@@ -28,6 +28,8 @@ dependencies {
     implementation("com.github.ajalt.clikt:clikt:_")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:_")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:_")
+    implementation("io.ktor:ktor-server-core:_")
+    implementation("io.ktor:ktor-server-netty:_")
     implementation("io.ktor:ktor-client-core:_")
     implementation("io.ktor:ktor-client-cio:_")
     implementation("io.ktor:ktor-client-json:_")

@@ -8,6 +8,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import com.github.smaugfm.mono.model.*
+import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
@@ -18,9 +19,7 @@ class MonoApi(private val token: String) {
         require(token.isNotBlank())
     }
 
-    companion object {
-        private fun url(endpoint: String) = "https://api.monobank.ua/${endpoint}"
-    }
+    private var previousStatementCallTimestamp = Long.MIN_VALUE / 2
 
     private val httpClient = HttpClient {
         defaultRequest {
@@ -49,8 +48,16 @@ class MonoApi(private val token: String) {
         from: Instant,
         to: Instant = Clock.System.now()
     ): List<StatementItem> {
+        val currentTime = System.currentTimeMillis()
+        if (currentTime - previousStatementCallTimestamp < StatementCallRate) {
+            delay(StatementCallRate - (currentTime - previousStatementCallTimestamp))
+        }
+
         val itemsString =
-            httpClient.get<String>(url("personal/statement/$id/${from.epochSeconds}/${to.epochSeconds}"))
+            httpClient.get<String>(url("personal/statement/$id/${from.epochSeconds}/${to.epochSeconds}")).also {
+                previousStatementCallTimestamp = System.currentTimeMillis()
+            }
+
         return Json.decodeFromString(itemsString)
     }
 
@@ -58,4 +65,10 @@ class MonoApi(private val token: String) {
         val infoString = httpClient.get<String>(url("bank/currency"))
         return Json.decodeFromString(infoString)
     }
+
+    companion object {
+        private const val StatementCallRate = 60000
+        private fun url(endpoint: String) = "https://api.monobank.ua/${endpoint}"
+    }
+
 }

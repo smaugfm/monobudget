@@ -1,7 +1,12 @@
 package com.github.smaugfm.mono.model
 
-enum class CashbackType(val title: String) {
-    NONE("None"),
-    UAH("UAN"),
-    MILES("Miles")
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+
+@Serializable
+enum class CashbackType() {
+    @SerialName("")
+    None,
+    UAH,
+    Miles
 }
