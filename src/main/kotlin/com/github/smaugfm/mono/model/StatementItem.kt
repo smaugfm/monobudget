@@ -1,12 +1,8 @@
 package com.github.smaugfm.mono.model
 
+import com.github.smaugfm.mono.model.serializers.InstantAsLongSerializer
 import kotlinx.datetime.Instant
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 
 /**
  * Перелік транзакцій за вказанний час
@@ -28,13 +24,3 @@ data class StatementItem(
     val hold: Boolean
 )
 
-class InstantAsLongSerializer : KSerializer<Instant> {
-    override val descriptor = PrimitiveSerialDescriptor("time", PrimitiveKind.LONG)
-
-    override fun deserialize(decoder: Decoder) = Instant.fromEpochSeconds(decoder.decodeLong())
-
-    override fun serialize(encoder: Encoder, value: Instant) {
-        encoder.encodeLong(value.epochSeconds)
-    }
-
-}

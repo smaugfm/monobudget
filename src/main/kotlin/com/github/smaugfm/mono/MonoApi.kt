@@ -8,11 +8,21 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import com.github.smaugfm.mono.model.*
+import io.ktor.application.*
+import io.ktor.http.*
+import io.ktor.request.*
+import io.ktor.response.*
+import io.ktor.routing.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.net.URI
 
 class MonoApi(private val token: String) {
     init {
@@ -35,11 +45,24 @@ class MonoApi(private val token: String) {
         return Json.decodeFromString(infoString)
     }
 
-    suspend fun setWebHook(urlString: String): Status {
+    suspend fun setWebHook(url: URI): Status {
+        require(url.toASCIIString() == url.toString())
+
         val json = defaultSerializer()
-        val statusString = httpClient.post<String>(url("personal/webhook")) {
-            body = json.write(WebHookRequest(urlString))
+        val server = embeddedServer(Netty, port = url.port) {
+            routing {
+                get(url.path) {
+                    call.response.status(HttpStatusCode.OK)
+                    call.respondText("OK\n", ContentType.Text.Plain)
+                    println("Webhook setup successful: $url")
+                }
+            }
         }
+        server.start(wait = false)
+        val statusString = httpClient.post<String>(url("personal/webhook")) {
+            body = json.write(WebHookRequest(url.toString()))
+        }
+        server.stop(100, 100)
         return Json.decodeFromString(statusString)
     }
 
