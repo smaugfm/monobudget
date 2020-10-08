@@ -6,10 +6,8 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.smaugfm.mono.MonoApi
 import com.github.smaugfm.mono.model.WebHookResponse
+import com.github.smaugfm.ynab.YnabApi
 import io.ktor.application.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -18,22 +16,26 @@ import io.ktor.routing.*
 import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import io.ktor.utils.io.jvm.javaio.*
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import ynab.client.api.BudgetsApi
-import java.io.InputStreamReader
+import ynab.client.invoker.ApiClient
+import ynab.client.invoker.Configuration
+import ynab.client.invoker.auth.ApiKeyAuth
 import java.net.URI
-import kotlin.system.exitProcess
+
 
 class YnabMono() : CliktCommand() {
-    val token by option().required()
+    val ynabToken by option().required()
+    val monoToken by option().required()
     val webhook by option().required()
     val setWebhook by option().flag()
 
     override fun run() {
-        val api = MonoApi(token)
-        runBlocking {
+        val api = MonoApi(monoToken)
+        YnabApi(ynabToken).use { ynabApi ->
+            runBlocking {
+                println(ynabApi.getBudgets())
+            }
         }
     }
 
