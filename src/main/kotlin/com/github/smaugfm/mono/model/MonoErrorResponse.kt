@@ -7,5 +7,5 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class MonoErrorResponse(
-    val errorDescription: String
+    val errorDescription: String,
 )

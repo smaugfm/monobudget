@@ -1,4 +1,4 @@
-package com.github.smaugfm.ynab
+package com.github.smaugfm.wrappers
 
 import kotlinx.coroutines.CompletableDeferred
 import ynab.client.api.AccountsApi
@@ -10,7 +10,6 @@ import ynab.client.invoker.Configuration
 import ynab.client.invoker.auth.ApiKeyAuth
 import ynab.client.model.AccountsResponse
 import ynab.client.model.BudgetSummaryResponse
-import java.util.*
 
 class YnabApi(token: String) : AutoCloseable {
     init {
@@ -26,7 +25,7 @@ class YnabApi(token: String) : AutoCloseable {
             override fun onSuccess(
                 result: T,
                 statusCode: Int,
-                responseHeaders: MutableMap<String, MutableList<String>>?
+                responseHeaders: MutableMap<String, MutableList<String>>?,
             ) {
                 deferred.complete(result)
             }
@@ -34,7 +33,7 @@ class YnabApi(token: String) : AutoCloseable {
             override fun onFailure(
                 e: ApiException?,
                 statusCode: Int,
-                responseHeaders: MutableMap<String, MutableList<String>>?
+                responseHeaders: MutableMap<String, MutableList<String>>?,
             ) {
                 deferred.completeExceptionally(e ?: ApiException(statusCode, "Unknown error"))
             }

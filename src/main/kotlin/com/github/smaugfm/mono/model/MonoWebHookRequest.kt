@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MonoWebHookRequest(
-    val webHookUrl: String
+    val webHookUrl: String,
 )

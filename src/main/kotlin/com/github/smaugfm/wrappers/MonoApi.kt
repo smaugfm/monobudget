@@ -1,14 +1,13 @@
-package com.github.smaugfm.mono
+package com.github.smaugfm.wrappers
 
-import io.ktor.client.HttpClient
-import io.ktor.client.features.defaultRequest
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.post
+import com.github.smaugfm.events.ExternalEvent
 import com.github.smaugfm.mono.model.*
 import io.ktor.application.*
+import io.ktor.client.*
+import io.ktor.client.features.*
+import io.ktor.client.features.json.*
+import io.ktor.client.features.json.serializer.*
+import io.ktor.client.request.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.request.*
@@ -17,7 +16,10 @@ import io.ktor.routing.*
 import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
@@ -70,7 +72,7 @@ class MonoApi(private val token: String) {
     suspend fun fetchStatementItems(
         id: MonoAccountId,
         from: Instant,
-        to: Instant = Clock.System.now()
+        to: Instant = Clock.System.now(),
     ): List<MonoStatementItem> {
         val currentTime = System.currentTimeMillis()
         if (currentTime - previousStatementCallTimestamp < StatementCallRate) {
@@ -94,11 +96,11 @@ class MonoApi(private val token: String) {
         private const val StatementCallRate = 60000
         private fun url(endpoint: String) = "https://api.monobank.ua/${endpoint}"
 
-        suspend fun startMonoWebhookServer(
+        suspend fun startMonoWebhookServerAsync(
             context: CoroutineContext,
             webhook: URI,
-            handler: suspend (item: MonoWebHookResponseData) -> Unit
-        ): Job =
+            dispatch: suspend (event: ExternalEvent) -> Unit,
+        ): Deferred<Unit> =
             withContext(context) {
                 val server = embeddedServer(Netty, port = webhook.port) {
                     install(ContentNegotiation) {
@@ -108,13 +110,12 @@ class MonoApi(private val token: String) {
                         post(webhook.path) {
                             val response = call.receive<MonoWebhookResponse>();
                             call.response.status(HttpStatusCode.OK)
-
-                            handler(response.data)
+                            dispatch(ExternalEvent.Mono.NewStatementReceived(response.data))
                         }
                     }
                 }
-                launch {
-                    server.start(wait = true)
+                async {
+                    server.start(wait = true).let { Unit }
                 }
             }
 

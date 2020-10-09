@@ -20,5 +20,5 @@ data class MonoCurrencyInfo(
     val date: Instant,
     val rateSell: Double? = null,
     val rateBuy: Double? = null,
-    val rateCross: Double? = null
+    val rateCross: Double? = null,
 )

@@ -11,5 +11,5 @@ data class MonoUserInfo(
     val clientId: String,
     val name: String,
     val webHookUrl: String,
-    val accounts: List<MonoAccount>
+    val accounts: List<MonoAccount>,
 )

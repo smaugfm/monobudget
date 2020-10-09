@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MonoStatusResponse(
-    val status: String
+    val status: String,
 )

@@ -14,7 +14,7 @@ data class MonoAccount(
     val cashbackType: MonoCashbackType,
     val iban: String,
     val maskedPan: List<String>,
-    val type: String
+    val type: String,
 ) {
     override fun toString(): String {
         val builder = StringBuffer()

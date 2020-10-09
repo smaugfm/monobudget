@@ -24,7 +24,7 @@ data class Settings(
     val ynabBudgetId: String,
     @Serializable(with = HashBiMapAsMapSerializer::class)
     val mono2Ynab: BiMap<String, String> = HashBiMap(),
-    val telegram2Mono: Map<Long, List<String>> = emptyMap()
+    val telegram2Mono: Map<Long, List<String>> = emptyMap(),
 ) {
     companion object {
         fun load(path: Path) = Json.decodeFromString<Settings>(File(path.toString()).readText())

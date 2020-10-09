@@ -21,6 +21,6 @@ data class MonoStatementItem(
     val commissionRate: Long,
     val cashbackAmount: Long,
     val balance: Long,
-    val hold: Boolean
+    val hold: Boolean,
 )
 

@@ -1,9 +1,7 @@
 package com.github.smaugfm.serializers
 
-import io.michaelrocks.bimap.BiMap
 import io.michaelrocks.bimap.HashBiMap
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.Serializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
