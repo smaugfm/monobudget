@@ -1,6 +1,6 @@
 package com.github.smaugfm.mono.model
 
-import com.github.smaugfm.mono.model.serializers.InstantAsLongSerializer
+import com.github.smaugfm.serializers.InstantAsLongSerializer
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 
@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
  */
 
 @Serializable
-data class StatementItem(
+data class MonoStatementItem(
     val id: String,
     @Serializable(with = InstantAsLongSerializer::class)
     val time: Instant,

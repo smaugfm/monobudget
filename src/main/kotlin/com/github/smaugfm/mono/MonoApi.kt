@@ -10,14 +10,11 @@ import io.ktor.client.request.post
 import com.github.smaugfm.mono.model.*
 import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
@@ -40,12 +37,12 @@ class MonoApi(private val token: String) {
         }
     }
 
-    suspend fun fetchUserInfo(): UserInfo {
+    suspend fun fetchUserInfo(): MonoUserInfo {
         val infoString = httpClient.get<String>(url("personal/client-info"))
         return Json.decodeFromString(infoString)
     }
 
-    suspend fun setWebHook(url: URI): Status {
+    suspend fun setWebHook(url: URI): MonoStatusResponse {
         require(url.toASCIIString() == url.toString())
 
         val json = defaultSerializer()
@@ -60,17 +57,17 @@ class MonoApi(private val token: String) {
         }
         server.start(wait = false)
         val statusString = httpClient.post<String>(url("personal/webhook")) {
-            body = json.write(WebHookRequest(url.toString()))
+            body = json.write(MonoWebHookRequest(url.toString()))
         }
         server.stop(100, 100)
         return Json.decodeFromString(statusString)
     }
 
     suspend fun fetchStatementItems(
-        id: AccountId,
+        id: MonoAccountId,
         from: Instant,
         to: Instant = Clock.System.now()
-    ): List<StatementItem> {
+    ): List<MonoStatementItem> {
         val currentTime = System.currentTimeMillis()
         if (currentTime - previousStatementCallTimestamp < StatementCallRate) {
             delay(StatementCallRate - (currentTime - previousStatementCallTimestamp))
@@ -84,7 +81,7 @@ class MonoApi(private val token: String) {
         return Json.decodeFromString(itemsString)
     }
 
-    suspend fun fetchBankCurrency(): List<CurrencyInfo> {
+    suspend fun fetchBankCurrency(): List<MonoCurrencyInfo> {
         val infoString = httpClient.get<String>(url("bank/currency"))
         return Json.decodeFromString(infoString)
     }

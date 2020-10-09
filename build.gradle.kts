@@ -14,6 +14,8 @@ repositories {
         dirs("lib")
     }
     mavenCentral()
+    jcenter()
+    maven(url = "https://jitpack.io")
     maven(url = "https://kotlin.bintray.com/kotlinx")
 }
 
@@ -28,6 +30,21 @@ tasks.withType<KotlinCompile> {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    ynabSdk()
+    implementation("com.github.snowe2010:pretty-print:v2.0.7")
+    implementation("com.github.ajalt.clikt:clikt:_")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:_")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:_")
+    implementation("io.ktor:ktor-server-core:_")
+    implementation("io.ktor:ktor-server-netty:_")
+    implementation("io.ktor:ktor-serialization:_")
+    implementation("io.ktor:ktor-client-core:_")
+    implementation("io.ktor:ktor-client-cio:_")
+    implementation("io.ktor:ktor-client-json:_")
+    implementation("io.ktor:ktor-client-serialization:_")
+}
+
+fun DependencyHandlerScope.ynabSdk() {
     implementation(":ynab-sdk-0.0.3")
     implementation(":swagger-annotations-1.5.15")
     implementation(":junit-4.12")
@@ -40,15 +57,5 @@ dependencies {
     implementation(":hamcrest-core-1.3")
     implementation(":gson-fire-1.8.0")
     implementation(":threetenbp-1.3.5")
-
-    implementation("com.github.ajalt.clikt:clikt:_")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:_")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:_")
-    implementation("io.ktor:ktor-server-core:_")
-    implementation("io.ktor:ktor-server-netty:_")
-    implementation("io.ktor:ktor-serialization:_")
-    implementation("io.ktor:ktor-client-core:_")
-    implementation("io.ktor:ktor-client-cio:_")
-    implementation("io.ktor:ktor-client-json:_")
-    implementation("io.ktor:ktor-client-serialization:_")
 }
+

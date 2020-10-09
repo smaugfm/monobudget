@@ -1,13 +1,16 @@
 package com.github.smaugfm.ynab
 
 import kotlinx.coroutines.CompletableDeferred
+import ynab.client.api.AccountsApi
 import ynab.client.api.BudgetsApi
 import ynab.client.invoker.ApiCallback
 import ynab.client.invoker.ApiClient
 import ynab.client.invoker.ApiException
 import ynab.client.invoker.Configuration
 import ynab.client.invoker.auth.ApiKeyAuth
+import ynab.client.model.AccountsResponse
 import ynab.client.model.BudgetSummaryResponse
+import java.util.*
 
 class YnabApi(token: String) : AutoCloseable {
     init {
@@ -42,6 +45,13 @@ class YnabApi(token: String) : AutoCloseable {
             override fun onDownloadProgress(bytesRead: Long, contentLength: Long, done: Boolean) {
             }
         }
+    }
+
+    suspend fun getAccounts(budgetId: String): AccountsResponse {
+        val deferred = CompletableDeferred<AccountsResponse>()
+        AccountsApi().getAccountsAsync(budgetId, asyncAdapter(deferred))
+
+        return deferred.await()
     }
 
     suspend fun getBudgets(): BudgetSummaryResponse {

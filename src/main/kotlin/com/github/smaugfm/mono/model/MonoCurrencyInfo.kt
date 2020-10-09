@@ -1,7 +1,7 @@
 package com.github.smaugfm.mono.model
 
-import com.github.smaugfm.mono.model.serializers.CurrencyAsIntSerializer
-import com.github.smaugfm.mono.model.serializers.InstantAsLongSerializer
+import com.github.smaugfm.serializers.CurrencyAsIntSerializer
+import com.github.smaugfm.serializers.InstantAsLongSerializer
 import kotlinx.serialization.Serializable
 import java.time.Instant
 import java.util.*
@@ -11,7 +11,7 @@ import java.util.*
  */
 
 @Serializable
-data class CurrencyInfo(
+data class MonoCurrencyInfo(
     @Serializable(with = CurrencyAsIntSerializer::class)
     val currencyCodeA: Currency,
     @Serializable(with = CurrencyAsIntSerializer::class)

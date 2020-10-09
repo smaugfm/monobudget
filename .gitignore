@@ -2,4 +2,4 @@ build/
 out/
 .gradle/
 
-.env
+settings.json

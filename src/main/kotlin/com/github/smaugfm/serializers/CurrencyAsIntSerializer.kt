@@ -1,4 +1,4 @@
-package com.github.smaugfm.mono.model.serializers
+package com.github.smaugfm.serializers
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind

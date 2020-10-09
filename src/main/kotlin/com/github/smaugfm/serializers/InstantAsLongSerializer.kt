@@ -1,4 +1,4 @@
-package com.github.smaugfm.mono.model.serializers
+package com.github.smaugfm.serializers
 
 import kotlinx.datetime.Instant
 import kotlinx.serialization.KSerializer
