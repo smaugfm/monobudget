@@ -9,17 +9,21 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import com.github.smaugfm.mono.model.*
 import io.ktor.application.*
+import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.net.URI
+import kotlin.coroutines.CoroutineContext
 
 class MonoApi(private val token: String) {
     init {
@@ -89,6 +93,35 @@ class MonoApi(private val token: String) {
     companion object {
         private const val StatementCallRate = 60000
         private fun url(endpoint: String) = "https://api.monobank.ua/${endpoint}"
-    }
 
+        suspend fun startMonoWebhookServer(
+            context: CoroutineContext,
+            webhook: URI,
+            handler: suspend (item: MonoWebHookResponseData) -> Unit
+        ): Job =
+            withContext(context) {
+                val server = embeddedServer(Netty, port = webhook.port) {
+                    install(ContentNegotiation) {
+                        json()
+                    }
+                    routing {
+                        post(webhook.path) {
+                            val response = call.receive<MonoWebhookResponse>();
+                            call.response.status(HttpStatusCode.OK)
+
+                            handler(response.data)
+                        }
+                    }
+                }
+                launch {
+                    server.start(wait = true)
+                }
+            }
+
+        suspend fun Collection<MonoApi>.setupWebhook(webhook: URI) {
+            this.forEach {
+                it.setWebHook(webhook)
+            }
+        }
+    }
 }
