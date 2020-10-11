@@ -1,4 +1,4 @@
-package com.github.smaugfm.mono.model
+package com.github.smaugfm.mono
 
 import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import kotlinx.serialization.Serializable
@@ -17,7 +17,7 @@ data class MonoAccount(
     val type: String,
 ) {
     override fun toString(): String {
-        val builder = StringBuffer()
+        val builder = StringBuilder()
         builder.append("MonoAccount {\n")
         builder.append("\tid: $id\n")
         builder.append("\tbalance: $balance\n")

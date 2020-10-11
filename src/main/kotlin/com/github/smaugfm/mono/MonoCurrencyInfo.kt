@@ -1,4 +1,4 @@
-package com.github.smaugfm.mono.model
+package com.github.smaugfm.mono
 
 import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import com.github.smaugfm.serializers.InstantAsLongSerializer

@@ -1,7 +1,5 @@
 package com.github.smaugfm.events
 
-import com.github.smaugfm.wrappers.TelegramApi
-import com.github.smaugfm.wrappers.YnabApi
 import io.michaelrocks.bimap.BiMap
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -9,21 +7,19 @@ import java.util.*
 import java.util.concurrent.Executors
 
 class EventProcessor(
-    private val mono2Ynab: BiMap<String, String>,
-    private val telegram2Mono: Map<Long, List<String>>,
-    private val handlers: List<(ExternalEvent, IEventContext) -> Boolean>,
+    private val monoAcc2Ynab: BiMap<String, String>,
+    private val monoAcc2Telegram: Map<String, Long>,
+    private val handleCreators: List<IEventHandlerCreator>,
 ) : IEventContext {
-
+    private val handlers = handleCreators.map { it.create(this::dispatch) }
     private val singleThreaded = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    override lateinit var ynab: YnabApi
-    override lateinit var telegram: TelegramApi
-    private val eventsQueue: Queue<ExternalEvent> = ArrayDeque()
+    private val eventsQueue: Queue<Event> = ArrayDeque()
     private var isDispatching: Boolean = false
 
-    override fun resolveYnabAccount(monoAccountId: String) = mono2Ynab[monoAccountId]
-    override fun resolveMonoAccounts(telegramChatId: Long) = telegram2Mono[telegramChatId] ?: emptyList()
+    override fun resolveYnabAccount(monoAccountId: String) = monoAcc2Ynab[monoAccountId]
+    override fun resolveTelegramAccount(monoAccountId: String) = monoAcc2Telegram[monoAccountId]
 
-    override suspend fun dispatch(event: ExternalEvent) {
+    override suspend fun dispatch(event: Event) {
         withContext(singleThreaded) {
             eventsQueue.offer(event)
             if (!isDispatching) {
@@ -33,7 +29,7 @@ class EventProcessor(
                         val current = eventsQueue.poll()
 
                         for (handler in handlers) {
-                            val handled = handler(current, this@EventProcessor)
+                            val handled = handler(current)
                             if (handled)
                                 break
                         }
@@ -43,10 +39,5 @@ class EventProcessor(
                 }
             }
         }
-    }
-
-    fun init(ynabApi: YnabApi, telegramApi: TelegramApi) {
-        ynab = ynabApi
-        telegram = telegramApi
     }
 }

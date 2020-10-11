@@ -43,10 +43,10 @@ tasks {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("ynab.sdk:ynab-sdk:_")
     implementation("com.github.snowe2010:pretty-print:v2.0.7")
     implementation("io.michaelrocks:bimap:_")
-    implementation("io.github.kotlin-telegram-bot.kotlin-telegram-bot:telegram:5.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:_")
+    implementation("com.github.elbekD:kt-telegram-bot:1.3.5")
     implementation("com.github.ajalt.clikt:clikt:_")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:_")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:_")
@@ -57,10 +57,9 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:_")
     implementation("io.ktor:ktor-client-json:_")
     implementation("io.ktor:ktor-client-serialization:_")
+
+    testImplementation("io.mockk:mockk:_")
     testImplementation("org.junit.jupiter:junit-jupiter-api:_")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:_")
-}
-
-fun DependencyHandlerScope.ynabSdk() {
 }
 

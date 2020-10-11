@@ -1,6 +1,6 @@
 package com.github.smaugfm.serializers
 
-import io.michaelrocks.bimap.HashBiMap
+import com.github.smaugfm.util.HashBiMap
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.encoding.Decoder
@@ -13,10 +13,8 @@ class HashBiMapAsMapSerializer<K : Any, V : Any>(
     private val mapSerializer = MapSerializer(keySerializer, valueSerializer)
     override val descriptor = mapSerializer.descriptor
 
-    override fun deserialize(decoder: Decoder): HashBiMap<K, V> {
-        val map = decoder.decodeSerializableValue(mapSerializer)
-        return HashBiMap.create(map)
-    }
+    override fun deserialize(decoder: Decoder): HashBiMap<K, V> =
+        HashBiMap.of(decoder.decodeSerializableValue(mapSerializer))
 
     override fun serialize(encoder: Encoder, value: HashBiMap<K, V>) {
         encoder.encodeSerializableValue(mapSerializer, value)

@@ -1,13 +1,11 @@
 package com.github.smaugfm.events
 
-import com.github.smaugfm.wrappers.TelegramApi
-import com.github.smaugfm.wrappers.YnabApi
+import com.github.smaugfm.apis.TelegramApi
+import com.github.smaugfm.apis.YnabApi
 
 interface IEventContext {
     fun resolveYnabAccount(monoAccountId: String): String?
-    fun resolveMonoAccounts(telegramChatId: Long): List<String>
+    fun resolveTelegramAccount(monoAccountId: String): Long?
 
-    val ynab: YnabApi
-    val telegram: TelegramApi
-    suspend fun dispatch(event: ExternalEvent): Unit
+    suspend fun dispatch(event: Event): Unit
 }

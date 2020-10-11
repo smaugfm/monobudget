@@ -1,4 +1,4 @@
-package com.github.smaugfm.mono.model
+package com.github.smaugfm.mono
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

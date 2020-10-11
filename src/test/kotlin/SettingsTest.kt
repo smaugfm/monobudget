@@ -1,5 +1,5 @@
 import com.github.smaugfm.settings.Settings
-import io.michaelrocks.bimap.HashBiMap
+import com.github.smaugfm.util.HashBiMap
 import org.junit.jupiter.api.Test
 import java.net.URI
 import java.nio.file.Files
@@ -12,22 +12,25 @@ class SettingsTest {
             "vasa8",
             listOf("vasa9", "vasa10"),
             "vasa11",
+            "vasa14",
             webhookURI = URI("http://vasa13.com:8080/vasa12"),
             "vasa1",
-            HashBiMap.create(
-                mapOf(
-                    "vasa2" to "vasa3",
-                    "vasa4" to "vasa5"
-                )
+            HashBiMap.of(
+                "vasa2" to "vasa3",
+                "vasa4" to "vasa5"
             ),
             mapOf(
-                1223L to listOf("vasa6"),
-                12342L to listOf("vasa7")
+                "vasa6" to 12324L,
+                "vasa7" to 123242L,
+            ),
+            mapOf(
+                12342 to "vasa12",
+                12342 to "vasa13",
             )
         )
 
         settings.save(file)
         val loaded = Settings.load(file)
-        assert(settings == loaded)
+        assert(loaded == settings)
     }
 }

@@ -1,7 +1,7 @@
-package com.github.smaugfm.wrappers
+package com.github.smaugfm.apis
 
-import com.github.smaugfm.events.ExternalEvent
-import com.github.smaugfm.mono.model.*
+import com.github.smaugfm.events.Event
+import com.github.smaugfm.mono.*
 import io.ktor.application.*
 import io.ktor.client.*
 import io.ktor.client.features.*
@@ -16,10 +16,10 @@ import io.ktor.routing.*
 import io.ktor.serialization.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.async
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
@@ -87,6 +87,7 @@ class MonoApi(private val token: String) {
         return Json.decodeFromString(itemsString)
     }
 
+
     suspend fun fetchBankCurrency(): List<MonoCurrencyInfo> {
         val infoString = httpClient.get<String>(url("bank/currency"))
         return Json.decodeFromString(infoString)
@@ -96,28 +97,27 @@ class MonoApi(private val token: String) {
         private const val StatementCallRate = 60000
         private fun url(endpoint: String) = "https://api.monobank.ua/${endpoint}"
 
-        suspend fun startMonoWebhookServerAsync(
+        fun startMonoWebhookServerAsync(
             context: CoroutineContext,
             webhook: URI,
-            dispatch: suspend (event: ExternalEvent) -> Unit,
-        ): Deferred<Unit> =
-            withContext(context) {
-                val server = embeddedServer(Netty, port = webhook.port) {
-                    install(ContentNegotiation) {
-                        json()
-                    }
-                    routing {
-                        post(webhook.path) {
-                            val response = call.receive<MonoWebhookResponse>();
-                            call.response.status(HttpStatusCode.OK)
-                            dispatch(ExternalEvent.Mono.NewStatementReceived(response.data))
-                        }
-                    }
+            dispatch: suspend (event: Event) -> Unit,
+        ): Job {
+            val server = embeddedServer(Netty, port = webhook.port) {
+                install(ContentNegotiation) {
+                    json()
                 }
-                async {
-                    server.start(wait = true).let { Unit }
+                routing {
+                    post(webhook.path) {
+                        val response = call.receive<MonoWebhookResponse>();
+                        call.response.status(HttpStatusCode.OK)
+                        dispatch(Event.Mono.NewStatementReceived(response.data))
+                    }
                 }
             }
+            return GlobalScope.launch(context) {
+                server.start(wait = true).let { Unit }
+            }
+        }
 
         suspend fun Collection<MonoApi>.setupWebhook(webhook: URI) {
             this.forEach {
