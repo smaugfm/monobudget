@@ -22,10 +22,7 @@ data class Settings(
     @Serializable(with = URIAsStringSerializer::class)
     val webhookURI: URI,
     val ynabBudgetId: String,
-    @Serializable(with = HashBiMapAsMapSerializer::class)
-    val monoAcc2Ynab: BiMap<String, String>,
-    val monoAcc2Telegram: Map<String, Long>,
-    val mccToCategory: Map<Int, String>,
+    val mappings: Mappings
 ) {
     companion object {
         fun load(path: Path) = Json.decodeFromString<Settings>(File(path.toString()).readText())
