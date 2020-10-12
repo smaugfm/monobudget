@@ -1,8 +1,6 @@
 package com.github.smaugfm.apis
 
-import com.github.smaugfm.ynab.YnabSaveTransaction
-import com.github.smaugfm.ynab.YnabSaveTransactionWrapper
-import com.github.smaugfm.ynab.YnabTransactionResponse
+import com.github.smaugfm.ynab.*
 import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
@@ -32,7 +30,24 @@ class YnabApi(
 
     suspend fun createTransaction(
         transaction: YnabSaveTransaction,
-    ): YnabTransactionResponse = httpClient.post(url("budgets", budgetId, "transactions")) {
-        body = json.write(YnabSaveTransactionWrapper(transaction))
-    }
+    ): YnabTransactionDetail =
+        httpClient.post<YnabSaveTransactionResponse>(url("budgets", budgetId, "transactions")) {
+            body = json.write(YnabSaveTransactionWrapper(transaction))
+        }.data.transaction
+
+    suspend fun updateTransaction(
+        transactionId: String,
+        transaction: YnabSaveTransaction,
+    ): YnabTransactionDetail =
+        httpClient.put<YnabTransactionResponse>(url("budgets", budgetId, "transactions", transactionId)) {
+            body = json.write(YnabSaveTransactionWrapper(transaction))
+        }.data.transaction
+
+    suspend fun getTransaction(
+        transactionId: String,
+    ): YnabTransactionDetail =
+        httpClient.get<YnabTransactionResponse>(url("budgets",
+            budgetId,
+            "transactions",
+            transactionId)).data.transaction
 }
