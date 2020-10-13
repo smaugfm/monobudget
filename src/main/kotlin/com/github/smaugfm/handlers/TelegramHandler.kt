@@ -2,7 +2,7 @@ package com.github.smaugfm.handlers
 
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
-import com.github.smaugfm.apis.TelegramApi
+import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.mono.MonoStatementItem

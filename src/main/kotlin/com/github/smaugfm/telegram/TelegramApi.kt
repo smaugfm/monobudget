@@ -1,4 +1,4 @@
-package com.github.smaugfm.apis
+package com.github.smaugfm.telegram
 
 import com.elbekD.bot.Bot
 import com.github.smaugfm.events.Event

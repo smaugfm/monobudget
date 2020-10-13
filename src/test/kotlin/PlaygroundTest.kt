@@ -1,14 +1,14 @@
-import com.github.smaugfm.apis.TelegramApi
+import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.handlers.TelegramHandler
 import com.github.smaugfm.mono.MonoStatementItem
+import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Settings
-import com.github.smaugfm.ynab.YnabSaveTransaction
+import com.github.smaugfm.ynab.YnabTransactionDetail
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import org.junit.jupiter.api.Test
-import java.nio.file.Paths
 import java.util.*
 import kotlin.time.days
 
@@ -16,10 +16,11 @@ class PlaygroundTest {
     @Test
     fun test() {
         runBlocking {
-            val settings = Settings.load(Paths.get("settings.json"))
+            val settings = Settings.loadDefault()
             val telegram =
                 TelegramHandler(
-                    TelegramApi.create(settings.telegramBotUsername, settings.telegramBotToken)
+                    TelegramApi.create(settings.telegramBotUsername, settings.telegramBotToken),
+                    settings.mappings,
                 )
 
             val statementItem = mockk<MonoStatementItem>()
@@ -29,13 +30,18 @@ class PlaygroundTest {
             every { statementItem.description } returns "Rozetka"
             every { statementItem.currencyCode } returns Currency.getInstance("UAH")
 
-            val transaction = mockk<YnabSaveTransaction>()
-            every { transaction.payee_name } returns "rozetka"
+            val monoResponse = mockk<MonoWebHookResponseData>()
+            every { monoResponse.account } returns settings.mappings.getMonoAccounts().find { it.startsWith("p") }!!
+            every { monoResponse.statementItem } returns statementItem
 
-            telegram.sendStatementMessage(settings.monoAcc2Telegram.values.find { it.toString().startsWith("4") }!!,
-                statementItem,
-                transaction,
-                "Продукты/быт")
+            val transaction = mockk<YnabTransactionDetail>()
+            every { transaction.payee_name } returns "rozetka"
+            every { transaction.category_name } returns "Продукты/быт"
+            every { transaction.id } returns "12342"
+
+            telegram.sendStatementMessage(
+                monoResponse,
+                transaction)
         }
     }
 }
