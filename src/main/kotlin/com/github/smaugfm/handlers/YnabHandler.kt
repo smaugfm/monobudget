@@ -1,13 +1,11 @@
 package com.github.smaugfm.handlers
 
-import com.github.smaugfm.apis.YnabApi
+import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.settings.Mappings
-import com.github.smaugfm.ynab.YnabCleared
-import com.github.smaugfm.ynab.YnabFlagColor
-import com.github.smaugfm.ynab.YnabSaveTransaction
+import com.github.smaugfm.ynab.*
 
 class YnabHandler(
     private val ynab: YnabApi,
@@ -23,22 +21,21 @@ class YnabHandler(
         return true
     }
 
-    private suspend fun updateTransaction(dispatch: Dispatch, e: Event.Ynab.UpdateTransaction) {
-        val transaction = ynab.getTransaction(e.transactionId)
+    suspend fun updateTransaction(dispatch: Dispatch, e: Event.Ynab.UpdateTransaction) {
+        val transactionDetail = ynab.getTransaction(e.transactionId)
+        val saveTransaction = ynabTransactionSaveFromDetails(transactionDetail)
 
-        val newTransactin = when (e.type) {
-            TelegramHandler.Companion.UpdateType.Unclear -> transaction.copy(cleared = YnabCleared.Uncleared)
-            TelegramHandler.Companion.UpdateType.MarkRed -> transaction.copy(flag_color = YnabFlagColor.Red)
-            TelegramHandler.Companion.UpdateType.Unrecognized -> transaction.copy(category_id = null)
+        val newTransaction = when (e.type) {
+            TelegramHandler.Companion.UpdateType.Unclear -> saveTransaction.copy(cleared = YnabCleared.Uncleared)
+            TelegramHandler.Companion.UpdateType.MarkRed -> saveTransaction.copy(flag_color = YnabFlagColor.Red)
+            TelegramHandler.Companion.UpdateType.Unrecognized -> saveTransaction.copy(category_id = null)
         }
+
+        ynab.updateTransaction(transactionDetail.id, newTransaction)
     }
 
     private suspend fun createTransaction(dispatch: Dispatch, e: Event.Mono.NewStatementReceived) {
-        val ynabAccountId = mappings.getYnabAccByMono(e.data.account) ?: return
-        val telegramChatId = mappings.getTelegramChaIdAccByMono(e.data.account) ?: return
-
         val saveTransaction = determineTransactionParams(e.data.statementItem)
-
         val transactionDetail = ynab.createTransaction(saveTransaction)
 
         dispatch(Event.Telegram.SendStatementMessage(
@@ -47,7 +44,32 @@ class YnabHandler(
         ))
     }
 
+
     private fun determineTransactionParams(statementItem: MonoStatementItem): YnabSaveTransaction {
         TODO()
+    }
+
+    companion object {
+        fun ynabTransactionSaveFromDetails(t: YnabTransactionDetail): YnabSaveTransaction {
+            return YnabSaveTransaction(t.account_id,
+                t.date,
+                t.amount,
+                t.payee_id,
+                null,
+                t.category_id,
+                t.memo,
+                t.cleared,
+                t.approved,
+                t.flag_color,
+                t.import_id,
+                t.subtransactions.map {
+                    YnabSaveSubTransaction(it.amount,
+                        it.payee_id,
+                        it.payee_name,
+                        it.category_id,
+                        it.memo)
+                }
+            )
+        }
     }
 }

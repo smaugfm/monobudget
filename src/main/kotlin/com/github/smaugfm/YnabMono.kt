@@ -5,11 +5,12 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.smaugfm.apis.MonoApi
-import com.github.smaugfm.apis.MonoApi.Companion.setupWebhook
-import com.github.smaugfm.apis.TelegramApi
-import com.github.smaugfm.apis.YnabApi
+import com.github.smaugfm.mono.MonoApi
+import com.github.smaugfm.mono.MonoApi.Companion.setupWebhook
+import com.github.smaugfm.telegram.TelegramApi
+import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.events.EventProcessor
+import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.handlers.MonoHandler
 import com.github.smaugfm.handlers.TelegramHandler
 import com.github.smaugfm.handlers.YnabHandler
@@ -37,13 +38,11 @@ class YnabMono : CliktCommand() {
             if (!dontSetWebhook)
                 monoApis.setupWebhook(settings.webhookURI)
 
-            val events = EventProcessor(
-                settings.monoAcc2Ynab,
-                settings.monoAcc2Telegram,
+            val events: IEventDispatcher = EventProcessor(
                 listOf(
-                    MonoHandler(settings.monoAcc2Ynab, settings.monoAcc2Telegram),
-                    YnabHandler(ynabApi),
-                    TelegramHandler(telegramApi)
+                    MonoHandler(settings.mappings),
+                    YnabHandler(ynabApi, settings.mappings),
+                    TelegramHandler(telegramApi, settings.mappings)
                 ),
             )
 

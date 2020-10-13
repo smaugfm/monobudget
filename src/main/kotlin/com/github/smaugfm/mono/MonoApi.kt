@@ -1,7 +1,6 @@
-package com.github.smaugfm.apis
+package com.github.smaugfm.mono
 
 import com.github.smaugfm.events.Event
-import com.github.smaugfm.mono.*
 import io.ktor.application.*
 import io.ktor.client.*
 import io.ktor.client.features.*

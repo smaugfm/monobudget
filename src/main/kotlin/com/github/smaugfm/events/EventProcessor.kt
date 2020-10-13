@@ -1,23 +1,17 @@
 package com.github.smaugfm.events
 
-import io.michaelrocks.bimap.BiMap
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.util.*
 import java.util.concurrent.Executors
 
 class EventProcessor(
-    private val monoAcc2Ynab: BiMap<String, String>,
-    private val monoAcc2Telegram: Map<String, Long>,
     private val handleCreators: List<IEventHandlerCreator>,
-) : IEventContext {
+) : IEventDispatcher {
     private val handlers = handleCreators.map { it.create(this::dispatch) }
     private val singleThreaded = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     private val eventsQueue: Queue<Event> = ArrayDeque()
     private var isDispatching: Boolean = false
-
-    override fun resolveYnabAccount(monoAccountId: String) = monoAcc2Ynab[monoAccountId]
-    override fun resolveTelegramAccount(monoAccountId: String) = monoAcc2Telegram[monoAccountId]
 
     override suspend fun dispatch(event: Event) {
         withContext(singleThreaded) {
