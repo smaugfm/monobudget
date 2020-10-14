@@ -91,9 +91,7 @@ class TelegramHandler(
         return with(monoStatementItem) {
             val format = DecimalFormat("##")
             val time = with(time.toLocalDateTime(TimeZone.currentSystemDefault())) {
-                "${format.format(hour)}:${
-                format.format(minute)
-                }"
+                "${format.format(hour)}:${format.format(minute)}"
             }
 
             builder.append("\uD83D\uDCB3 <b>$description</b>                  ${time}\n")
