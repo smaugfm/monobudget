@@ -1,11 +1,15 @@
 package com.github.smaugfm.handlers
 
-import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.settings.Mappings
-import com.github.smaugfm.ynab.*
+import com.github.smaugfm.ynab.YnabApi
+import com.github.smaugfm.ynab.YnabCleared
+import com.github.smaugfm.ynab.YnabFlagColor
+import com.github.smaugfm.ynab.YnabSaveSubTransaction
+import com.github.smaugfm.ynab.YnabSaveTransaction
+import com.github.smaugfm.ynab.YnabTransactionDetail
 
 class YnabHandler(
     private val ynab: YnabApi,
@@ -38,12 +42,13 @@ class YnabHandler(
         val saveTransaction = determineTransactionParams(e.data.statementItem)
         val transactionDetail = ynab.createTransaction(saveTransaction)
 
-        dispatch(Event.Telegram.SendStatementMessage(
-            e.data,
-            transactionDetail,
-        ))
+        dispatch(
+            Event.Telegram.SendStatementMessage(
+                e.data,
+                transactionDetail,
+            )
+        )
     }
-
 
     private fun determineTransactionParams(statementItem: MonoStatementItem): YnabSaveTransaction {
         TODO()
@@ -51,7 +56,8 @@ class YnabHandler(
 
     companion object {
         fun ynabTransactionSaveFromDetails(t: YnabTransactionDetail): YnabSaveTransaction {
-            return YnabSaveTransaction(t.account_id,
+            return YnabSaveTransaction(
+                t.account_id,
                 t.date,
                 t.amount,
                 t.payee_id,
@@ -63,11 +69,13 @@ class YnabHandler(
                 t.flag_color,
                 t.import_id,
                 t.subtransactions.map {
-                    YnabSaveSubTransaction(it.amount,
+                    YnabSaveSubTransaction(
+                        it.amount,
                         it.payee_id,
                         it.payee_name,
                         it.category_id,
-                        it.memo)
+                        it.memo
+                    )
                 }
             )
         }

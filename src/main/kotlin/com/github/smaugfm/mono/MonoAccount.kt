@@ -2,7 +2,7 @@ package com.github.smaugfm.mono
 
 import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import kotlinx.serialization.Serializable
-import java.util.*
+import java.util.Currency
 
 @Serializable
 data class MonoAccount(
@@ -32,4 +32,3 @@ data class MonoAccount(
         return builder.toString()
     }
 }
-

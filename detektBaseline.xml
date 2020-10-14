@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexMethod:CorrectionSuggestor.kt$CorrectionSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
+    <ID>LongParameterList:TelegramApi.kt$TelegramApi$( chatId: Any, text: String, parseMode: String? = null, disableWebPagePreview: Boolean? = null, disableNotification: Boolean? = null, replyTo: Int? = null, markup: ReplyKeyboard? = null, )</ID>
+    <ID>LoopWithTooManyJumpStatements:CorrectionSuggestor.kt$CorrectionSuggestor$for (j in start..end) { val c2 = s2[j] if (c1 != c2 || s2Consumed[j]) continue s2Consumed[j] = true matches += 1 if (j &lt; s2MatchIndex) transpositions += 1 s2MatchIndex = j break }</ID>
+    <ID>MagicNumber:CorrectionSuggestor.kt$CorrectionSuggestor$0.1</ID>
+    <ID>MagicNumber:CorrectionSuggestor.kt$CorrectionSuggestor$0.8</ID>
+    <ID>MagicNumber:CorrectionSuggestor.kt$CorrectionSuggestor$3.0</ID>
+    <ID>MagicNumber:Util.kt$10.0</ID>
+    <ID>ReturnCount:CorrectionSuggestor.kt$CorrectionSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
+  </CurrentIssues>
+</SmellBaseline>

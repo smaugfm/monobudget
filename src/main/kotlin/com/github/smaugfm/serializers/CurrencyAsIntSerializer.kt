@@ -5,7 +5,7 @@ import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import java.util.*
+import java.util.Currency
 
 class CurrencyAsIntSerializer : KSerializer<Currency> {
     override val descriptor = PrimitiveSerialDescriptor(
@@ -21,5 +21,4 @@ class CurrencyAsIntSerializer : KSerializer<Currency> {
     override fun serialize(encoder: Encoder, value: Currency) {
         return encoder.encodeInt(value.numericCode)
     }
-
 }

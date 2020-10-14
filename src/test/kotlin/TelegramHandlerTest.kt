@@ -16,7 +16,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.Currency
 import kotlin.time.days
 
 class TelegramHandlerTest {
@@ -53,21 +53,39 @@ class TelegramHandlerTest {
 
             telegram.sendStatementMessage(
                 monoResponse,
-                transaction)
+                transaction
+            )
         }
 
         val data = TelegramHandler.callbackData(transactionId)
         coVerify {
             mappings.getTelegramChatIdAccByMono(monoAccount)
-            api.sendMessage(chatId, any(), "HTML", null, null, null,
-                InlineKeyboardMarkup(listOf(listOf(
-                    InlineKeyboardButton("Unclear",
-                        callback_data = data(TelegramHandler.Companion.UpdateType.Unclear)),
-                    InlineKeyboardButton("Mark red",
-                        callback_data = data(TelegramHandler.Companion.UpdateType.MarkRed)),
-                    InlineKeyboardButton("Невыясненные",
-                        callback_data = data(TelegramHandler.Companion.UpdateType.Unrecognized)),
-                ))))
+            api.sendMessage(
+                chatId,
+                any(),
+                "HTML",
+                null,
+                null,
+                null,
+                InlineKeyboardMarkup(
+                    listOf(
+                        listOf(
+                            InlineKeyboardButton(
+                                "Unclear",
+                                callback_data = data(TelegramHandler.Companion.UpdateType.Unclear)
+                            ),
+                            InlineKeyboardButton(
+                                "Mark red",
+                                callback_data = data(TelegramHandler.Companion.UpdateType.MarkRed)
+                            ),
+                            InlineKeyboardButton(
+                                "Невыясненные",
+                                callback_data = data(TelegramHandler.Companion.UpdateType.Unrecognized)
+                            ),
+                        )
+                    )
+                )
+            )
         }
     }
 

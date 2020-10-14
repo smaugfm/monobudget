@@ -1,12 +1,16 @@
 package com.github.smaugfm.ynab
 
-import io.ktor.client.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import io.ktor.client.HttpClient
+import io.ktor.client.features.ResponseException
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.put
+import io.ktor.client.statement.readText
+import io.ktor.http.ParametersBuilder
+import io.ktor.http.URLBuilder
+import io.ktor.http.URLProtocol
 import kotlinx.serialization.decodeFromString
 
 class YnabApi(
@@ -24,12 +28,15 @@ class YnabApi(
     }
 
     private fun url(vararg path: String): String =
-        with(URLBuilder(
-            URLProtocol.HTTPS,
-            "api.youneedabudget.com",
-            parameters = ParametersBuilder().also {
-                it.append("access_token", token)
-            })) {
+        with(
+            URLBuilder(
+                URLProtocol.HTTPS,
+                "api.youneedabudget.com",
+                parameters = ParametersBuilder().also {
+                    it.append("access_token", token)
+                }
+            )
+        ) {
             path(listOf("v1") + path)
         }.buildString()
 
@@ -47,7 +54,8 @@ class YnabApi(
     ): YnabTransactionDetail =
         requestCatching {
             httpClient.post<YnabSaveTransactionResponse>(
-                url("budgets", budgetId, "transactions")) {
+                url("budgets", budgetId, "transactions")
+            ) {
                 body = jsonSerializer.write(YnabSaveTransactionWrapper(transaction))
             }
         }.data.transaction
@@ -58,10 +66,13 @@ class YnabApi(
     ): YnabTransactionDetail =
         requestCatching {
             httpClient.put<YnabTransactionResponseWithServerKnowledge>(
-                url("budgets",
+                url(
+                    "budgets",
                     budgetId,
                     "transactions",
-                    transactionId)) {
+                    transactionId
+                )
+            ) {
                 body = jsonSerializer.write(YnabSaveTransactionWrapper(transaction))
             }
         }.data.transaction
@@ -71,10 +82,13 @@ class YnabApi(
     ): YnabTransactionDetail =
         requestCatching {
             httpClient.get<YnabTransactionResponse>(
-                url("budgets",
+                url(
+                    "budgets",
                     budgetId,
                     "transactions",
-                    transactionId))
+                    transactionId
+                )
+            )
         }.data.transaction
 
     suspend fun getAccountTransactions(
@@ -82,11 +96,13 @@ class YnabApi(
     ): List<YnabTransactionDetail> =
         requestCatching {
             httpClient.get<YnabTransactionsResponse>(
-                url("budgets",
+                url(
+                    "budgets",
                     budgetId,
                     "accounts",
                     accountId,
-                    "transactions"))
+                    "transactions"
+                )
+            )
         }.data.transactions
 }
-

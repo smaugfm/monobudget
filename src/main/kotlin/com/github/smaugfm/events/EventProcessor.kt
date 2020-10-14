@@ -2,7 +2,8 @@ package com.github.smaugfm.events
 
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
-import java.util.*
+import java.util.ArrayDeque
+import java.util.Queue
 import java.util.concurrent.Executors
 
 class EventProcessor(

@@ -19,5 +19,4 @@ class HashBiMapAsMapSerializer<K : Any, V : Any>(
     override fun serialize(encoder: Encoder, value: HashBiMap<K, V>) {
         encoder.encodeSerializableValue(mapSerializer, value)
     }
-
 }

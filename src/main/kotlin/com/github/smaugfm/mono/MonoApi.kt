@@ -1,20 +1,27 @@
 package com.github.smaugfm.mono
 
 import com.github.smaugfm.events.Event
-import io.ktor.application.*
-import io.ktor.client.*
-import io.ktor.client.features.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.request.*
-import io.ktor.features.*
-import io.ktor.http.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
-import io.ktor.serialization.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
+import io.ktor.application.call
+import io.ktor.application.install
+import io.ktor.client.HttpClient
+import io.ktor.client.features.defaultRequest
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.features.json.defaultSerializer
+import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.features.ContentNegotiation
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.request.receive
+import io.ktor.response.respondText
+import io.ktor.routing.get
+import io.ktor.routing.post
+import io.ktor.routing.routing
+import io.ktor.serialization.json
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -64,7 +71,7 @@ class MonoApi(private val token: String) {
         val statusString = httpClient.post<String>(url("personal/webhook")) {
             body = json.write(MonoWebHookRequest(url.toString()))
         }
-        server.stop(100, 100)
+        server.stop(serverStopGracePeriod, serverStopGracePeriod)
         return Json.decodeFromString(statusString)
     }
 
@@ -86,7 +93,6 @@ class MonoApi(private val token: String) {
         return Json.decodeFromString(itemsString)
     }
 
-
     suspend fun fetchBankCurrency(): List<MonoCurrencyInfo> {
         val infoString = httpClient.get<String>(url("bank/currency"))
         return Json.decodeFromString(infoString)
@@ -94,7 +100,8 @@ class MonoApi(private val token: String) {
 
     companion object {
         private const val StatementCallRate = 60000
-        private fun url(endpoint: String) = "https://api.monobank.ua/${endpoint}"
+        private const val serverStopGracePeriod = 100L
+        private fun url(endpoint: String) = "https://api.monobank.ua/$endpoint"
 
         fun startMonoWebhookServerAsync(
             context: CoroutineContext,
@@ -107,7 +114,7 @@ class MonoApi(private val token: String) {
                 }
                 routing {
                     post(webhook.path) {
-                        val response = call.receive<MonoWebhookResponse>();
+                        val response = call.receive<MonoWebhookResponse>()
                         call.response.status(HttpStatusCode.OK)
                         dispatch(Event.Mono.NewStatementReceived(response.data))
                     }

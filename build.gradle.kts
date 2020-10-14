@@ -4,6 +4,9 @@ plugins {
     application
     kotlin("jvm")
     kotlin("plugin.serialization")
+    id("com.github.jakemarsden.git-hooks") version "0.0.2"
+    id("org.jlleitschuh.gradle.ktlint")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 group = "com.github.smaugfm"
@@ -30,6 +33,16 @@ application {
     mainClass.set("com.github.smaugfm.YnabMonoKt")
 }
 
+detekt {
+    config = files(rootDir.resolve("detekt.yml"))
+    baseline = rootDir.resolve("detektBaseline.xml")
+    buildUponDefaultConfig = true
+}
+
+gitHooks {
+    setHooks(mapOf("pre-commit" to "ktlintFormat detekt"))
+}
+
 tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
@@ -43,10 +56,9 @@ tasks {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("com.github.snowe2010:pretty-print:v2.0.7")
     implementation("io.michaelrocks:bimap:_")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:_")
-    implementation("com.github.elbekD:kt-telegram-bot:1.3.5")
+    implementation("com.github.elbekD:kt-telegram-bot:_")
     implementation("com.github.ajalt.clikt:clikt:_")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:_")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:_")
@@ -63,4 +75,3 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:_")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:_")
 }
-

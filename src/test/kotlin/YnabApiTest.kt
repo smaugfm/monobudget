@@ -46,7 +46,12 @@ class YnabApiTest {
 
             handler.updateTransaction(Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.MarkRed))
 
-            handler.updateTransaction(Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.Unrecognized))
+            handler.updateTransaction(
+                Event.Ynab.UpdateTransaction(
+                    id,
+                    TelegramHandler.Companion.UpdateType.Unrecognized
+                )
+            )
         }
     }
 }
