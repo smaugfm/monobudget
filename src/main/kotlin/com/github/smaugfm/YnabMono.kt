@@ -31,7 +31,8 @@ class YnabMono : CliktCommand() {
             val monoApis = settings.monoTokens.map(::MonoApi)
             val telegramApi = TelegramApi.create(
                 settings.telegramBotUsername,
-                settings.telegramBotToken
+                settings.telegramBotToken,
+                settings.mappings.getTelegramChatIds()
             )
             val ynabApi = YnabApi(settings.ynabToken, settings.ynabBudgetId)
 

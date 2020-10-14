@@ -22,8 +22,8 @@ class SettingsTest {
                     "vasa4" to "vasa5"
                 ),
                 mapOf(
-                    "vasa6" to 12324L,
-                    "vasa7" to 123242L,
+                    "vasa6" to 12324,
+                    "vasa7" to 123242,
                 ),
                 mapOf(
                     12342 to "vasa12",

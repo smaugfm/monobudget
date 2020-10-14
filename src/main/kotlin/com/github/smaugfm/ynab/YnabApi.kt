@@ -46,7 +46,8 @@ class YnabApi(
         transaction: YnabSaveTransaction,
     ): YnabTransactionDetail =
         requestCatching {
-            httpClient.post<YnabSaveTransactionResponse>(url("budgets", budgetId, "transactions")) {
+            httpClient.post<YnabSaveTransactionResponse>(
+                url("budgets", budgetId, "transactions")) {
                 body = jsonSerializer.write(YnabSaveTransactionWrapper(transaction))
             }
         }.data.transaction
@@ -56,10 +57,11 @@ class YnabApi(
         transaction: YnabSaveTransaction,
     ): YnabTransactionDetail =
         requestCatching {
-            httpClient.put<YnabTransactionResponseWithServerKnowledge>(url("budgets",
-                budgetId,
-                "transactions",
-                transactionId)) {
+            httpClient.put<YnabTransactionResponseWithServerKnowledge>(
+                url("budgets",
+                    budgetId,
+                    "transactions",
+                    transactionId)) {
                 body = jsonSerializer.write(YnabSaveTransactionWrapper(transaction))
             }
         }.data.transaction
@@ -68,21 +70,23 @@ class YnabApi(
         transactionId: String,
     ): YnabTransactionDetail =
         requestCatching {
-            httpClient.get<YnabTransactionResponse>(url("budgets",
-                budgetId,
-                "transactions",
-                transactionId))
+            httpClient.get<YnabTransactionResponse>(
+                url("budgets",
+                    budgetId,
+                    "transactions",
+                    transactionId))
         }.data.transaction
 
     suspend fun getAccountTransactions(
         accountId: String,
     ): List<YnabTransactionDetail> =
         requestCatching {
-            httpClient.get<YnabTransactionsResponse>(url("budgets",
-                budgetId,
-                "accounts",
-                accountId,
-                "transactions"))
+            httpClient.get<YnabTransactionsResponse>(
+                url("budgets",
+                    budgetId,
+                    "accounts",
+                    accountId,
+                    "transactions"))
         }.data.transactions
 }
 
