@@ -5,16 +5,16 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.smaugfm.mono.MonoApi
-import com.github.smaugfm.mono.MonoApi.Companion.setupWebhook
-import com.github.smaugfm.telegram.TelegramApi
-import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.events.EventProcessor
 import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.handlers.MonoHandler
 import com.github.smaugfm.handlers.TelegramHandler
 import com.github.smaugfm.handlers.YnabHandler
+import com.github.smaugfm.mono.MonoApi
+import com.github.smaugfm.mono.MonoApi.Companion.setupWebhook
 import com.github.smaugfm.settings.Settings
+import com.github.smaugfm.telegram.TelegramApi
+import com.github.smaugfm.ynab.YnabApi
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Paths
@@ -54,7 +54,6 @@ class YnabMono : CliktCommand() {
                     settings.webhookURI,
                     events::dispatch,
                 )
-
 
             telegramServerJob.join()
             monoWebhookServer.join()

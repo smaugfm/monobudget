@@ -46,14 +46,17 @@ class TelegramHandler(
             telegramChatId,
             formatHTMLStatementMessage(monoResponse.statementItem, transaction),
             "HTML",
-            markup = InlineKeyboardMarkup(listOf(listOf(
-                InlineKeyboardButton("Unclear", callback_data = data(UpdateType.Unclear)),
-                InlineKeyboardButton("Mark red", callback_data = data(UpdateType.MarkRed)),
-                InlineKeyboardButton("Невыясненные", callback_data = data(UpdateType.Unrecognized)),
-            )))
+            markup = InlineKeyboardMarkup(
+                listOf(
+                    listOf(
+                        InlineKeyboardButton("Unclear", callback_data = data(UpdateType.Unclear)),
+                        InlineKeyboardButton("Mark red", callback_data = data(UpdateType.MarkRed)),
+                        InlineKeyboardButton("Невыясненные", callback_data = data(UpdateType.Unrecognized)),
+                    )
+                )
+            )
         )
     }
-
 
     suspend fun handleCallbackQuery(dispatch: Dispatch, chatId: Int, data: String) {
         val matchResult = callbackDataPattern.matchEntire(data)
@@ -89,7 +92,7 @@ class TelegramHandler(
             val format = DecimalFormat("##")
             val time = with(time.toLocalDateTime(TimeZone.currentSystemDefault())) {
                 "${format.format(hour)}:${
-                    format.format(minute)
+                format.format(minute)
                 }"
             }
 

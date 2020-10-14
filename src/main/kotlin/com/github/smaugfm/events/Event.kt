@@ -9,8 +9,8 @@ sealed class Event {
         data class NewStatementReceived(val data: MonoWebHookResponseData) : Mono()
     }
 
-    sealed class Ynab() : Event() {
-        data class UpdateTransaction(val transactionId: String, val type: TelegramHandler.Companion.UpdateType): Ynab()
+    sealed class Ynab : Event() {
+        data class UpdateTransaction(val transactionId: String, val type: TelegramHandler.Companion.UpdateType) : Ynab()
     }
 
     sealed class Telegram : Event() {
@@ -19,6 +19,6 @@ sealed class Event {
             val transaction: YnabTransactionDetail,
         ) : Telegram()
 
-        data class CallbackQueryReceived(val telegramChatId: Int, val data: String): Telegram()
+        data class CallbackQueryReceived(val telegramChatId: Int, val data: String) : Telegram()
     }
 }

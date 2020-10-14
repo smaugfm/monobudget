@@ -1,7 +1,7 @@
 package com.github.smaugfm.util
 
 import io.michaelrocks.bimap.AbstractBiMap
-import java.util.*
+import java.util.HashMap
 
 class HashBiMap<K : Any, V : Any>(capacity: Int = 16) : AbstractBiMap<K, V>(HashMap(capacity), HashMap(capacity)) {
     override fun equals(other: Any?): Boolean {

@@ -1,11 +1,11 @@
 package com.github.smaugfm.mono
 
-import com.github.smaugfm.util.MCC
 import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import com.github.smaugfm.serializers.InstantAsLongSerializer
+import com.github.smaugfm.util.MCC
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
-import java.util.*
+import java.util.Currency
 
 /**
  * Перелік транзакцій за вказанний час
@@ -49,4 +49,3 @@ data class MonoStatementItem(
         return builder.toString()
     }
 }
-

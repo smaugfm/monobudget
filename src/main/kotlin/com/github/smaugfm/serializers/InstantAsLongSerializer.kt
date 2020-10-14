@@ -18,5 +18,4 @@ class InstantAsLongSerializer : KSerializer<Instant> {
     override fun serialize(encoder: Encoder, value: Instant) {
         encoder.encodeLong(value.epochSeconds)
     }
-
 }

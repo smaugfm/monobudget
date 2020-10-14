@@ -4,7 +4,7 @@ import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import com.github.smaugfm.serializers.InstantAsLongSerializer
 import kotlinx.serialization.Serializable
 import java.time.Instant
-import java.util.*
+import java.util.Currency
 
 /**
  * Перелік курсів. Кожна валютна пара може мати одне і більше полів з rateSell, rateBuy, rateCross.

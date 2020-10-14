@@ -3,7 +3,7 @@ package com.github.smaugfm.util
 import kotlin.math.max
 import kotlin.math.min
 
-object JaroWinklerSimilarity {
+object CorrectionSuggestor {
     private fun jaroSimilarity(s1: String, s2: String): Double {
         if (s1.isEmpty() && s2.isEmpty()) return 1.0
         else if (s1.isEmpty() || s2.isEmpty()) return 0.0
@@ -31,9 +31,11 @@ object JaroWinklerSimilarity {
 
         return when (matches) {
             0.0 -> 0.0
-            else -> (matches / s1.length +
+            else -> (
+                matches / s1.length +
                     matches / s2.length +
-                    (matches - transpositions) / matches) / 3.0
+                    (matches - transpositions) / matches
+                ) / 3.0
         }
     }
 
@@ -45,7 +47,7 @@ object JaroWinklerSimilarity {
         return min(winkler, 1.0)
     }
 
-    val correctionSuggestor: TypoSuggestor = { value, possibleValues ->
+    val suggestor: TypoSuggestor = { value, possibleValues ->
         possibleValues.map { it to jaroWinklerSimilarity(value, it) }
             .filter { it.second > 0.8 }
             .sortedByDescending { it.second }
