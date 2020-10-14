@@ -1,3 +1,6 @@
+import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isSuccess
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.util.HashBiMap
@@ -34,6 +37,12 @@ class SettingsTest {
 
         settings.save(file)
         val loaded = Settings.load(file)
-        assert(loaded == settings)
+
+        assertThat(settings).isEqualTo(loaded)
+    }
+
+    @Test
+    fun defaultLoad() {
+        assertThat { Settings.loadDefault() }.isSuccess()
     }
 }

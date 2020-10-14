@@ -40,7 +40,12 @@ detekt {
 }
 
 gitHooks {
-    setHooks(mapOf("pre-commit" to "ktlintFormat detekt"))
+    setHooks(
+        mapOf(
+            "pre-commit" to "ktlintFormat detekt",
+            "pre-push" to "ktlintFormat detekt test"
+        )
+    )
 }
 
 tasks {
