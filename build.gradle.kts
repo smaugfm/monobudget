@@ -59,6 +59,7 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:_")
 
     testImplementation("io.mockk:mockk:_")
+    testImplementation("com.willowtreeapps.assertk:assertk-jvm:_")
     testImplementation("org.junit.jupiter:junit-jupiter-api:_")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:_")
 }

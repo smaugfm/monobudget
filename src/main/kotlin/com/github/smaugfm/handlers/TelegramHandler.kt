@@ -2,16 +2,15 @@ package com.github.smaugfm.handlers
 
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
-import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
+import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.ynab.YnabTransactionDetail
-import kotlinx.coroutines.future.asDeferred
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import java.text.DecimalFormat
@@ -29,7 +28,7 @@ class TelegramHandler(
                 e.mono,
                 e.transaction,
             )
-            is Event.Telegram.CallbackQueryReceived -> handleCallbackQuery(dispatch, e.data)
+            is Event.Telegram.CallbackQueryReceived -> handleCallbackQuery(dispatch, e.telegramChatId, e.data)
             else -> return false
         }
 
@@ -40,28 +39,27 @@ class TelegramHandler(
         monoResponse: MonoWebHookResponseData,
         transaction: YnabTransactionDetail,
     ) {
-        val telegramChatId = mappings.getTelegramChaIdAccByMono(monoResponse.account) ?: return
-        val callback = callbackData(transaction.id)
+        val telegramChatId = mappings.getTelegramChatIdAccByMono(monoResponse.account) ?: return
+        val data = callbackData(transaction.id)
 
-        telegram.bot.sendMessage(
+        telegram.sendMessage(
             telegramChatId,
             formatHTMLStatementMessage(monoResponse.statementItem, transaction),
             "HTML",
             markup = InlineKeyboardMarkup(listOf(listOf(
-                InlineKeyboardButton("Unclear", callback_data = callback(UpdateType.Unclear)),
-                InlineKeyboardButton("Mark red", callback_data = callback(UpdateType.MarkRed)),
-                InlineKeyboardButton("Невыясненные", callback_data = callback(UpdateType.Unrecognized)),
+                InlineKeyboardButton("Unclear", callback_data = data(UpdateType.Unclear)),
+                InlineKeyboardButton("Mark red", callback_data = data(UpdateType.MarkRed)),
+                InlineKeyboardButton("Невыясненные", callback_data = data(UpdateType.Unrecognized)),
             )))
         )
-            .asDeferred()
-            .await()
     }
 
 
-    private suspend fun handleCallbackQuery(dispatch: Dispatch, data: String) {
+    suspend fun handleCallbackQuery(dispatch: Dispatch, chatId: Int, data: String) {
         val matchResult = callbackDataPattern.matchEntire(data)
         if (matchResult == null) {
             logger.severe("Callback query callback_data does not match pattern. $data")
+            sendUnknownErrorMessage(chatId)
             return
         }
 
@@ -71,10 +69,15 @@ class TelegramHandler(
             UpdateType.valueOf(typeStr)
         } catch (e: Throwable) {
             logger.severe("Callback query callback_data does not contain known CallbackType. $data")
+            sendUnknownErrorMessage(chatId)
             return
         }
 
         dispatch(Event.Ynab.UpdateTransaction(transactionId, type))
+    }
+
+    private suspend fun sendUnknownErrorMessage(chatId: Int) {
+        telegram.sendMessage(chatId, unknownErrorMessage)
     }
 
     private fun formatHTMLStatementMessage(
@@ -108,9 +111,11 @@ class TelegramHandler(
             Unrecognized
         }
 
+        const val unknownErrorMessage = "Произошла непредвиденная ошибка."
+
         private val callbackDataPattern = Regex("(\\S+)   (\\S+)")
 
-        private fun callbackData(transactionId: String) = { updateType: UpdateType ->
+        fun callbackData(transactionId: String) = { updateType: UpdateType ->
             "$updateType   $transactionId"
         }
     }

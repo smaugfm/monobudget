@@ -36,7 +36,7 @@ data class MonoStatementItem(
         builder.append("\tdesc: $description\n")
         builder.append("\tamount: $amount\n")
         builder.append("\tmcc:$mcc (${MCC.mapRussian.getOrDefault(mcc, "unknown")})\n")
-        builder.append("\ttime$time\n")
+        builder.append("\ttime: $time\n")
         if (comment.isNotBlank())
             builder.append("\tcomment: $comment\n")
         builder.append("\tbalance: $balance\n")
@@ -44,7 +44,7 @@ data class MonoStatementItem(
         builder.append("\tcommisionRate: $commissionRate\n")
         builder.append("\tcashbackAmount: $cashbackAmount\n")
         builder.append("\tcurrency: $currencyCode\n")
-        builder.append("\thold: $hold\n\n")
+        builder.append("\thold: $hold\n}\n")
 
         return builder.toString()
     }

@@ -42,14 +42,11 @@ class YnabApiTest {
         runBlocking {
             val id = api.getAccountTransactions(accountId).first().id
 
-            handler.updateTransaction({},
-                Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.Unclear))
+            handler.updateTransaction(Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.Unclear))
 
-            handler.updateTransaction({},
-                Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.MarkRed))
+            handler.updateTransaction(Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.MarkRed))
 
-            handler.updateTransaction({},
-                Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.Unrecognized))
+            handler.updateTransaction(Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.Unrecognized))
         }
     }
 }

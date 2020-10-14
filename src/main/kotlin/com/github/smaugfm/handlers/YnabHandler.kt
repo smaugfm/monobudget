@@ -14,14 +14,14 @@ class YnabHandler(
     override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
         when (e) {
             is Event.Mono.NewStatementReceived -> createTransaction(dispatch, e)
-            is Event.Ynab.UpdateTransaction -> updateTransaction(dispatch, e)
+            is Event.Ynab.UpdateTransaction -> updateTransaction(e)
             else -> return false
         }
 
         return true
     }
 
-    suspend fun updateTransaction(dispatch: Dispatch, e: Event.Ynab.UpdateTransaction) {
+    suspend fun updateTransaction(e: Event.Ynab.UpdateTransaction) {
         val transactionDetail = ynab.getTransaction(e.transactionId)
         val saveTransaction = ynabTransactionSaveFromDetails(transactionDetail)
 

@@ -6,19 +6,19 @@ import com.github.smaugfm.ynab.YnabTransactionDetail
 
 sealed class Event {
     sealed class Mono : Event() {
-        class NewStatementReceived(val data: MonoWebHookResponseData) : Mono()
+        data class NewStatementReceived(val data: MonoWebHookResponseData) : Mono()
     }
 
     sealed class Ynab() : Event() {
-        class UpdateTransaction(val transactionId: String, val type: TelegramHandler.Companion.UpdateType): Ynab()
+        data class UpdateTransaction(val transactionId: String, val type: TelegramHandler.Companion.UpdateType): Ynab()
     }
 
     sealed class Telegram : Event() {
-        class SendStatementMessage(
+        data class SendStatementMessage(
             val mono: MonoWebHookResponseData,
             val transaction: YnabTransactionDetail,
         ) : Telegram()
 
-        class CallbackQueryReceived(val data: String): Telegram()
+        data class CallbackQueryReceived(val telegramChatId: Int, val data: String): Telegram()
     }
 }
