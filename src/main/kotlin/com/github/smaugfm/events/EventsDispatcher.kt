@@ -6,16 +6,16 @@ import java.util.ArrayDeque
 import java.util.Queue
 import java.util.concurrent.Executors
 
-class EventProcessor(
-    private val handleCreators: List<IEventHandlerCreator>,
-) : IEventDispatcher {
-    private val handlers = handleCreators.map { it.create(this::dispatch) }
-    private val singleThreaded = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
-    private val eventsQueue: Queue<Event> = ArrayDeque()
+open class EventsDispatcher<T>(
+    vararg handlerCreators: IEventHandlerCreator<T>,
+) : IEventDispatcher<T> {
+    private val handlers = handlerCreators.map { it.create(this::dispatch) }
+    private val singleThreadedContext = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    private val eventsQueue: Queue<T> = ArrayDeque()
     private var isDispatching: Boolean = false
 
-    override suspend fun dispatch(event: Event) {
-        withContext(singleThreaded) {
+    override suspend fun dispatch(event: T) {
+        withContext(singleThreadedContext) {
             eventsQueue.offer(event)
             if (!isDispatching) {
                 isDispatching = true

@@ -1,5 +1,5 @@
 package com.github.smaugfm.events
 
-interface IEventDispatcher {
-    suspend fun dispatch(event: Event)
+interface IEventDispatcher<T> {
+    suspend fun dispatch(event: T)
 }

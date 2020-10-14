@@ -6,7 +6,7 @@ import com.github.smaugfm.events.EventHandler
 import com.github.smaugfm.events.IEventHandlerCreator
 import com.github.smaugfm.settings.Mappings
 
-abstract class EventHandlerBase(protected val mappings: Mappings) : IEventHandlerCreator {
+abstract class EventHandlerBase(protected val mappings: Mappings) : IEventHandlerCreator<Event> {
     final override fun create(dispatch: Dispatch): EventHandler = {
         handle(dispatch, it)
     }
