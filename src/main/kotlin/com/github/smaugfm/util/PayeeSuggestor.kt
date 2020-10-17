@@ -3,7 +3,8 @@ package com.github.smaugfm.util
 import kotlin.math.max
 import kotlin.math.min
 
-object CorrectionSuggestor {
+class PayeeSuggestor(private val ignoreCase: Boolean = true) {
+
     private fun jaroSimilarity(s1: String, s2: String): Double {
         if (s1.isEmpty() && s2.isEmpty()) return 1.0
         else if (s1.isEmpty() || s2.isEmpty()) return 0.0
@@ -41,18 +42,26 @@ object CorrectionSuggestor {
 
     private fun jaroWinklerSimilarity(s1: String, s2: String): Double {
         // Unlike classic Jaro-Winkler, we don't set a limit on the prefix length
-        val prefixLength = s1.commonPrefixWith(s2).length
-        val jaro = jaroSimilarity(s1, s2)
+        val prefixLength = s1.commonPrefixWith(s2, ignoreCase).length
+        val case = { s: String -> if (ignoreCase) s.toLowerCase() else s }
+        val jaro = jaroSimilarity(case(s1), case(s2))
         val winkler = jaro + (0.1 * prefixLength * (1 - jaro))
         return min(winkler, 1.0)
     }
 
-    val suggestor: TypoSuggestor = { value, possibleValues ->
-        possibleValues.map { it to jaroWinklerSimilarity(value, it) }
-            .filter { it.second > 0.8 }
+    operator fun invoke(value: String, payees: List<String>): List<String> =
+        value
+            .split(spaceRegex)
+            .map { word ->
+                payees
+                    .map { it to jaroWinklerSimilarity(word, it) }
+                    .filter { it.second > 0.8 }
+            }
+            .flatten()
             .sortedByDescending { it.second }
             .map { it.first }
+
+    companion object {
+        private val spaceRegex = Regex("\\s+")
     }
 }
-
-typealias TypoSuggestor = (value: String, possibleValues: List<String>) -> List<String>
