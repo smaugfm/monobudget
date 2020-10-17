@@ -3,7 +3,13 @@ import com.github.smaugfm.handlers.TelegramHandler
 import com.github.smaugfm.handlers.YnabHandler
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.ynab.YnabApi
+import com.github.smaugfm.ynab.YnabCleared
+import com.github.smaugfm.ynab.YnabSaveTransaction
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.todayAt
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class YnabApiTest {
@@ -34,6 +40,45 @@ class YnabApiTest {
             val detail = api.getTransaction(id)
             val save = YnabHandler.ynabTransactionSaveFromDetails(detail)
             println(api.updateTransaction(id, save.copy(memo = "vasa")))
+        }
+    }
+
+    @Disabled
+    @Test
+    fun `Create transaction`() {
+        runBlocking {
+            // val category = api.getCategories()[5]
+            val transaction = YnabSaveTransaction(
+                "1355f021-05fc-446b-b2e8-19eb44dd8ede",
+                Clock.System.todayAt(TimeZone.currentSystemDefault()),
+                10000,
+                null,
+                "vasa",
+                null,
+                null,
+                YnabCleared.Cleared,
+                false,
+                null,
+                null,
+                emptyList()
+            )
+
+            val created = api.createTransaction(transaction)
+            println(created)
+        }
+    }
+
+    @Test
+    fun `Get categories`() {
+        runBlocking {
+            println(api.getCategories())
+        }
+    }
+
+    @Test
+    fun `Get payees`() {
+        runBlocking {
+            println(api.getPayees())
         }
     }
 

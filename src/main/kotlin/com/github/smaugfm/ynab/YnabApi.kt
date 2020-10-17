@@ -49,6 +49,20 @@ class YnabApi(
         }
     }
 
+    suspend fun getPayees() =
+        requestCatching {
+            httpClient.get<YnabPayeesResponse>(
+                url("budgets", budgetId, "payees")
+            )
+        }.data.payees
+
+    suspend fun getCategories() =
+        requestCatching {
+            httpClient.get<YnabCategoriesResponse>(
+                url("budgets", budgetId, "categories")
+            )
+        }.data.category_groups
+
     suspend fun createTransaction(
         transaction: YnabSaveTransaction,
     ): YnabTransactionDetail =

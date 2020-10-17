@@ -2,47 +2,14 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>ComplexMethod:CorrectionSuggestor.kt$CorrectionSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveSubTransaction$val category_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveSubTransaction$val payee_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveSubTransaction$val payee_name: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransaction$val account_id: String</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransaction$val category_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransaction$val flag_color: YnabFlagColor?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransaction$val import_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransaction$val payee_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransaction$val payee_name: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransactionDetailWrapper$val server_knowledge: Long</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSaveTransactionDetailWrapper$val transaction_ids: List&lt;String&gt;</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSubTransaction$val category_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSubTransaction$val category_name: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSubTransaction$val payee_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSubTransaction$val payee_name: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSubTransaction$val transaction_id: String</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSubTransaction$val transfer_account_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabSubTransaction$val transfer_transaction_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val account_id: String</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val account_name: String</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val category_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val category_name: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val flag_color: YnabFlagColor?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val import_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val matched_transaction_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val payee_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val payee_name: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val transfer_account_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetail$val transfer_transaction_id: String?</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetailWrapper$val transaction_ids: List&lt;String&gt;</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetailWrapperWithServerKnowledge$val server_knowledge: Long</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionDetailWrapperWithServerKnowledge$val transaction_ids: List&lt;String&gt;</ID>
-    <ID>ConstructorParameterNaming:models.kt$YnabTransactionsDetailWrapper$val server_knowledge: Long</ID>
+    <ID>ComplexMethod:PayeeSuggestor.kt$PayeeSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
     <ID>LongParameterList:TelegramApi.kt$TelegramApi$( chatId: Any, text: String, parseMode: String? = null, disableWebPagePreview: Boolean? = null, disableNotification: Boolean? = null, replyTo: Int? = null, markup: ReplyKeyboard? = null, )</ID>
-    <ID>LoopWithTooManyJumpStatements:CorrectionSuggestor.kt$CorrectionSuggestor$for (j in start..end) { val c2 = s2[j] if (c1 != c2 || s2Consumed[j]) continue s2Consumed[j] = true matches += 1 if (j &lt; s2MatchIndex) transpositions += 1 s2MatchIndex = j break }</ID>
-    <ID>MagicNumber:CorrectionSuggestor.kt$CorrectionSuggestor$0.1</ID>
-    <ID>MagicNumber:CorrectionSuggestor.kt$CorrectionSuggestor$0.8</ID>
-    <ID>MagicNumber:CorrectionSuggestor.kt$CorrectionSuggestor$3.0</ID>
+    <ID>LoopWithTooManyJumpStatements:PayeeSuggestor.kt$PayeeSuggestor$for (j in start..end) { val c2 = s2[j] if (c1 != c2 || s2Consumed[j]) continue s2Consumed[j] = true matches += 1 if (j &lt; s2MatchIndex) transpositions += 1 s2MatchIndex = j break }</ID>
+    <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.1</ID>
+    <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.8</ID>
+    <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$3.0</ID>
     <ID>MagicNumber:Util.kt$10.0</ID>
     <ID>MatchingDeclarationName:models.kt$IEventHandlerCreator&lt;T&gt;</ID>
-    <ID>ReturnCount:CorrectionSuggestor.kt$CorrectionSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
+    <ID>ReturnCount:PayeeSuggestor.kt$PayeeSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
   </CurrentIssues>
 </SmellBaseline>

@@ -5,6 +5,64 @@ import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class YnabPayeesResponse(
+    val data: YnabPayeesWrapper,
+)
+
+@Serializable
+data class YnabPayeesWrapper(
+    val payees: List<YnabPayee>,
+    val server_knowledge: Long,
+)
+
+@Serializable
+data class YnabPayee(
+    val id: String,
+    val name: String,
+    val transfer_account_id: String?,
+    val deleted: Boolean,
+)
+
+@Serializable
+data class YnabCategoriesResponse(
+    val data: YnabCategoryGroupsWithCategoriesWrapper,
+)
+
+@Serializable
+data class YnabCategoryGroupsWithCategoriesWrapper(
+    val category_groups: List<YnabCategoryGroupWithCategories>,
+    val server_knowledge: Long
+)
+
+@Serializable
+data class YnabCategoryGroupWithCategories(
+    val id: String,
+    val name: String,
+    val hidden: Boolean,
+    val deleted: Boolean,
+    val categories: List<YnabCategory>
+)
+
+@Serializable
+data class YnabCategory(
+    val id: String,
+    val category_group_id: String,
+    val name: String,
+    val hidden: Boolean,
+    val original_category_group_id: String?,
+    val note: String?,
+    val budgeted: Long,
+    val activity: Long,
+    val balance: Long,
+    val goal_type: String?,
+    val goal_creation_month: String?,
+    val goal_target: Long?,
+    val goal_target_month: String?,
+    val goal_percentage_complete: Int?,
+    val deleted: Boolean,
+)
+
+@Serializable
 data class YnabSaveTransaction(
     val account_id: String,
     @Serializable(with = LocalDateAsISOSerializer::class)

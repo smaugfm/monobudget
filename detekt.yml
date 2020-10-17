@@ -20,7 +20,7 @@ exceptions:
 naming:
   ConstructorParameterNaming:
     active: true
-    excludes: ['**/YnabModels.kt']
+    excludes: ['**/models.kt']
 
 complexity:
   LargeClass:
