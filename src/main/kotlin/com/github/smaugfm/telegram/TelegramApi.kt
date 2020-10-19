@@ -36,6 +36,10 @@ class TelegramApi private constructor(
         ).asDeferred().await()
     }
 
+    suspend fun answerCallbackQuery(id: String, text: String?) {
+        bot.answerCallbackQuery(id, text = text).asDeferred().await()
+    }
+
     fun startServer(
         context: CoroutineContext,
         dispatch: suspend (Event) -> Unit,
@@ -46,7 +50,7 @@ class TelegramApi private constructor(
                 return@onCallbackQuery
 
             it.data?.let { data ->
-                dispatch(Event.Telegram.CallbackQueryReceived(it.from.id, data))
+                dispatch(Event.Telegram.CallbackQueryReceived(it.id, data))
             } ?: logger.severe("Received callback query without callback_data.\n$it")
         }
 

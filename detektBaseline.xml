@@ -8,6 +8,7 @@
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.1</ID>
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.8</ID>
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$3.0</ID>
+    <ID>MagicNumber:TransactionActionType.kt$TransactionActionType.Companion$3</ID>
     <ID>MagicNumber:Util.kt$10.0</ID>
     <ID>MatchingDeclarationName:models.kt$IEventHandlerCreator&lt;T&gt;</ID>
     <ID>ReturnCount:PayeeSuggestor.kt$PayeeSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>

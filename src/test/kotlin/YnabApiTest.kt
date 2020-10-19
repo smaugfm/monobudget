@@ -1,9 +1,9 @@
 import com.github.smaugfm.events.Event
-import com.github.smaugfm.handlers.TelegramHandler
-import com.github.smaugfm.handlers.YnabHandler
 import com.github.smaugfm.settings.Settings
+import com.github.smaugfm.telegram.TransactionActionType
 import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.ynab.YnabCleared
+import com.github.smaugfm.ynab.YnabHandler
 import com.github.smaugfm.ynab.YnabSaveTransaction
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
@@ -71,15 +71,19 @@ class YnabApiTest {
     @Test
     fun `Get categories`() {
         runBlocking {
-            println(api.getCategories())
+            api.getCategories().map { it.categories }.flatten().map { it.id to it.name }.forEach {
+                println(it)
+            }
         }
+        println()
     }
 
     @Test
     fun `Get payees`() {
         runBlocking {
-            println(api.getPayees())
+            api.getPayees().map { it.id to it.name }.forEach { println(it) }
         }
+        println()
     }
 
     @Test
@@ -87,16 +91,12 @@ class YnabApiTest {
         runBlocking {
             val id = api.getAccountTransactions(accountId).first().id
 
-            handler.updateTransaction(Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.Unclear))
+            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Uncategorize(id)))
+            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unpayee(id)))
+            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unapprove(id)))
+            // handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unknown(id)))
 
-            handler.updateTransaction(Event.Ynab.UpdateTransaction(id, TelegramHandler.Companion.UpdateType.MarkRed))
-
-            handler.updateTransaction(
-                Event.Ynab.UpdateTransaction(
-                    id,
-                    TelegramHandler.Companion.UpdateType.Unrecognized
-                )
-            )
+            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.MakePayee(id, "vasility")))
         }
     }
 }

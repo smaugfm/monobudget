@@ -1,9 +1,5 @@
-package com.github.smaugfm.handlers
+package com.github.smaugfm.events
 
-import com.github.smaugfm.events.Dispatch
-import com.github.smaugfm.events.Event
-import com.github.smaugfm.events.EventHandler
-import com.github.smaugfm.events.IEventHandlerCreator
 import com.github.smaugfm.settings.Mappings
 
 abstract class EventHandlerBase(protected val mappings: Mappings) : IEventHandlerCreator<Event> {

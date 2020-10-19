@@ -1,15 +1,11 @@
-package com.github.smaugfm.handlers
+package com.github.smaugfm.ynab
 
 import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
+import com.github.smaugfm.events.EventHandlerBase
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.settings.Mappings
-import com.github.smaugfm.ynab.YnabApi
-import com.github.smaugfm.ynab.YnabCleared
-import com.github.smaugfm.ynab.YnabFlagColor
-import com.github.smaugfm.ynab.YnabSaveSubTransaction
-import com.github.smaugfm.ynab.YnabSaveTransaction
-import com.github.smaugfm.ynab.YnabTransactionDetail
+import com.github.smaugfm.telegram.TransactionActionType
 
 class YnabHandler(
     private val ynab: YnabApi,
@@ -18,21 +14,31 @@ class YnabHandler(
     override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
         when (e) {
             is Event.Mono.NewStatementReceived -> createTransaction(dispatch, e)
-            is Event.Ynab.UpdateTransaction -> updateTransaction(e)
+            is Event.Ynab.TransactionAction -> updateTransaction(e)
             else -> return false
         }
 
         return true
     }
 
-    suspend fun updateTransaction(e: Event.Ynab.UpdateTransaction) {
-        val transactionDetail = ynab.getTransaction(e.transactionId)
+    suspend fun updateTransaction(e: Event.Ynab.TransactionAction) {
+        val transactionDetail = ynab.getTransaction(e.type.transactionId)
         val saveTransaction = ynabTransactionSaveFromDetails(transactionDetail)
 
         val newTransaction = when (e.type) {
-            TelegramHandler.Companion.UpdateType.Unclear -> saveTransaction.copy(cleared = YnabCleared.Uncleared)
-            TelegramHandler.Companion.UpdateType.MarkRed -> saveTransaction.copy(flag_color = YnabFlagColor.Red)
-            TelegramHandler.Companion.UpdateType.Unrecognized -> saveTransaction.copy(category_id = null)
+            is TransactionActionType.Uncategorize -> saveTransaction.copy(category_id = null)
+            is TransactionActionType.Unpayee -> saveTransaction.copy(
+                payee_id = null,
+                payee_name = null,
+                approved = false
+            )
+            is TransactionActionType.Unapprove -> saveTransaction.copy(approved = false)
+            is TransactionActionType.Unknown -> saveTransaction.copy(
+                payee_id = mappings.unknownPayeeId,
+                category_id = mappings.unknownCategoryId,
+                payee_name = null
+            )
+            is TransactionActionType.MakePayee -> saveTransaction.copy(payee_id = null, payee_name = e.type.payeeName)
         }
 
         ynab.updateTransaction(transactionDetail.id, newTransaction)
