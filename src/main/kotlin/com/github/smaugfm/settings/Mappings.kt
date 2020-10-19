@@ -13,6 +13,9 @@ data class Mappings(
     private val monoAcc2Ynab: BiMap<String, String>,
     private val monoAcc2Telegram: Map<String, Int>,
     private val mccToCategory: Map<Int, String>,
+    private val descToPayee: Map<String, String>,
+    val unknownPayeeId: String,
+    val unknownCategoryId: String,
 ) {
     @Transient
     private val logger = Logger.getLogger(Mappings::class.simpleName)
@@ -31,6 +34,6 @@ data class Mappings(
     }
 
     companion object {
-        val Empty = Mappings(HashBiMap(), emptyMap(), emptyMap())
+        val Empty = Mappings(HashBiMap(), emptyMap(), emptyMap(), emptyMap(), "", "")
     }
 }

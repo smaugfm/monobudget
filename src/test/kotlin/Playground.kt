@@ -16,7 +16,8 @@ class Playground {
             val ynab = YnabApi(settings.ynabToken, settings.ynabBudgetId)
             val statementItems = mono.fetchStatementItems(
                 settings.mappings.getMonoAccounts().find { it.startsWith("p") }!!,
-                Clock.System.now() - 29.days
+                Clock.System.now() - 59.days,
+                Clock.System.now() - 29.days,
             )
 
             val payees = ynab.getPayees()
