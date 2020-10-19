@@ -17,16 +17,16 @@ val myMavenRepoReadUsername: String by project
 val myMavenRepoReadPassword: String by project
 
 repositories {
+    maven(url = "https://jitpack.io")
+    mavenCentral()
+    jcenter()
+    maven(url = "https://kotlin.bintray.com/kotlinx")
     maven(url = myMavenRepoReadUrl) {
         credentials {
             username = myMavenRepoReadUsername
             password = myMavenRepoReadPassword
         }
     }
-    maven(url = "https://jitpack.io")
-    mavenCentral()
-    jcenter()
-    maven(url = "https://kotlin.bintray.com/kotlinx")
 }
 
 application {
@@ -74,6 +74,8 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:_")
     implementation("io.ktor:ktor-client-json:_")
     implementation("io.ktor:ktor-client-serialization:_")
+    implementation("io.github.microutils:kotlin-logging:_")
+    implementation("org.slf4j:slf4j-simple:_")
 
     testImplementation("io.mockk:mockk:_")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:_")

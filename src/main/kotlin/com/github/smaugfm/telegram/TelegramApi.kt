@@ -3,18 +3,26 @@ package com.github.smaugfm.telegram
 import com.elbekD.bot.Bot
 import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.events.Event
+import com.github.smaugfm.util.getLogger
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.launch
-import java.util.logging.Logger
+import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
-class TelegramApi private constructor(
-    private val bot: Bot,
+class TelegramApi(
+    botUsername: String,
+    botToken: String,
     val allowedChatIds: Set<Int>,
+    webhookUrl: URI? = null,
 ) {
-    private val logger = Logger.getLogger(TelegramApi::class.qualifiedName.toString())
+    private val bot: Bot =
+        if (webhookUrl != null)
+            Bot.createWebhook(botUsername, botToken)
+        else
+            Bot.createPolling(botUsername, botToken)
+    private val logger = getLogger()
 
     suspend fun sendMessage(
         chatId: Any,
@@ -55,16 +63,5 @@ class TelegramApi private constructor(
         }
 
         return GlobalScope.launch(context) { bot.start() }
-    }
-
-    companion object {
-        fun create(
-            botUsername: String,
-            botToken: String,
-            allowedChatIds: Set<Int>,
-        ): TelegramApi {
-            val telegram = Bot.createPolling(botUsername, botToken)
-            return TelegramApi(telegram, allowedChatIds)
-        }
     }
 }

@@ -1,6 +1,6 @@
 package com.github.smaugfm.telegram
 
-import java.util.logging.Logger
+import com.github.smaugfm.util.getLogger
 import kotlin.reflect.full.primaryConstructor
 
 sealed class TransactionActionType {
@@ -23,7 +23,7 @@ sealed class TransactionActionType {
     data class MakePayee(override val transactionId: String, val payeeName: String) : TransactionActionType()
 
     companion object {
-        private val logger = Logger.getLogger(TransactionActionType::class.qualifiedName.toString())
+        private val logger = getLogger()
         private val callbackDataPattern = Regex("(\\S+)   (\\S+)(?:   \\((\\w[\\s\\w]+)\\))?")
 
         private fun <T : Any?> severe(msg: String): T? {

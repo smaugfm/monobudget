@@ -1,11 +1,11 @@
 package com.github.smaugfm.settings
 
 import com.github.smaugfm.serializers.HashBiMapAsMapSerializer
+import com.github.smaugfm.util.getLogger
 import io.michaelrocks.bimap.BiMap
 import io.michaelrocks.bimap.HashBiMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import java.util.logging.Logger
 
 @Serializable
 data class Mappings(
@@ -18,7 +18,7 @@ data class Mappings(
     val unknownCategoryId: String,
 ) {
     @Transient
-    private val logger = Logger.getLogger(Mappings::class.simpleName)
+    private val logger = getLogger()
 
     fun getMonoAccounts(): Set<String> = monoAcc2Telegram.keys
     fun getTelegramChatIds(): Set<Int> = monoAcc2Telegram.values.toSet()

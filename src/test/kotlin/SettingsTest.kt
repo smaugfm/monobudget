@@ -5,7 +5,6 @@ import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.util.HashBiMap
 import org.junit.jupiter.api.Test
-import java.net.URI
 import java.nio.file.Files
 
 class SettingsTest {
@@ -17,7 +16,6 @@ class SettingsTest {
             listOf("vasa9", "vasa10"),
             "vasa11",
             "vasa14",
-            webhookURI = URI("http://vasa13.com:8080/vasa12"),
             "vasa1",
             Mappings(
                 HashBiMap.of(

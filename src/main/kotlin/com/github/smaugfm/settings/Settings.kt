@@ -3,13 +3,11 @@
 package com.github.smaugfm.settings
 
 import com.github.smaugfm.serializers.HashBiMapAsMapSerializer
-import com.github.smaugfm.serializers.URIAsStringSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -19,8 +17,6 @@ data class Settings(
     val monoTokens: List<String>,
     val telegramBotToken: String,
     val telegramBotUsername: String,
-    @Serializable(with = URIAsStringSerializer::class)
-    val webhookURI: URI,
     val ynabBudgetId: String,
     val mappings: Mappings,
 ) {
