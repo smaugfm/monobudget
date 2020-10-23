@@ -55,7 +55,7 @@ class YnabApi(
                     "args: ${args.joinToString(", ") { "\"it\"" }}"
             )
             block().also {
-                logger.info("Request done ${method.name}. Response:\n\t$it")
+                logger.info("Request ${method.name} done. Response:\n\t$it")
             }
         } catch (e: ResponseException) {
             val error = json.decodeFromString<YnabErrorResponse>(e.response.readText())

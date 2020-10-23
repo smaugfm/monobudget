@@ -5,7 +5,7 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.smaugfm.events.EventsDispatcher
+import com.github.smaugfm.events.EventsDispatcherI
 import com.github.smaugfm.mono.MonoApi
 import com.github.smaugfm.mono.MonoApi.Companion.setupWebhook
 import com.github.smaugfm.mono.MonoHandler
@@ -62,7 +62,7 @@ class YnabMono : CliktCommand() {
                     logger.info("Skipping mono webhook setup.")
                 }
 
-                val events = EventsDispatcher(
+                val events = EventsDispatcherI(
                     MonoHandler(settings.mappings),
                     YnabHandler(ynabApi, settings.mappings),
                     TelegramHandler(telegramApi, settings.mappings)

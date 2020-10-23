@@ -3,14 +3,19 @@ package com.github.smaugfm.ynab
 import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.events.EventHandlerBase
-import com.github.smaugfm.mono.MonoStatementItem
+import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TransactionActionType
+import com.github.smaugfm.util.PayeeSuggestor
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class YnabHandler(
     private val ynab: YnabApi,
     mappings: Mappings,
 ) : EventHandlerBase(YnabHandler::class.simpleName.toString(), mappings) {
+    val payeeSuggestor = PayeeSuggestor()
+
     override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
         when (e) {
             is Event.Mono.NewStatementReceived -> createTransaction(dispatch, e)
@@ -45,7 +50,7 @@ class YnabHandler(
     }
 
     private suspend fun createTransaction(dispatch: Dispatch, e: Event.Mono.NewStatementReceived) {
-        val saveTransaction = determineTransactionParams(e.data.statementItem)
+        val saveTransaction = determineTransactionParams(e.data)
         val transactionDetail = ynab.createTransaction(saveTransaction)
 
         dispatch(
@@ -56,8 +61,22 @@ class YnabHandler(
         )
     }
 
-    private fun determineTransactionParams(statementItem: MonoStatementItem): YnabSaveTransaction {
-        TODO()
+    private fun determineTransactionParams(data: MonoWebHookResponseData): YnabSaveTransaction {
+        return YnabSaveTransaction(
+            account_id = mappings.getYnabAccByMono(data.account)
+                ?: throw IllegalStateException("Could not find YNAB account for mono account ${data.account}"),
+            date = data.statementItem.time.toLocalDateTime(TimeZone.currentSystemDefault()).date,
+            amount = data.statementItem.amount,
+            payee_id = TODO(),
+            payee_name = TODO(),
+            category_id = TODO(),
+            memo = data.statementItem.description,
+            cleared = YnabCleared.Cleared,
+            approved = true,
+            flag_color = null,
+            import_id = null,
+            subtransactions = emptyList()
+        )
     }
 
     companion object {

@@ -1,5 +1,6 @@
 package com.github.smaugfm.events
 
+import io.ktor.util.error
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
@@ -9,8 +10,8 @@ import java.util.concurrent.Executors
 
 private val logger = KotlinLogging.logger {}
 
-open class EventsDispatcher<T>(
-    vararg handlerCreators: IEventHandlerCreator<T>,
+open class EventsDispatcherI<T>(
+    vararg handlerCreators: EventHandlerCreator<T>,
 ) : IEventDispatcher<T> {
     private val handlers = handlerCreators.map { it.create(this::dispatch) }
     private val singleThreadedContext = Executors.newSingleThreadExecutor().asCoroutineDispatcher()
@@ -28,10 +29,16 @@ open class EventsDispatcher<T>(
                         val current = eventsQueue.poll()
 
                         for (handler in handlers) {
-                            val handled = handler.handle(current)
-                            if (handled) {
-                                logger.info("Event handled by ${handler.name}")
-                                break
+                            try {
+                                val handled = handler.handle(current)
+                                if (handled) {
+                                    logger.info("Event handled by ${handler.name}")
+                                    break
+                                }
+                            } catch (e: Throwable) {
+                                logger.info("Error in event handler ${handler.name}")
+                                logger.info(event.toString())
+                                logger.error(e)
                             }
                         }
                     }
