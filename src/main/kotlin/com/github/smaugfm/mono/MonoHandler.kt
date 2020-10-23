@@ -7,7 +7,7 @@ import com.github.smaugfm.settings.Mappings
 
 class MonoHandler(
     mappings: Mappings,
-) : EventHandlerBase(mappings) {
+) : EventHandlerBase(MonoHandler::class.simpleName.toString(), mappings) {
     override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
         return false
     }

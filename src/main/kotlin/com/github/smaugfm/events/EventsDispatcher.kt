@@ -2,9 +2,12 @@ package com.github.smaugfm.events
 
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
+import mu.KotlinLogging
 import java.util.ArrayDeque
 import java.util.Queue
 import java.util.concurrent.Executors
+
+private val logger = KotlinLogging.logger {}
 
 open class EventsDispatcher<T>(
     vararg handlerCreators: IEventHandlerCreator<T>,
@@ -15,6 +18,7 @@ open class EventsDispatcher<T>(
     private var isDispatching: Boolean = false
 
     override suspend fun dispatch(event: T) {
+        logger.info("Event dispatched.\n\t$event")
         withContext(singleThreadedContext) {
             eventsQueue.offer(event)
             if (!isDispatching) {
@@ -24,9 +28,11 @@ open class EventsDispatcher<T>(
                         val current = eventsQueue.poll()
 
                         for (handler in handlers) {
-                            val handled = handler(current)
-                            if (handled)
+                            val handled = handler.handle(current)
+                            if (handled) {
+                                logger.info("Event handled by ${handler.name}")
                                 break
+                            }
                         }
                     }
                 } finally {

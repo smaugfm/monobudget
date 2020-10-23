@@ -3,26 +3,24 @@ package com.github.smaugfm.telegram
 import com.elbekD.bot.Bot
 import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.events.Event
-import com.github.smaugfm.util.getLogger
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.launch
+import mu.KotlinLogging
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
+
+private val logger = KotlinLogging.logger {}
 
 class TelegramApi(
     botUsername: String,
     botToken: String,
     val allowedChatIds: Set<Int>,
-    webhookUrl: URI? = null,
+    @Suppress("UNUSED_PARAMETER") webhookUrl: URI? = null,
 ) {
     private val bot: Bot =
-        if (webhookUrl != null)
-            Bot.createWebhook(botUsername, botToken)
-        else
-            Bot.createPolling(botUsername, botToken)
-    private val logger = getLogger()
+        Bot.createPolling(botUsername, botToken)
 
     suspend fun sendMessage(
         chatId: Any,
@@ -41,7 +39,9 @@ class TelegramApi(
             disableNotification,
             replyTo,
             markup
-        ).asDeferred().await()
+        ).asDeferred().also {
+            logger.info("Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: $markup")
+        }.await()
     }
 
     suspend fun answerCallbackQuery(id: String, text: String?) {
@@ -53,13 +53,14 @@ class TelegramApi(
         dispatch: suspend (Event) -> Unit,
     ): Job {
         bot.onCallbackQuery {
+            logger.info("Received callbackQuery.\n\t$it")
             val chatId = it.from.id
             if (chatId !in allowedChatIds)
                 return@onCallbackQuery
 
             it.data?.let { data ->
                 dispatch(Event.Telegram.CallbackQueryReceived(it.id, data))
-            } ?: logger.severe("Received callback query without callback_data.\n$it")
+            } ?: logger.error("Received callback query without callback_data.\n$it")
         }
 
         return GlobalScope.launch(context) { bot.start() }

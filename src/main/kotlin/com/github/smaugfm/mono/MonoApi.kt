@@ -15,6 +15,7 @@ import io.ktor.features.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
+import io.ktor.request.uri
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.post
@@ -30,8 +31,11 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
+
+private val logger = KotlinLogging.logger {}
 
 class MonoApi(private val token: String) {
     init {
@@ -63,10 +67,11 @@ class MonoApi(private val token: String) {
                 get(url.path) {
                     call.response.status(HttpStatusCode.OK)
                     call.respondText("OK\n", ContentType.Text.Plain)
-                    println("Webhook setup successful: $url")
+                    logger.info("Webhook setup successful: $url")
                 }
             }
         }
+        logger.info("Starting webhook setup server.")
         server.start(wait = false)
         val statusString = httpClient.post<String>(url("personal/webhook")) {
             body = json.write(MonoWebHookRequest(url.toString()))
@@ -114,6 +119,7 @@ class MonoApi(private val token: String) {
                 }
                 routing {
                     post(webhook.path) {
+                        logger.info("Webhook queried. Uri: ${call.request.uri}")
                         val response = call.receive<MonoWebhookResponse>()
                         call.response.status(HttpStatusCode.OK)
                         dispatch(Event.Mono.NewStatementReceived(response.data))
