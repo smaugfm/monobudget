@@ -5,10 +5,9 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.smaugfm.events.EventsDispatcherI
+import com.github.smaugfm.events.EventDispatcher
 import com.github.smaugfm.mono.MonoApi
 import com.github.smaugfm.mono.MonoApi.Companion.setupWebhook
-import com.github.smaugfm.mono.MonoHandler
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.telegram.TelegramHandler
@@ -62,8 +61,7 @@ class YnabMono : CliktCommand() {
                     logger.info("Skipping mono webhook setup.")
                 }
 
-                val events = EventsDispatcherI(
-                    MonoHandler(settings.mappings),
+                val dispatcher = EventDispatcher(
                     YnabHandler(ynabApi, settings.mappings),
                     TelegramHandler(telegramApi, settings.mappings)
                 )
@@ -71,14 +69,14 @@ class YnabMono : CliktCommand() {
                 logger.info("Events dispatcher created.")
 
                 val telegramServerJob = telegramApi
-                    .startServer(serversCoroutinesContext, events::dispatch)
+                    .startServer(serversCoroutinesContext, dispatcher)
 
                 logger.info("Telegram bot started.")
                 val monoWebhookServer =
                     MonoApi.startMonoWebhookServerAsync(
                         serversCoroutinesContext,
                         monoWebhookUrl,
-                        events::dispatch,
+                        dispatcher
                     )
                 logger.info("Mono webhook listener started.")
                 logger.info("Setup completed. Listening...\n")

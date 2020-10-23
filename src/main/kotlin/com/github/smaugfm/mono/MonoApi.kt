@@ -1,6 +1,7 @@
 package com.github.smaugfm.mono
 
 import com.github.smaugfm.events.Event
+import com.github.smaugfm.events.IEventDispatcher
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
@@ -111,7 +112,7 @@ class MonoApi(private val token: String) {
         fun startMonoWebhookServerAsync(
             context: CoroutineContext,
             webhook: URI,
-            dispatch: suspend (event: Event) -> Unit,
+            dispatcher: IEventDispatcher
         ): Job {
             val server = embeddedServer(Netty, port = webhook.port) {
                 install(ContentNegotiation) {
@@ -122,7 +123,7 @@ class MonoApi(private val token: String) {
                         logger.info("Webhook queried. Uri: ${call.request.uri}")
                         val response = call.receive<MonoWebhookResponse>()
                         call.response.status(HttpStatusCode.OK)
-                        dispatch(Event.Mono.NewStatementReceived(response.data))
+                        dispatcher(Event.Mono.NewStatementReceived(response.data))
                     }
                 }
             }
