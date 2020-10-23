@@ -1,7 +1,6 @@
 package com.github.smaugfm.util
 
 import java.util.Currency
-import java.util.logging.Logger
 import kotlin.math.pow
 
 fun Currency.formatAmount(amount: Long): String {

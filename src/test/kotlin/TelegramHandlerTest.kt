@@ -4,6 +4,8 @@ import assertk.assertions.isEqualTo
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.github.smaugfm.events.Event
+import com.github.smaugfm.events.IEvent
+import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
@@ -55,8 +57,7 @@ class TelegramHandlerTest {
             every { transaction.id } returns id
 
             telegram.sendStatementMessage(
-                monoResponse,
-                transaction
+                Event.Telegram.SendStatementMessage(monoResponse, transaction)
             )
         }
 
@@ -103,38 +104,50 @@ class TelegramHandlerTest {
 
     @Test
     fun `Test callback handler, error message is sent`() {
-        val dispatchedEvents = mutableListOf<Event>()
+        val dispatchedEvents = mutableListOf<IEvent<*>>()
 
+        @Suppress("UNCHECKED_CAST")
+        val dispatcher = object : IEventDispatcher {
+            override suspend fun <R, E : IEvent<R>> invoke(event: E): R {
+                dispatchedEvents.add(event)
+                return Unit as R
+            }
+        }
+
+        coEvery { api.answerCallbackQuery(any(), any()) } returns Unit
         coEvery { api.sendMessage(any(), any()) } returns Unit
 
-        val result1 = runBlocking {
+        runBlocking {
             telegram.handleCallbackQuery(
-                dispatchedEvents::add,
-                "vasa"
+                dispatcher,
+                Event.Telegram.CallbackQueryReceived("1", "vasa"),
             )
         }
 
-        val result2 = runBlocking {
+        runBlocking {
             telegram.handleCallbackQuery(
-                dispatchedEvents::add,
-                "vasa   vasa"
+                dispatcher,
+                Event.Telegram.CallbackQueryReceived("2", "vasa   vasa")
             )
         }
-
-        assertThat(result1).isEqualTo(TelegramHandler.unknownErrorMessage)
-        assertThat(result2).isEqualTo(TelegramHandler.unknownErrorMessage)
 
         val transactionId = "vasa"
         val payee = "victor"
         val type = TransactionActionType.MakePayee(transactionId, payee)
-        val result3 = runBlocking {
+        runBlocking {
             telegram.handleCallbackQuery(
-                dispatchedEvents::add,
-                "${TransactionActionType.MakePayee::class.simpleName}   $transactionId   ($payee)"
+                dispatcher,
+                Event.Telegram.CallbackQueryReceived(
+                    "3",
+                    "${TransactionActionType.MakePayee::class.simpleName}   $transactionId   ($payee)"
+                )
             )
         }
 
-        assertThat(result3).isEqualTo(null)
+        coVerify {
+            api.answerCallbackQuery("1", TelegramHandler.UNKNOWN_ERROR_MSG)
+            api.answerCallbackQuery("2", TelegramHandler.UNKNOWN_ERROR_MSG)
+        }
 
         val serialized = type.serialize()
         val deserialized = TransactionActionType.deserialize(serialized)

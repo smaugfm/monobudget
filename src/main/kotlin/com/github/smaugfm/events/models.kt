@@ -1,13 +1,19 @@
 package com.github.smaugfm.events
 
-interface EventHandlerCreator<T> {
-    fun create(dispatch: GenericDispatch<T>): IGenericEventHandler<T>
+import kotlinx.coroutines.Deferred
+
+interface IEventHandler<R, T : IEvent<R>> {
+    suspend fun handleAsync(dispatcher: IEventDispatcher, event: T): Deferred<R>
 }
 
-interface IGenericEventHandler<T> {
-    val name: String
-    suspend fun handle(event: T): Boolean
+interface IEventsHandlerRegistrar {
+    fun registerEvents(builder: HandlersBuilder)
 }
-typealias EventHandler = IGenericEventHandler<Event>
-typealias GenericDispatch<T> = suspend (T) -> Unit
-typealias Dispatch = GenericDispatch<Event>
+
+interface IEvent<out T>
+
+typealias UnitEvent = IEvent<Unit>
+
+interface IEventDispatcher {
+    suspend operator fun <R, E : IEvent<R>> invoke(event: E): R
+}

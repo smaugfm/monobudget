@@ -2,11 +2,11 @@ package com.github.smaugfm.telegram
 
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
-import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
-import com.github.smaugfm.events.EventHandlerBase
+import com.github.smaugfm.events.HandlersBuilder
+import com.github.smaugfm.events.IEventDispatcher
+import com.github.smaugfm.events.IEventsHandlerRegistrar
 import com.github.smaugfm.mono.MonoStatementItem
-import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
@@ -20,25 +20,13 @@ private val logger = KotlinLogging.logger {}
 
 class TelegramHandler(
     private val telegram: TelegramApi,
-    mappings: Mappings,
-) : EventHandlerBase(TelegramHandler::class.simpleName.toString(), mappings) {
-    override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
-        when (e) {
-            is Event.Telegram.SendStatementMessage -> sendStatementMessage(
-                e.mono,
-                e.transaction,
-            )
-            is Event.Telegram.CallbackQueryReceived -> {
-                val responseText = handleCallbackQuery(dispatch, e.data)
-                dispatch(Event.Telegram.AnswerCallbackQuery(e.callbackQueryId, responseText))
-            }
-            is Event.Telegram.AnswerCallbackQuery -> {
-                answerCallbackQuery(e.callbackQueryId, e.text)
-            }
-            else -> return false
+    val mappings: Mappings,
+) : IEventsHandlerRegistrar {
+    override fun registerEvents(builder: HandlersBuilder) {
+        builder.apply {
+            registerUnit(this@TelegramHandler::sendStatementMessage)
+            registerUnit(this@TelegramHandler::handleCallbackQuery)
         }
-
-        return true
     }
 
     private suspend fun answerCallbackQuery(id: String, text: String?) {
@@ -46,9 +34,10 @@ class TelegramHandler(
     }
 
     suspend fun sendStatementMessage(
-        monoResponse: MonoWebHookResponseData,
-        transaction: YnabTransactionDetail,
+        event: Event.Telegram.SendStatementMessage,
     ) {
+        val monoResponse = event.mono
+        val transaction = event.transaction
         val telegramChatId = mappings.getTelegramChatIdAccByMono(monoResponse.account) ?: return
         val id = transaction.id
 
@@ -85,12 +74,15 @@ class TelegramHandler(
         )
     }
 
-    suspend fun handleCallbackQuery(dispatch: Dispatch, data: String): String? {
-        val type = TransactionActionType.deserialize(data) ?: return unknownErrorMessage
+    suspend fun handleCallbackQuery(
+        dispatch: IEventDispatcher,
+        event: Event.Telegram.CallbackQueryReceived,
+    ) {
+        val type = TransactionActionType.deserialize(event.data)
+            ?: return Unit.also { telegram.answerCallbackQuery(event.callbackQueryId, UNKNOWN_ERROR_MSG) }
         logger.info("Deserialized callbackQuery to $type")
 
         dispatch(Event.Ynab.TransactionAction(type))
-        return null
     }
 
     private fun formatHTMLStatementMessage(
@@ -116,6 +108,6 @@ class TelegramHandler(
     }
 
     companion object {
-        const val unknownErrorMessage = "Произошла непредвиденная ошибка."
+        const val UNKNOWN_ERROR_MSG = "Произошла непредвиденная ошибка."
     }
 }

@@ -3,6 +3,7 @@ package com.github.smaugfm.telegram
 import com.elbekD.bot.Bot
 import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.events.Event
+import com.github.smaugfm.events.IEventDispatcher
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
@@ -50,7 +51,7 @@ class TelegramApi(
 
     fun startServer(
         context: CoroutineContext,
-        dispatch: suspend (Event) -> Unit,
+        dispatcher: IEventDispatcher,
     ): Job {
         bot.onCallbackQuery {
             logger.info("Received callbackQuery.\n\t$it")
@@ -59,7 +60,7 @@ class TelegramApi(
                 return@onCallbackQuery
 
             it.data?.let { data ->
-                dispatch(Event.Telegram.CallbackQueryReceived(it.id, data))
+                dispatcher(Event.Telegram.CallbackQueryReceived(it.id, data))
             } ?: logger.error("Received callback query without callback_data.\n$it")
         }
 

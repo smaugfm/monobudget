@@ -1,8 +1,9 @@
 package com.github.smaugfm.ynab
 
-import com.github.smaugfm.events.Dispatch
 import com.github.smaugfm.events.Event
-import com.github.smaugfm.events.EventHandlerBase
+import com.github.smaugfm.events.HandlersBuilder
+import com.github.smaugfm.events.IEventDispatcher
+import com.github.smaugfm.events.IEventsHandlerRegistrar
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TransactionActionType
@@ -12,18 +13,15 @@ import kotlinx.datetime.toLocalDateTime
 
 class YnabHandler(
     private val ynab: YnabApi,
-    mappings: Mappings,
-) : EventHandlerBase(YnabHandler::class.simpleName.toString(), mappings) {
+    private val mappings: Mappings,
+) : IEventsHandlerRegistrar {
     val payeeSuggestor = PayeeSuggestor()
 
-    override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
-        when (e) {
-            is Event.Mono.NewStatementReceived -> createTransaction(dispatch, e)
-            is Event.Ynab.TransactionAction -> updateTransaction(e)
-            else -> return false
+    override fun registerEvents(builder: HandlersBuilder) {
+        builder.apply {
+            registerUnit(this@YnabHandler::createTransaction)
+            registerUnit(this@YnabHandler::updateTransaction)
         }
-
-        return true
     }
 
     suspend fun updateTransaction(e: Event.Ynab.TransactionAction) {
@@ -49,11 +47,14 @@ class YnabHandler(
         ynab.updateTransaction(transactionDetail.id, newTransaction)
     }
 
-    private suspend fun createTransaction(dispatch: Dispatch, e: Event.Mono.NewStatementReceived) {
+    private suspend fun createTransaction(
+        dispatcher: IEventDispatcher,
+        e: Event.Mono.NewStatementReceived,
+    ) {
         val saveTransaction = determineTransactionParams(e.data)
         val transactionDetail = ynab.createTransaction(saveTransaction)
 
-        dispatch(
+        dispatcher(
             Event.Telegram.SendStatementMessage(
                 e.data,
                 transactionDetail,
