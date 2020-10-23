@@ -1,11 +1,12 @@
 package com.github.smaugfm.settings
 
 import com.github.smaugfm.serializers.HashBiMapAsMapSerializer
-import com.github.smaugfm.util.getLogger
 import io.michaelrocks.bimap.BiMap
 import io.michaelrocks.bimap.HashBiMap
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.Transient
+import mu.KotlinLogging
+
+private val logger = KotlinLogging.logger { }
 
 @Serializable
 data class Mappings(
@@ -17,20 +18,17 @@ data class Mappings(
     val unknownPayeeId: String,
     val unknownCategoryId: String,
 ) {
-    @Transient
-    private val logger = getLogger()
-
     fun getMonoAccounts(): Set<String> = monoAcc2Telegram.keys
     fun getTelegramChatIds(): Set<Int> = monoAcc2Telegram.values.toSet()
 
     fun getYnabAccByMono(monoAcc: String): String? = monoAcc2Ynab[monoAcc].also {
         if (it == null)
-            logger.severe("Could not find YNAB account for Mono account $monoAcc")
+            logger.error("Could not find YNAB account for Mono account $monoAcc")
     }
 
     fun getTelegramChatIdAccByMono(monoAcc: String): Int? = monoAcc2Telegram[monoAcc].also {
         if (it == null)
-            logger.severe("Could not find Telegram chatID for Mono account $monoAcc")
+            logger.error("Could not find Telegram chatID for Mono account $monoAcc")
     }
 
     companion object {

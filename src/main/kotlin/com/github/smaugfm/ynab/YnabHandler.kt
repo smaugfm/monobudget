@@ -10,7 +10,7 @@ import com.github.smaugfm.telegram.TransactionActionType
 class YnabHandler(
     private val ynab: YnabApi,
     mappings: Mappings,
-) : EventHandlerBase(mappings) {
+) : EventHandlerBase(YnabHandler::class.simpleName.toString(), mappings) {
     override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
         when (e) {
             is Event.Mono.NewStatementReceived -> createTransaction(dispatch, e)

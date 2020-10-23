@@ -43,7 +43,7 @@ gitHooks {
     setHooks(
         mapOf(
             "pre-commit" to "ktlintFormat detekt",
-            "pre-push" to "ktlintFormat detekt test"
+            "pre-push" to "test"
         )
     )
 }

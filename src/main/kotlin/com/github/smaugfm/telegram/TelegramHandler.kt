@@ -13,12 +13,15 @@ import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.ynab.YnabTransactionDetail
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import mu.KotlinLogging
 import java.text.DecimalFormat
+
+private val logger = KotlinLogging.logger {}
 
 class TelegramHandler(
     private val telegram: TelegramApi,
     mappings: Mappings,
-) : EventHandlerBase(mappings) {
+) : EventHandlerBase(TelegramHandler::class.simpleName.toString(), mappings) {
     override suspend fun handle(dispatch: Dispatch, e: Event): Boolean {
         when (e) {
             is Event.Telegram.SendStatementMessage -> sendStatementMessage(
@@ -38,7 +41,7 @@ class TelegramHandler(
         return true
     }
 
-    suspend fun answerCallbackQuery(id: String, text: String?) {
+    private suspend fun answerCallbackQuery(id: String, text: String?) {
         telegram.answerCallbackQuery(id, text)
     }
 
@@ -84,6 +87,7 @@ class TelegramHandler(
 
     suspend fun handleCallbackQuery(dispatch: Dispatch, data: String): String? {
         val type = TransactionActionType.deserialize(data) ?: return unknownErrorMessage
+        logger.info("Deserialized callbackQuery to $type")
 
         dispatch(Event.Ynab.TransactionAction(type))
         return null
