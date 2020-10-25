@@ -14,12 +14,13 @@ data class Mappings(
     private val monoAcc2Ynab: BiMap<String, String>,
     private val monoAcc2Telegram: Map<String, Int>,
     private val mccToCategory: Map<Int, String>,
-    private val descToPayee: Map<String, String>,
     val unknownPayeeId: String,
     val unknownCategoryId: String,
 ) {
     fun getMonoAccounts(): Set<String> = monoAcc2Telegram.keys
     fun getTelegramChatIds(): Set<Int> = monoAcc2Telegram.values.toSet()
+
+    fun getMccCategoryOverride(mccCode: Int): String? = mccToCategory[mccCode]
 
     fun getYnabAccByMono(monoAcc: String): String? = monoAcc2Ynab[monoAcc].also {
         if (it == null)
@@ -32,6 +33,6 @@ data class Mappings(
     }
 
     companion object {
-        val Empty = Mappings(HashBiMap(), emptyMap(), emptyMap(), emptyMap(), "", "")
+        val Empty = Mappings(HashBiMap(), emptyMap(), emptyMap(), "", "")
     }
 }

@@ -82,7 +82,7 @@ class TelegramHandlerTest {
                                 callback_data = TransactionActionType.Unpayee(id).serialize()
                             ),
                             InlineKeyboardButton(
-                                "\uD83D\uDEABreject",
+                                "\uD83D\uDEABunapprove",
                                 callback_data = TransactionActionType.Unapprove(id).serialize()
                             ),
                         ),

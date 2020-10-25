@@ -29,10 +29,6 @@ class TelegramHandler(
         }
     }
 
-    private suspend fun answerCallbackQuery(id: String, text: String?) {
-        telegram.answerCallbackQuery(id, text)
-    }
-
     suspend fun sendStatementMessage(
         event: Event.Telegram.SendStatementMessage,
     ) {
@@ -54,7 +50,7 @@ class TelegramHandler(
                         ),
                         InlineKeyboardButton("❌payee", callback_data = TransactionActionType.Unpayee(id).serialize()),
                         InlineKeyboardButton(
-                            "\uD83D\uDEABreject",
+                            "\uD83D\uDEABunapprove",
                             callback_data = TransactionActionType.Unapprove(id).serialize()
                         ),
                     ),
@@ -97,7 +93,7 @@ class TelegramHandler(
             }
 
             builder.append("\uD83D\uDCB3 <b>$description</b>                  ${time}\n")
-            builder.append("      ${MCC.mapRussian[mcc] ?: "Неизвестный MCC:"}\n")
+            builder.append("      ${MCC.mapRussian[mcc] ?: "Неизвестный MCC"} ($mcc)\n")
             builder.append("      <u>${currencyCode.formatAmount(amount)}${currencyCode.currencyCode}</u>\n")
             builder.append("      <code>Category: ${transaction.category_name}</code>\n")
             builder.append("      <code>Payee:    ${transaction.payee_name}</code>\n")

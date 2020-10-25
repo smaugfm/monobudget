@@ -1,8 +1,5 @@
 package com.github.smaugfm.events
 
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
-
 class HandlersBuilder(private val handlers: MutableMap<Class<*>, IEventHandler<*, *>>) {
     fun <R, T : IEvent<R>> register(eventCls: Class<T>, handler: IEventHandler<R, T>) {
         if (handlers.containsKey(eventCls))
@@ -11,25 +8,23 @@ class HandlersBuilder(private val handlers: MutableMap<Class<*>, IEventHandler<*
     }
 
     inline fun <R, reified T : IEvent<R>> register(
-        crossinline handler: suspend (dispatcher: IEventDispatcher, event: T) -> Deferred<R>,
+        crossinline handler: suspend (dispatcher: IEventDispatcher, event: T) -> R,
     ) {
         register(
             T::class.java,
             object : IEventHandler<R, T> {
-                override suspend fun handleAsync(dispatcher: IEventDispatcher, event: T): Deferred<R> {
-                    return handler(dispatcher, event)
-                }
+                override suspend fun handle(dispatcher: IEventDispatcher, event: T): R =
+                    handler(dispatcher, event)
             }
         )
     }
 
-    inline fun <R, reified T : IEvent<R>> register(crossinline handler: suspend (event: T) -> Deferred<R>) {
+    inline fun <R, reified T : IEvent<R>> register(crossinline handler: suspend (event: T) -> R) {
         register(
             T::class.java,
             object : IEventHandler<R, T> {
-                override suspend fun handleAsync(dispatcher: IEventDispatcher, event: T): Deferred<R> {
-                    return handler(event)
-                }
+                override suspend fun handle(dispatcher: IEventDispatcher, event: T): R =
+                    handler(event)
             }
         )
     }
@@ -40,9 +35,8 @@ class HandlersBuilder(private val handlers: MutableMap<Class<*>, IEventHandler<*
         register(
             T::class.java,
             object : IEventHandler<Unit, T> {
-                override suspend fun handleAsync(dispatcher: IEventDispatcher, event: T): Deferred<Unit> {
+                override suspend fun handle(dispatcher: IEventDispatcher, event: T) {
                     handler(dispatcher, event)
-                    return CompletableDeferred(Unit)
                 }
             }
         )
@@ -52,9 +46,8 @@ class HandlersBuilder(private val handlers: MutableMap<Class<*>, IEventHandler<*
         register(
             T::class.java,
             object : IEventHandler<Unit, T> {
-                override suspend fun handleAsync(dispatcher: IEventDispatcher, event: T): Deferred<Unit> {
+                override suspend fun handle(dispatcher: IEventDispatcher, event: T) {
                     handler(event)
-                    return CompletableDeferred(Unit)
                 }
             }
         )
