@@ -8,14 +8,28 @@ import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TransactionActionType
 import com.github.smaugfm.util.PayeeSuggestor
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.hours
 
 class YnabHandler(
     private val ynab: YnabApi,
     private val mappings: Mappings,
 ) : IEventsHandlerRegistrar {
     val payeeSuggestor = PayeeSuggestor()
+    private lateinit var payees: List<YnabPayee>
+
+    init {
+        GlobalScope.launch {
+            while (true) {
+                payees = ynab.getPayees()
+                delay(1.hours)
+            }
+        }
+    }
 
     override fun registerEvents(builder: HandlersBuilder) {
         builder.apply {
@@ -63,14 +77,17 @@ class YnabHandler(
     }
 
     private fun determineTransactionParams(data: MonoWebHookResponseData): YnabSaveTransaction {
+        val suggestedPayee = payeeSuggestor(data.statementItem.description, payees.map { it.name }).firstOrNull()
+        val mccCategoryOverride = mappings.getMccCategoryOverride(data.statementItem.mcc)
+
         return YnabSaveTransaction(
             account_id = mappings.getYnabAccByMono(data.account)
                 ?: throw IllegalStateException("Could not find YNAB account for mono account ${data.account}"),
             date = data.statementItem.time.toLocalDateTime(TimeZone.currentSystemDefault()).date,
             amount = data.statementItem.amount,
-            payee_id = TODO(),
-            payee_name = TODO(),
-            category_id = TODO(),
+            payee_id = null,
+            payee_name = suggestedPayee,
+            category_id = mccCategoryOverride,
             memo = data.statementItem.description,
             cleared = YnabCleared.Cleared,
             approved = true,

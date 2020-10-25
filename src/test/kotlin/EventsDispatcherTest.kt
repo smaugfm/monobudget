@@ -1,61 +1,75 @@
+import assertk.assertThat
+import assertk.assertions.containsExactly
+import com.github.smaugfm.events.EventDispatcher
+import com.github.smaugfm.events.HandlersBuilder
+import com.github.smaugfm.events.IEvent
+import com.github.smaugfm.events.IEventDispatcher
+import com.github.smaugfm.events.IEventsHandlerRegistrar
+import com.github.smaugfm.events.UnitEvent
+import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.Test
 
+class EventsDispatcherTest {
 
-// class EventsDispatcherTest {
-//
-//     private sealed class TestEvent {
-//         data class First(val first: String = "1") : TestEvent()
-//         data class Second(val second: String = "2") : TestEvent()
-//     }
-//
-//     private class FirstHandler : EventHandlerCreator<TestEvent> {
-//         private var executing = false
-//         override fun create(dispatch: GenericDispatch<TestEvent>): IEventHandler<TestEvent> {
-//             return object : IEventHandler<TestEvent> {
-//                 override val name = FirstHandler::class.simpleName.toString()
-//
-//                 override suspend fun handleAsync(event: TestEvent): Boolean {
-//                     if (executing)
-//                         throw IllegalStateException()
-//                     executing = true
-//                     return try {
-//                         if (event is TestEvent.First) {
-//                             dispatch(TestEvent.Second())
-//                             true
-//                         } else
-//                             false
-//                     } finally {
-//                         executing = false
-//                     }
-//                 }
-//             }
-//         }
-//     }
-//
-//     private class SecondHandler : EventHandlerCreator<TestEvent> {
-//         override fun create(dispatch: GenericDispatch<TestEvent>): IEventHandler<TestEvent> {
-//             return object : IEventHandler<TestEvent> {
-//                 override val name = SecondHandler::class.simpleName.toString()
-//                 override suspend fun handleAsync(event: TestEvent) = event is TestEvent.Second
-//             }
-//         }
-//     }
-//
-//     private class TestIEventDispatcher :
-//         EventDispatcher<TestEvent>(FirstHandler(), SecondHandler()) {
-//         val dispatchCalled = mutableListOf<TestEvent>()
-//         override suspend fun dispatch(event: TestEvent) {
-//             dispatchCalled.add(event)
-//             super.dispatch(event)
-//         }
-//     }
-//
-//     @Test
-//     fun `Test multiple dispatches in one run`() {
-//         val dispatcher = TestIEventDispatcher()
-//         runBlocking {
-//             dispatcher.dispatch(TestEvent.First())
-//         }
-//
-//         assertThat(dispatcher.dispatchCalled).containsExactly(TestEvent.First(), TestEvent.Second())
-//     }
-// }
+    private sealed class TestEvent {
+        data class First(val first: String) : TestEvent(), UnitEvent
+        data class Second(val second: String) : TestEvent(), UnitEvent
+    }
+
+    private class FirstHandler : IEventsHandlerRegistrar {
+        @Volatile
+        private var executing = 0
+        override fun registerEvents(builder: HandlersBuilder) {
+            builder.apply {
+                registerUnit { dispatch: IEventDispatcher, _: TestEvent.First ->
+                    check(executing <= 2)
+                    executing++
+                    try {
+                        dispatch(TestEvent.Second(executing.toString()))
+                    } finally {
+                        executing--
+                    }
+                }
+            }
+        }
+    }
+
+    private class SecondHandler : IEventsHandlerRegistrar {
+        @Volatile
+        private var dispatched = 0
+        override fun registerEvents(builder: HandlersBuilder) {
+            builder.apply {
+                registerUnit { dispatcher: IEventDispatcher, e: TestEvent.Second ->
+                    dispatched++
+                    if (dispatched < 2)
+                        dispatcher(TestEvent.First(dispatched.toString()))
+                }
+            }
+        }
+    }
+
+    private class TestEventDispatcher :
+        EventDispatcher(FirstHandler(), SecondHandler()) {
+        val dispatchCalled = mutableListOf<TestEvent>()
+        override suspend fun <R, E : IEvent<R>> invoke(event: E): R {
+            if (event is TestEvent)
+                dispatchCalled.add(event)
+            return super.invoke(event)
+        }
+    }
+
+    @Test
+    fun `Test multiple dispatches in one run`() {
+        val dispatcher = TestEventDispatcher()
+        runBlocking {
+            dispatcher(TestEvent.First("0"))
+        }
+
+        assertThat(dispatcher.dispatchCalled).containsExactly(
+            TestEvent.First("0"),
+            TestEvent.Second("1"),
+            TestEvent.First("1"),
+            TestEvent.Second("2")
+        )
+    }
+}

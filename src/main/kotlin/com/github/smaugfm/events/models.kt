@@ -1,9 +1,7 @@
 package com.github.smaugfm.events
 
-import kotlinx.coroutines.Deferred
-
 interface IEventHandler<R, T : IEvent<R>> {
-    suspend fun handleAsync(dispatcher: IEventDispatcher, event: T): Deferred<R>
+    suspend fun handle(dispatcher: IEventDispatcher, event: T): R
 }
 
 interface IEventsHandlerRegistrar {
