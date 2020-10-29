@@ -4,7 +4,8 @@ plugins {
     application
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("com.github.jakemarsden.git-hooks") version "0.0.2"
+    id("com.star-zero.gradle.githook")
+    id("com.github.johnrengelman.shadow")
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
 }
@@ -39,13 +40,16 @@ detekt {
     buildUponDefaultConfig = true
 }
 
-gitHooks {
-    setHooks(
-        mapOf(
-            "pre-commit" to "ktlintFormat detekt",
-            "pre-push" to "test"
-        )
-    )
+githook {
+    createHooksDirIfNotExist = true
+    hooks {
+        create("pre-commit") {
+            task = "ktlintFormat detekt"
+        }
+        create("pre-push") {
+            task = "test"
+        }
+    }
 }
 
 tasks {
