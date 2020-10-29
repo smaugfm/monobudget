@@ -1,7 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    application
     kotlin("jvm")
     kotlin("plugin.serialization")
     id("com.star-zero.gradle.githook")
@@ -30,10 +29,6 @@ repositories {
     }
 }
 
-application {
-    mainClass.set("com.github.smaugfm.YnabMonoKt")
-}
-
 detekt {
     config = files(rootDir.resolve("detekt.yml"))
     baseline = rootDir.resolve("detektBaseline.xml")
@@ -60,6 +55,25 @@ tasks {
 
     test {
         useJUnitPlatform()
+    }
+
+    shadowJar {
+        archiveBaseName.set(rootProject.name)
+        archiveClassifier.set("fat")
+    }
+
+    build {
+        dependsOn(shadowJar)
+    }
+
+    register<JavaExec>("runFat") {
+        group = "execution"
+        main = "com.github.smaugfm.YnabMonoKt"
+        classpath = files(
+            rootDir.resolve(
+                "build/libs/${rootProject.name}-${version}-fat.jar"
+            )
+        )
     }
 }
 
