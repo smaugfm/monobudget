@@ -89,14 +89,14 @@ class YnabApiTest {
     @Test
     fun `Update transaction in handler`() {
         runBlocking {
+            val payee = "vasa"
             val id = api.getAccountTransactions(accountId).first().id
 
-            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Uncategorize(id)))
-            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unpayee(id)))
-            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unapprove(id)))
+            handler.updateTransaction(Event.Ynab.TransactionAction(payee, id, TransactionActionType.Uncategorize))
+            handler.updateTransaction(Event.Ynab.TransactionAction(payee, id, TransactionActionType.Unapprove))
             // handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unknown(id)))
 
-            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.MakePayee(id, "vasility")))
+            handler.updateTransaction(Event.Ynab.TransactionAction(payee, id, TransactionActionType.MakePayee))
         }
     }
 }

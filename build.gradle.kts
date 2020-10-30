@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "com.github.smaugfm"
-version = "1.0.0"
+version = "0.1-alpha"
 
 val myMavenRepoReadUrl: String by project
 val myMavenRepoReadUsername: String by project
@@ -60,20 +60,13 @@ tasks {
     shadowJar {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("fat")
+        manifest {
+            attributes(mapOf("Main-Class" to "com.github.smaugfm.YnabMonoKt"))
+        }
     }
 
     build {
         dependsOn(shadowJar)
-    }
-
-    register<JavaExec>("runFat") {
-        group = "execution"
-        main = "com.github.smaugfm.YnabMonoKt"
-        classpath = files(
-            rootDir.resolve(
-                "build/libs/${rootProject.name}-${version}-fat.jar"
-            )
-        )
     }
 }
 

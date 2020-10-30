@@ -1,12 +1,22 @@
+import com.github.smaugfm.events.Event
 import com.github.smaugfm.mono.MonoApi
+import com.github.smaugfm.mono.MonoStatementItem
+import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Settings
+import com.github.smaugfm.telegram.TelegramApi
+import com.github.smaugfm.telegram.TelegramHandler
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.PayeeSuggestor
 import com.github.smaugfm.ynab.YnabApi
+import com.github.smaugfm.ynab.YnabTransactionDetail
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import java.util.Currency
+import java.util.UUID
 import kotlin.time.days
 
 class Playground {
@@ -46,6 +56,41 @@ class Playground {
                         }\n"
                     )
                 }
+        }
+    }
+
+    @Test
+    @Disabled
+    fun `Send statement message`() {
+        val settings = Settings.loadDefault()
+        val telegram = TelegramApi(
+            settings.telegramBotUsername,
+            settings.telegramBotToken,
+            settings.mappings.getTelegramChatIds()
+        )
+        val description = "vasa"
+        val monoAccount = ""
+        val handler = TelegramHandler(telegram, settings.mappings)
+        val statementItem = mockk<MonoStatementItem>()
+        every { statementItem.time } returns Clock.System.now() - 2.days
+        every { statementItem.amount } returns -11500
+        every { statementItem.mcc } returns 5722
+        every { statementItem.description } returns description
+        every { statementItem.currencyCode } returns Currency.getInstance("UAH")
+
+        val monoResponse = mockk<MonoWebHookResponseData>()
+        every { monoResponse.account } returns monoAccount
+        every { monoResponse.statementItem } returns statementItem
+
+        val transaction = mockk<YnabTransactionDetail>()
+        every { transaction.payee_name } returns "Rozetka"
+        every { transaction.category_name } returns "Продукты/быт"
+        every { transaction.id } returns UUID.randomUUID().toString()
+
+        runBlocking {
+            handler.sendStatementMessage(
+                Event.Telegram.SendStatementMessage(monoResponse, transaction)
+            )
         }
     }
 }
