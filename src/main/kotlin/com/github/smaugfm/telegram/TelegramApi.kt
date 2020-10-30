@@ -9,7 +9,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import java.net.URI
 import kotlin.coroutines.CoroutineContext
 
 private val logger = KotlinLogging.logger {}
@@ -18,7 +17,6 @@ class TelegramApi(
     botUsername: String,
     botToken: String,
     val allowedChatIds: Set<Int>,
-    @Suppress("UNUSED_PARAMETER") webhookUrl: URI? = null,
 ) {
     private val bot: Bot =
         Bot.createPolling(botUsername, botToken)
@@ -45,7 +43,7 @@ class TelegramApi(
         }.await()
     }
 
-    suspend fun answerCallbackQuery(id: String, text: String?) {
+    suspend fun answerCallbackQuery(id: String, text: String? = null) {
         bot.answerCallbackQuery(id, text = text).asDeferred().await()
     }
 
@@ -60,7 +58,7 @@ class TelegramApi(
                 return@onCallbackQuery
 
             it.data?.let { data ->
-                dispatcher(Event.Telegram.CallbackQueryReceived(it.id, data))
+                dispatcher(Event.Telegram.CallbackQueryReceived(it.id, data, it.message?.text!!))
             } ?: logger.error("Received callback query without callback_data.\n$it")
         }
 

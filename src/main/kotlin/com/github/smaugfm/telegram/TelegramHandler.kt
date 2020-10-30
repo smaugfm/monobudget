@@ -10,11 +10,11 @@ import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
+import com.github.smaugfm.util.replaceNewLines
 import com.github.smaugfm.ynab.YnabTransactionDetail
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import mu.KotlinLogging
-import java.text.DecimalFormat
+import java.util.UUID
+import java.util.regex.Pattern
 
 private val logger = KotlinLogging.logger {}
 
@@ -35,34 +35,31 @@ class TelegramHandler(
         val monoResponse = event.mono
         val transaction = event.transaction
         val telegramChatId = mappings.getTelegramChatIdAccByMono(monoResponse.account) ?: return
-        val id = transaction.id
 
         telegram.sendMessage(
             telegramChatId,
-            formatHTMLStatementMessage(monoResponse.statementItem, transaction),
+            formatHTMLStatementMessage(monoResponse.statementItem, transaction, transaction.id),
             "HTML",
             markup = InlineKeyboardMarkup(
                 listOf(
                     listOf(
                         InlineKeyboardButton(
                             "❌категорию",
-                            callback_data = TransactionActionType.Uncategorize(id).serialize()
+                            callback_data = TransactionActionType.Uncategorize.serialize()
                         ),
-                        InlineKeyboardButton("❌payee", callback_data = TransactionActionType.Unpayee(id).serialize()),
                         InlineKeyboardButton(
                             "\uD83D\uDEABunapprove",
-                            callback_data = TransactionActionType.Unapprove(id).serialize()
+                            callback_data = TransactionActionType.Unapprove.serialize()
                         ),
                     ),
                     listOf(
                         InlineKeyboardButton(
                             "➡️Невыясненные",
-                            callback_data = TransactionActionType.Unknown(id).serialize()
+                            callback_data = TransactionActionType.Unknown.serialize()
                         ),
                         InlineKeyboardButton(
                             "➕payee",
-                            callback_data = TransactionActionType.MakePayee(id, monoResponse.statementItem.description)
-                                .serialize()
+                            callback_data = TransactionActionType.MakePayee.serialize()
                         ),
                     )
                 )
@@ -70,34 +67,64 @@ class TelegramHandler(
         )
     }
 
-    suspend fun handleCallbackQuery(
+    private suspend fun handleCallbackQuery(
         dispatch: IEventDispatcher,
         event: Event.Telegram.CallbackQueryReceived,
     ) {
+        val (payee, transactionId) = extractPayeeAndTransactionIdFromMessage(event.messageText)
+
+        if (transactionId == null) {
+            logger.error(
+                "Invalid message received. " +
+                    "Cannot find transaction id.\nMessage:\n${event.messageText}"
+            )
+            return Unit.also { telegram.answerCallbackQuery(event.callbackQueryId, UNKNOWN_ERROR_MSG) }
+        }
+
         val type = TransactionActionType.deserialize(event.data)
             ?: return Unit.also { telegram.answerCallbackQuery(event.callbackQueryId, UNKNOWN_ERROR_MSG) }
+
         logger.info("Deserialized callbackQuery to $type")
 
-        dispatch(Event.Ynab.TransactionAction(type))
+        dispatch(Event.Ynab.TransactionAction(payee, transactionId, type)).also {
+            telegram.answerCallbackQuery(event.callbackQueryId)
+        }
     }
 
-    private fun formatHTMLStatementMessage(
+    fun extractPayeeAndTransactionIdFromMessage(text: String): Pair<String?, String?> {
+        val payeeRegex = Regex("")
+        payeeRegex.javaClass.getDeclaredField("nativePattern").let {
+            it.isAccessible = true
+            it.set(
+                payeeRegex,
+                Pattern.compile("Payee:\\s+([\\w \t]+)$", Pattern.UNICODE_CHARACTER_CLASS or Pattern.MULTILINE)
+            )
+        }
+
+        val payee = payeeRegex.find(text)?.groupValues?.get(1)
+        val id = try {
+            UUID.fromString(text.substring(text.length - UUIDwidth, text.length))
+        } catch (e: IllegalArgumentException) {
+            null
+        }?.toString()
+
+        return Pair(payee, id)
+    }
+
+    fun formatHTMLStatementMessage(
         monoStatementItem: MonoStatementItem,
         transaction: YnabTransactionDetail,
+        id: String,
     ): String {
         val builder = StringBuilder("Новая транзакция Monobank добавлена в YNAB\n")
         return with(monoStatementItem) {
-            val format = DecimalFormat("##")
-            val time = with(time.toLocalDateTime(TimeZone.currentSystemDefault())) {
-                "${format.format(hour)}:${format.format(minute)}"
-            }
-
-            builder.append("\uD83D\uDCB3 <b>$description</b>                  ${time}\n")
+            builder.append("\uD83D\uDCB3 <b>${description.replaceNewLines()}</b>\n")
             builder.append("      ${MCC.mapRussian[mcc] ?: "Неизвестный MCC"} ($mcc)\n")
             builder.append("      <u>${currencyCode.formatAmount(amount)}${currencyCode.currencyCode}</u>\n")
-            builder.append("      <code>Category: ${transaction.category_name}</code>\n")
-            builder.append("      <code>Payee:    ${transaction.payee_name}</code>\n")
-            builder.append("\n")
+            builder.append("      <code>Category: ${transaction.category_name ?: ""}</code>\n")
+            builder.append("      <code>Payee:    ${transaction.payee_name ?: ""}</code>\n")
+            builder.append("\n\n")
+            builder.append("<pre>$id</pre>")
 
             builder.toString()
         }
@@ -105,5 +132,6 @@ class TelegramHandler(
 
     companion object {
         const val UNKNOWN_ERROR_MSG = "Произошла непредвиденная ошибка."
+        private const val UUIDwidth = 36
     }
 }

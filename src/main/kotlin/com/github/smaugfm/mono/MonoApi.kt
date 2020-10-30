@@ -5,6 +5,7 @@ import com.github.smaugfm.events.IEventDispatcher
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
+import io.ktor.client.features.ResponseException
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.defaultSerializer
@@ -12,6 +13,7 @@ import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.statement.readText
 import io.ktor.features.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -24,6 +26,7 @@ import io.ktor.routing.routing
 import io.ktor.serialization.json
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -59,24 +62,33 @@ class MonoApi(private val token: String) {
         return Json.decodeFromString(infoString)
     }
 
-    suspend fun setWebHook(url: URI): MonoStatusResponse {
+    suspend fun setWebHook(url: URI, port: Int): MonoStatusResponse {
         require(url.toASCIIString() == url.toString())
 
+        val waitForWebhook = CompletableDeferred<Unit>()
         val json = defaultSerializer()
-        val server = embeddedServer(Netty, port = url.port) {
+        val server = embeddedServer(Netty, port = port) {
             routing {
                 get(url.path) {
                     call.response.status(HttpStatusCode.OK)
                     call.respondText("OK\n", ContentType.Text.Plain)
                     logger.info("Webhook setup successful: $url")
+                    waitForWebhook.complete(Unit)
                 }
             }
         }
-        logger.info("Starting webhook setup server.")
+        logger.info("Starting webhook setup server...")
         server.start(wait = false)
-        val statusString = httpClient.post<String>(url("personal/webhook")) {
-            body = json.write(MonoWebHookRequest(url.toString()))
+
+        val statusString = try {
+            httpClient.post<String>(url("personal/webhook")) {
+                body = json.write(MonoWebHookRequest(url.toString()))
+            }
+        } catch (e: ResponseException) {
+            logger.error(e.response.readText())
+            throw e
         }
+        waitForWebhook.await()
         server.stop(serverStopGracePeriod, serverStopGracePeriod)
         return Json.decodeFromString(statusString)
     }
@@ -112,9 +124,10 @@ class MonoApi(private val token: String) {
         fun startMonoWebhookServerAsync(
             context: CoroutineContext,
             webhook: URI,
-            dispatcher: IEventDispatcher
+            port: Int,
+            dispatcher: IEventDispatcher,
         ): Job {
-            val server = embeddedServer(Netty, port = webhook.port) {
+            val server = embeddedServer(Netty, port = port) {
                 install(ContentNegotiation) {
                     json()
                 }
@@ -132,10 +145,7 @@ class MonoApi(private val token: String) {
             }
         }
 
-        suspend fun Collection<MonoApi>.setupWebhook(webhook: URI) {
-            this.forEach {
-                it.setWebHook(webhook)
-            }
-        }
+        suspend fun Collection<MonoApi>.setupWebhook(webhook: URI, port: Int) =
+            this.forEach { it.setWebHook(webhook, port) }
     }
 }
