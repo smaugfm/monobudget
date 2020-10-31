@@ -29,6 +29,11 @@ internal fun formatInlineKeyboard(
     )
 }
 
+internal fun stripHTMLtagsFromMessage(messageText: String): String {
+    val replaceHtml = Regex("<.*?>")
+    return replaceHtml.replace(messageText, "")
+}
+
 internal fun formatHTMLStatementMessage(
     description: String,
     mcc: String,
@@ -71,6 +76,6 @@ internal inline fun <reified T : TransactionActionType> button(pressed: Set<KCla
     with(T::class) {
         InlineKeyboardButton(
             buttonText<T>(this in pressed),
-            callback_data = T::class.serialize()
+            callback_data = serialize<T>()
         )
     }
