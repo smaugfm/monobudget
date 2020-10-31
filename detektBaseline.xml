@@ -4,13 +4,15 @@
   <CurrentIssues>
     <ID>ComplexMethod:PayeeSuggestor.kt$PayeeSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
     <ID>LongParameterList:TelegramApi.kt$TelegramApi$( chatId: Any, text: String, parseMode: String? = null, disableWebPagePreview: Boolean? = null, disableNotification: Boolean? = null, replyTo: Int? = null, markup: ReplyKeyboard? = null, )</ID>
+    <ID>LongParameterList:TelegramApi.kt$TelegramApi$( chatId: Any? = null, messageId: Int? = null, inlineMessageId: String? = null, text: String, parseMode: String? = null, disableWebPagePreview: Boolean? = null, markup: InlineKeyboardMarkup? = null )</ID>
+    <ID>LongParameterList:Util.kt$( description: String, mcc: String, amount: String, category: String, payee: String, id: String )</ID>
     <ID>LoopWithTooManyJumpStatements:PayeeSuggestor.kt$PayeeSuggestor$for (j in start..end) { val c2 = s2[j] if (c1 != c2 || s2Consumed[j]) continue s2Consumed[j] = true matches += 1 if (j &lt; s2MatchIndex) transpositions += 1 s2MatchIndex = j break }</ID>
+    <ID>MagicNumber:CallbackQueryHandler.kt$CallbackQueryHandler$3</ID>
+    <ID>MagicNumber:CallbackQueryHandler.kt$CallbackQueryHandler$6</ID>
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.1</ID>
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.8</ID>
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$3.0</ID>
-    <ID>MagicNumber:TransactionActionType.kt$TransactionActionType.Companion$3</ID>
     <ID>MagicNumber:Util.kt$10.0</ID>
-    <ID>MatchingDeclarationName:models.kt$IEventHandlerCreator&lt;T&gt;</ID>
     <ID>ReturnCount:PayeeSuggestor.kt$PayeeSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
   </CurrentIssues>
 </SmellBaseline>

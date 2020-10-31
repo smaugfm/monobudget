@@ -12,7 +12,7 @@ import com.github.smaugfm.mono.MonoApi
 import com.github.smaugfm.mono.MonoApi.Companion.setupWebhook
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TelegramApi
-import com.github.smaugfm.telegram.TelegramHandler
+import com.github.smaugfm.telegram.handlers.TelegramHandler
 import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.ynab.YnabHandler
 import kotlinx.coroutines.asCoroutineDispatcher

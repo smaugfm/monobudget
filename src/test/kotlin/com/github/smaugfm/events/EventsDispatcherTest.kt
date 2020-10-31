@@ -1,11 +1,7 @@
+package com.github.smaugfm.events
+
 import assertk.assertThat
 import assertk.assertions.containsExactly
-import com.github.smaugfm.events.EventDispatcher
-import com.github.smaugfm.events.HandlersBuilder
-import com.github.smaugfm.events.IEvent
-import com.github.smaugfm.events.IEventDispatcher
-import com.github.smaugfm.events.IEventsHandlerRegistrar
-import com.github.smaugfm.events.UnitEvent
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 

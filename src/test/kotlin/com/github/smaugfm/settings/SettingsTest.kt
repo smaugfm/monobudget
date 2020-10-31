@@ -1,8 +1,8 @@
+package com.github.smaugfm.settings
+
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isSuccess
-import com.github.smaugfm.settings.Mappings
-import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.util.HashBiMap
 import org.junit.jupiter.api.Test
 import java.nio.file.Files

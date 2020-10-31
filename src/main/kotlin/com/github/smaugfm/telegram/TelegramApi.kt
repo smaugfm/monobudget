@@ -1,6 +1,7 @@
 package com.github.smaugfm.telegram
 
 import com.elbekD.bot.Bot
+import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.events.IEventDispatcher
@@ -43,6 +44,28 @@ class TelegramApi(
         }.await()
     }
 
+    suspend fun editMessage(
+        chatId: Any? = null,
+        messageId: Int? = null,
+        inlineMessageId: String? = null,
+        text: String,
+        parseMode: String? = null,
+        disableWebPagePreview: Boolean? = null,
+        markup: InlineKeyboardMarkup? = null
+    ) {
+        bot.editMessageText(
+            chatId,
+            messageId,
+            inlineMessageId,
+            text,
+            parseMode,
+            disableWebPagePreview,
+            markup
+        ).asDeferred().also {
+            logger.info("Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: $markup")
+        }.await()
+    }
+
     suspend fun answerCallbackQuery(id: String, text: String? = null) {
         bot.answerCallbackQuery(id, text = text).asDeferred().await()
     }
@@ -58,7 +81,7 @@ class TelegramApi(
                 return@onCallbackQuery
 
             it.data?.let { data ->
-                dispatcher(Event.Telegram.CallbackQueryReceived(it.id, data, it.message?.text!!))
+                dispatcher(Event.Telegram.CallbackQueryReceived(it.id, data, it.message!!))
             } ?: logger.error("Received callback query without callback_data.\n$it")
         }
 
