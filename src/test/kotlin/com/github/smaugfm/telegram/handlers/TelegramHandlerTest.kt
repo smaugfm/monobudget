@@ -90,32 +90,27 @@ class TelegramHandlerTest {
                         listOf(
                             InlineKeyboardButton(
                                 "❌категорию",
-                                callback_data = TransactionActionType.Uncategorize::class.serialize()
+                                callback_data = serialize<TransactionActionType.Uncategorize>()
                             ),
                             InlineKeyboardButton(
                                 "\uD83D\uDEABunapprove",
-                                callback_data = TransactionActionType.Unapprove::class.serialize()
+                                callback_data = serialize<TransactionActionType.Unapprove>()
                             ),
                         ),
                         listOf(
                             InlineKeyboardButton(
                                 "➡️невыясненные",
-                                callback_data = TransactionActionType.Unknown::class.serialize()
+                                callback_data = serialize<TransactionActionType.Unknown>()
                             ),
                             InlineKeyboardButton(
                                 "➕payee",
-                                callback_data = TransactionActionType.MakePayee::class.serialize()
+                                callback_data = serialize<TransactionActionType.MakePayee>()
                             ),
                         )
                     )
                 )
             )
         }
-    }
-
-    private fun replaceMessageText(messageText: String): String {
-        val replaceHtml = Regex("<.*?>")
-        return replaceHtml.replace(messageText, "")
     }
 
     @Test
@@ -126,7 +121,7 @@ class TelegramHandlerTest {
             getMonoResponseAndTransaction(payee, payee, "vasa", id)
 
         val messageText = formatHTMLStatementMessage(monoResponse.statementItem, transaction)
-        val adjustedMessage = replaceMessageText(messageText)
+        val adjustedMessage = stripHTMLtagsFromMessage(messageText)
         val message = mockk<Message> {
             every { text } returns adjustedMessage
             every { entities } returns listOf(
@@ -165,7 +160,7 @@ class TelegramHandlerTest {
             every { id } returns transactionId
         }
 
-        val messageText = replaceMessageText(
+        val messageText = stripHTMLtagsFromMessage(
             formatHTMLStatementMessage(monoResponse.statementItem, transaction)
         )
         val keyboard = formatInlineKeyboard(emptySet())

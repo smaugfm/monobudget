@@ -47,8 +47,18 @@ class CallbackQueryHandler(
         val updatedText = updateHTMLStatementMessage(updatedTransaction, event.message)
         val updatedMarkup = updateMarkupKeyboard(type, event.message.reply_markup!!)
 
-        with(event.message) {
-            telegram.editMessage(chat.id, message_id, text = updatedText, parseMode = "HTML", markup = updatedMarkup)
+        if (stripHTMLtagsFromMessage(updatedText) != event.message.text ||
+            updatedMarkup != event.message.reply_markup
+        ) {
+            with(event.message) {
+                telegram.editMessage(
+                    chat.id,
+                    message_id,
+                    text = updatedText,
+                    parseMode = "HTML",
+                    markup = updatedMarkup
+                )
+            }
         }
     }
 

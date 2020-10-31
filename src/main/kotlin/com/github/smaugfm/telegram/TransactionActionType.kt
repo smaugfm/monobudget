@@ -37,8 +37,8 @@ sealed class TransactionActionType {
             }
         }
 
-        fun KClass<out TransactionActionType>.serialize(): String {
-            return this::class.simpleName!!
+        inline fun <reified T : TransactionActionType> serialize(): String {
+            return T::class.simpleName!!
         }
 
         fun KClass<out TransactionActionType>.buttonWord(): String {
