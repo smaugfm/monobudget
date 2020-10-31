@@ -1,10 +1,8 @@
+package com.github.smaugfm.ynab
+
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TransactionActionType
-import com.github.smaugfm.ynab.YnabApi
-import com.github.smaugfm.ynab.YnabCleared
-import com.github.smaugfm.ynab.YnabHandler
-import com.github.smaugfm.ynab.YnabSaveTransaction
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -92,11 +90,9 @@ class YnabApiTest {
             val payee = "vasa"
             val id = api.getAccountTransactions(accountId).first().id
 
-            handler.updateTransaction(Event.Ynab.TransactionAction(payee, id, TransactionActionType.Uncategorize))
-            handler.updateTransaction(Event.Ynab.TransactionAction(payee, id, TransactionActionType.Unapprove))
-            // handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unknown(id)))
-
-            handler.updateTransaction(Event.Ynab.TransactionAction(payee, id, TransactionActionType.MakePayee))
+            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Uncategorize(id)))
+            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.Unapprove(id)))
+            handler.updateTransaction(Event.Ynab.TransactionAction(TransactionActionType.MakePayee(id, payee)))
         }
     }
 }

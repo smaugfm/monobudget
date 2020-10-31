@@ -34,3 +34,6 @@ style:
   MaxLineLength:
     active: true
     excludes: ['**/MCC.kt']
+  ReturnCount:
+    active: true
+    max: 3

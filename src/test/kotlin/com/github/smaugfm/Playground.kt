@@ -1,10 +1,12 @@
+package com.github.smaugfm
+
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.mono.MonoApi
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TelegramApi
-import com.github.smaugfm.telegram.TelegramHandler
+import com.github.smaugfm.telegram.handlers.TelegramHandler
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.PayeeSuggestor
 import com.github.smaugfm.ynab.YnabApi
@@ -88,7 +90,7 @@ class Playground {
         every { transaction.id } returns UUID.randomUUID().toString()
 
         runBlocking {
-            handler.sendStatementMessage(
+            handler.sendStatementMessage.handle(
                 Event.Telegram.SendStatementMessage(monoResponse, transaction)
             )
         }

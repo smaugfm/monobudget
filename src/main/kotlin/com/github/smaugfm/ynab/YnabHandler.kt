@@ -35,12 +35,12 @@ class YnabHandler(
     override fun registerEvents(builder: HandlersBuilder) {
         builder.apply {
             registerUnit(this@YnabHandler::createTransaction)
-            registerUnit(this@YnabHandler::updateTransaction)
+            register(this@YnabHandler::updateTransaction)
         }
     }
 
-    suspend fun updateTransaction(e: Event.Ynab.TransactionAction) {
-        val transactionDetail = ynab.getTransaction(e.transactionId)
+    suspend fun updateTransaction(e: Event.Ynab.TransactionAction): YnabTransactionDetail {
+        val transactionDetail = ynab.getTransaction(e.type.transactionId)
         val saveTransaction = ynabTransactionSaveFromDetails(transactionDetail)
 
         val newTransaction = when (e.type) {
@@ -53,10 +53,10 @@ class YnabHandler(
                 category_id = mappings.unknownCategoryId,
                 payee_name = null
             )
-            is TransactionActionType.MakePayee -> saveTransaction.copy(payee_id = null, payee_name = e.payee)
+            is TransactionActionType.MakePayee -> saveTransaction.copy(payee_id = null, payee_name = e.type.payee)
         }
 
-        ynab.updateTransaction(transactionDetail.id, newTransaction)
+        return ynab.updateTransaction(transactionDetail.id, newTransaction)
     }
 
     private suspend fun createTransaction(
