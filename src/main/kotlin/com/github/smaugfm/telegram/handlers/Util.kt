@@ -10,10 +10,11 @@ import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.util.replaceNewLines
 import com.github.smaugfm.ynab.YnabTransactionDetail
+import java.util.Currency
 import kotlin.reflect.KClass
 
 internal fun formatInlineKeyboard(
-    pressed: Set<KClass<out TransactionActionType>>
+    pressed: Set<KClass<out TransactionActionType>>,
 ): InlineKeyboardMarkup {
     return InlineKeyboardMarkup(
         listOf(
@@ -29,7 +30,7 @@ internal fun formatInlineKeyboard(
     )
 }
 
-internal fun stripHTMLtagsFromMessage(messageText: String): String {
+internal fun stripHTMLTagsFromMessage(messageText: String): String {
     val replaceHtml = Regex("<.*?>")
     return replaceHtml.replace(messageText, "")
 }
@@ -40,7 +41,7 @@ internal fun formatHTMLStatementMessage(
     amount: String,
     category: String,
     payee: String,
-    id: String
+    id: String,
 ): String {
     val builder = StringBuilder("Новая транзакция Monobank добавлена в YNAB\n")
     return with(Unit) {
@@ -56,15 +57,21 @@ internal fun formatHTMLStatementMessage(
     }
 }
 
+internal fun formatAmountWithCurrency(amount: Long, currency: Currency) =
+    currency.formatAmount(amount) + currency.currencyCode
+
 internal fun formatHTMLStatementMessage(
+    accountCurrency: Currency,
     monoStatementItem: MonoStatementItem,
     transaction: YnabTransactionDetail,
 ): String {
     with(monoStatementItem) {
+        val accountAmount = formatAmountWithCurrency(amount, accountCurrency)
+        val operationAmount = formatAmountWithCurrency(this.operationAmount, currencyCode)
         return formatHTMLStatementMessage(
             description.replaceNewLines(),
-            MCC.mapRussian[mcc] ?: "Неизвестный MCC",
-            currencyCode.formatAmount(amount) + currencyCode.currencyCode,
+            (MCC.mapRussian[mcc] ?: "Неизвестный MCC") + " ($mcc)",
+            accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),
             transaction.category_name ?: "",
             transaction.payee_name ?: "",
             transaction.id,

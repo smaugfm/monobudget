@@ -6,6 +6,7 @@ import assertk.assertions.isSuccess
 import com.github.smaugfm.util.HashBiMap
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
+import java.util.Currency
 
 class SettingsTest {
     @Test
@@ -22,6 +23,7 @@ class SettingsTest {
                     "vasa2" to "vasa3",
                     "vasa4" to "vasa5"
                 ),
+                mapOf("aaa" to Currency.getInstance("UAH")),
                 mapOf(
                     "vasa6" to 12324,
                     "vasa7" to 123242,

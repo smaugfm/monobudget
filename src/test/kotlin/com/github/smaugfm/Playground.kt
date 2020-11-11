@@ -27,7 +27,7 @@ class Playground {
     fun `Get last 29 days Mono transactions`() {
         runBlocking {
             val window = 30
-            val untilDays = window * 7
+            val untilDays = 30
 
             val settings = Settings.loadDefault()
             val mono = MonoApi(settings.monoTokens.drop(1).first())

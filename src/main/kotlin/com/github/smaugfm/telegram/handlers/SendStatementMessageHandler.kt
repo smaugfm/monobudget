@@ -22,12 +22,13 @@ class SendStatementMessageHandler(
         event: Event.Telegram.SendStatementMessage,
     ) {
         val monoResponse = event.mono
+        val accountCurrency = mappings.getAccountCurrency(event.mono.account)!!
         val transaction = event.transaction
         val telegramChatId = mappings.getTelegramChatIdAccByMono(monoResponse.account) ?: return
 
         telegram.sendMessage(
             telegramChatId,
-            formatHTMLStatementMessage(monoResponse.statementItem, transaction),
+            formatHTMLStatementMessage(accountCurrency, monoResponse.statementItem, transaction),
             "HTML",
             markup = formatInlineKeyboard(emptySet())
         )

@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test
 class YnabApiTest {
     private val settings = Settings.loadDefault()
     private val api = YnabApi(settings.ynabToken, "692ab9be-240a-4847-96c1-80aa21709e9c")
+
     private val handler = YnabHandler(api, settings.mappings)
     private val accountId = "1355f021-05fc-446b-b2e8-19eb44dd8ede"
 
@@ -69,9 +70,14 @@ class YnabApiTest {
     @Test
     fun `Get categories`() {
         runBlocking {
-            api.getCategories().map { it.categories }.flatten().map { it.id to it.name }.forEach {
-                println(it)
-            }
+            api
+                .getCategories()
+                .map { it.categories }
+                .flatten()
+                .map { it.id to it.name }
+                .forEach {
+                    println("${it.first} - ${it.second}")
+                }
         }
         println()
     }

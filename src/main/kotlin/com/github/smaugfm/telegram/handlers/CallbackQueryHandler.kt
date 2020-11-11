@@ -47,7 +47,7 @@ class CallbackQueryHandler(
         val updatedText = updateHTMLStatementMessage(updatedTransaction, event.message)
         val updatedMarkup = updateMarkupKeyboard(type, event.message.reply_markup!!)
 
-        if (stripHTMLtagsFromMessage(updatedText) != event.message.text ||
+        if (stripHTMLTagsFromMessage(updatedText) != event.message.text ||
             updatedMarkup != event.message.reply_markup
         ) {
             with(event.message) {
