@@ -43,6 +43,7 @@ class TelegramHandlerTest {
         val statementItem = mockk<MonoStatementItem>()
         every { statementItem.time } returns Clock.System.now() - 2.days
         every { statementItem.amount } returns -11500
+        every { statementItem.operationAmount } returns -11500
         every { statementItem.mcc } returns 5722
         every { statementItem.description } returns description
         every { statementItem.currencyCode } returns Currency.getInstance("UAH")
@@ -65,6 +66,7 @@ class TelegramHandlerTest {
         val payee = "Rozetka"
         coEvery { api.sendMessage(any(), any(), any(), any(), any(), any(), any()) } returns Unit
         every { mappings.getTelegramChatIdAccByMono(any()) } returns chatId
+        every { mappings.getAccountCurrency(any()) } returns Currency.getInstance("UAH")
 
         val (monoResponse, transaction) =
             getMonoResponseAndTransaction(payee, payee, monoAccount, UUID.randomUUID().toString())
@@ -74,7 +76,7 @@ class TelegramHandlerTest {
                 Event.Telegram.SendStatementMessage(monoResponse, transaction)
             )
         }
-        val message = formatHTMLStatementMessage(monoResponse.statementItem, transaction)
+        val message = formatHTMLStatementMessage(Currency.getInstance("UAH"), monoResponse.statementItem, transaction)
 
         coVerify {
             mappings.getTelegramChatIdAccByMono(monoAccount)
@@ -120,8 +122,12 @@ class TelegramHandlerTest {
         val (monoResponse, transaction) =
             getMonoResponseAndTransaction(payee, payee, "vasa", id)
 
-        val messageText = formatHTMLStatementMessage(monoResponse.statementItem, transaction)
-        val adjustedMessage = stripHTMLtagsFromMessage(messageText)
+        val messageText = formatHTMLStatementMessage(
+            Currency.getInstance("UAH"),
+            monoResponse.statementItem,
+            transaction
+        )
+        val adjustedMessage = stripHTMLTagsFromMessage(messageText)
         val message = mockk<Message> {
             every { text } returns adjustedMessage
             every { entities } returns listOf(
@@ -160,8 +166,8 @@ class TelegramHandlerTest {
             every { id } returns transactionId
         }
 
-        val messageText = stripHTMLtagsFromMessage(
-            formatHTMLStatementMessage(monoResponse.statementItem, transaction)
+        val messageText = stripHTMLTagsFromMessage(
+            formatHTMLStatementMessage(Currency.getInstance("UAH"), monoResponse.statementItem, transaction)
         )
         val keyboard = formatInlineKeyboard(emptySet())
 
@@ -198,7 +204,7 @@ class TelegramHandlerTest {
         }
 
         val updatedMessageText =
-            formatHTMLStatementMessage(monoResponse.statementItem, updatedTransaction)
+            formatHTMLStatementMessage(Currency.getInstance("UAH"), monoResponse.statementItem, updatedTransaction)
         val updatedMarkup = formatInlineKeyboard(setOf(TransactionActionType.MakePayee::class))
 
         coVerify {
