@@ -1,12 +1,13 @@
 package com.github.smaugfm.telegram.handlers
 
+import com.elbekD.bot.types.CallbackQuery
 import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.elbekD.bot.types.Message
 import com.elbekD.bot.types.MessageEntity
 import com.github.smaugfm.events.Event
+import com.github.smaugfm.events.Handler
 import com.github.smaugfm.events.HandlersBuilder
 import com.github.smaugfm.events.IEventDispatcher
-import com.github.smaugfm.events.IEventsHandlerRegistrar
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.telegram.TransactionActionType
@@ -20,37 +21,46 @@ private val logger = KotlinLogging.logger {}
 class CallbackQueryHandler(
     private val telegram: TelegramApi,
     val mappings: Mappings,
-) : IEventsHandlerRegistrar {
-    override fun registerEvents(builder: HandlersBuilder) {
-        builder.apply {
-            registerUnit(this@CallbackQueryHandler::handle)
-        }
+) : Handler() {
+
+    override fun HandlersBuilder.registerHandlerFunctions() {
+        registerUnit(this@CallbackQueryHandler::handle)
     }
 
     suspend fun handle(
         dispatch: IEventDispatcher,
         event: Event.Telegram.CallbackQueryReceived,
     ) {
-        val type = TransactionActionType.deserialize(event.data, event.message)
+        val callbackQuery = event.callbackQuery
+        if (callbackQuery.from.id !in mappings.getTelegramChatIds()) {
+            logger.warn("Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}")
+            return
+        }
+
+        val (callbackQueryId, data, message) =
+            extractFromCallbackQuery(callbackQuery) ?: return
+
+        val type = TransactionActionType.deserialize(data, message)
             ?: return Unit.also {
                 telegram.answerCallbackQuery(
-                    event.callbackQueryId,
+                    callbackQueryId,
                     TelegramHandler.UNKNOWN_ERROR_MSG
                 )
             }
+
         logger.info("Found callbackQuery action type $type")
 
         val updatedTransaction = dispatch(Event.Ynab.TransactionAction(type)).also {
-            telegram.answerCallbackQuery(event.callbackQueryId)
+            telegram.answerCallbackQuery(callbackQueryId)
         }
 
-        val updatedText = updateHTMLStatementMessage(updatedTransaction, event.message)
-        val updatedMarkup = updateMarkupKeyboard(type, event.message.reply_markup!!)
+        val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
+        val updatedMarkup = updateMarkupKeyboard(type, message.reply_markup!!)
 
-        if (stripHTMLTagsFromMessage(updatedText) != event.message.text ||
-            updatedMarkup != event.message.reply_markup
+        if (stripHTMLTagsFromMessage(updatedText) != message.text ||
+            updatedMarkup != message.reply_markup
         ) {
-            with(event.message) {
+            with(message) {
                 telegram.editMessage(
                     chat.id,
                     message_id,
@@ -64,7 +74,7 @@ class CallbackQueryHandler(
 
     private fun updateHTMLStatementMessage(
         updatedTransaction: YnabTransactionDetail,
-        oldMessage: Message
+        oldMessage: Message,
     ): String {
         val oldText = oldMessage.text!!
         val oldTextLines = oldText.split("\n").filter { it.isNotBlank() }
@@ -85,6 +95,18 @@ class CallbackQueryHandler(
         )
     }
 
+    private fun extractFromCallbackQuery(callbackQuery: CallbackQuery): Triple<String, String, Message>? {
+        val callbackQueryId = callbackQuery.id
+        val data = callbackQuery.data.takeUnless { it.isNullOrBlank() }
+            ?: logger.warn("Received Telegram callbackQuery with empty data.\n$callbackQuery")
+                .let { return null }
+        val message =
+            callbackQuery.message ?: logger.warn("Received Telegram callbacQuery with empty message")
+                .let { return null }
+
+        return Triple(callbackQueryId, data, message)
+    }
+
     private fun pressedButtons(oldKeyboard: InlineKeyboardMarkup): Set<KClass<out TransactionActionType>> =
         oldKeyboard
             .inline_keyboard
@@ -98,7 +120,7 @@ class CallbackQueryHandler(
 
     private fun updateMarkupKeyboard(
         type: TransactionActionType,
-        oldKeyboard: InlineKeyboardMarkup
+        oldKeyboard: InlineKeyboardMarkup,
     ): InlineKeyboardMarkup =
         formatInlineKeyboard(pressedButtons(oldKeyboard) + type::class)
 }

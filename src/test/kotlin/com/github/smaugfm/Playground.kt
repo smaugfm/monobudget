@@ -6,6 +6,7 @@ import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TelegramApi
+import com.github.smaugfm.telegram.handlers.SendStatementMessageHandler
 import com.github.smaugfm.telegram.handlers.TelegramHandler
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.PayeeSuggestor
@@ -67,12 +68,15 @@ class Playground {
         val settings = Settings.loadDefault()
         val telegram = TelegramApi(
             settings.telegramBotUsername,
-            settings.telegramBotToken,
-            settings.mappings.getTelegramChatIds()
+            settings.telegramBotToken
         )
         val description = "vasa"
         val monoAccount = ""
-        val handler = TelegramHandler(telegram, settings.mappings)
+        val handler =
+            TelegramHandler(telegram, settings.mappings)
+                .handlers
+                .filterIsInstance<SendStatementMessageHandler>()
+                .first()
         val statementItem = mockk<MonoStatementItem>()
         every { statementItem.time } returns Clock.System.now() - 2.days
         every { statementItem.amount } returns -11500
@@ -90,7 +94,7 @@ class Playground {
         every { transaction.id } returns UUID.randomUUID().toString()
 
         runBlocking {
-            handler.sendStatementMessage.handle(
+            handler.handle(
                 Event.Telegram.SendStatementMessage(monoResponse, transaction)
             )
         }
