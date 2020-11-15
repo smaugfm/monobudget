@@ -15,6 +15,7 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.statement.readText
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.origin
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
@@ -67,7 +68,7 @@ class MonoApi(private val token: String) {
 
         val waitForWebhook = CompletableDeferred<Unit>()
         val json = defaultSerializer()
-        val server = embeddedServer(Netty, port = port) {
+        val tempServer = embeddedServer(Netty, port = port) {
             routing {
                 get(url.path) {
                     call.response.status(HttpStatusCode.OK)
@@ -78,7 +79,7 @@ class MonoApi(private val token: String) {
             }
         }
         logger.info("Starting webhook setup server...")
-        server.start(wait = false)
+        tempServer.start(wait = false)
 
         val statusString = try {
             httpClient.post<String>(url("personal/webhook")) {
@@ -89,7 +90,7 @@ class MonoApi(private val token: String) {
             throw e
         }
         waitForWebhook.await()
-        server.stop(serverStopGracePeriod, serverStopGracePeriod)
+        tempServer.stop(serverStopGracePeriod, serverStopGracePeriod)
         return Json.decodeFromString(statusString)
     }
 
@@ -133,7 +134,12 @@ class MonoApi(private val token: String) {
                 }
                 routing {
                     post(webhook.path) {
-                        logger.info("Webhook queried. Uri: ${call.request.uri}")
+                        call.request.origin.host
+                        logger.info(
+                            "Webhook queried. " +
+                                "Host: ${call.request.origin.remoteHost} " +
+                                "Uri: ${call.request.uri}"
+                        )
                         val response = call.receive<MonoWebhookResponse>()
                         call.response.status(HttpStatusCode.OK)
                         dispatcher(Event.Mono.NewStatementReceived(response.data))
@@ -141,11 +147,11 @@ class MonoApi(private val token: String) {
                 }
             }
             return GlobalScope.launch(context) {
-                server.start(wait = true).let { Unit }
+                server.start(wait = true)
             }
         }
 
-        suspend fun Collection<MonoApi>.setupWebhook(webhook: URI, port: Int) =
+        suspend fun Collection<MonoApi>.setupWebhookAll(webhook: URI, port: Int) =
             this.forEach { it.setWebHook(webhook, port) }
     }
 }

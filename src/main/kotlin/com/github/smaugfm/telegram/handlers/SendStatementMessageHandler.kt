@@ -1,8 +1,8 @@
 package com.github.smaugfm.telegram.handlers
 
 import com.github.smaugfm.events.Event
+import com.github.smaugfm.events.Handler
 import com.github.smaugfm.events.HandlersBuilder
-import com.github.smaugfm.events.IEventsHandlerRegistrar
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TelegramApi
 import mu.KotlinLogging
@@ -11,11 +11,9 @@ private val logger = KotlinLogging.logger {}
 class SendStatementMessageHandler(
     private val telegram: TelegramApi,
     val mappings: Mappings,
-) : IEventsHandlerRegistrar {
-    override fun registerEvents(builder: HandlersBuilder) {
-        builder.apply {
-            registerUnit(this@SendStatementMessageHandler::handle)
-        }
+) : Handler() {
+    override fun HandlersBuilder.registerHandlerFunctions() {
+        registerUnit(this@SendStatementMessageHandler::handle)
     }
 
     suspend fun handle(

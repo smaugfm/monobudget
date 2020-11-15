@@ -1,5 +1,6 @@
 package com.github.smaugfm.events
 
+import com.elbekD.bot.types.CallbackQuery
 import com.elbekD.bot.types.Message
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.telegram.TransactionActionType
@@ -12,7 +13,7 @@ sealed class Event {
 
     sealed class Ynab : Event() {
         data class TransactionAction(
-            val type: TransactionActionType
+            val type: TransactionActionType,
         ) : Ynab(), IEvent<YnabTransactionDetail>
     }
 
@@ -22,11 +23,8 @@ sealed class Event {
             val transaction: YnabTransactionDetail,
         ) : Telegram(), UnitEvent
 
-        data class CallbackQueryReceived(
-            val callbackQueryId: String,
-            val data: String,
-            val message: Message
-        ) :
-            Telegram(), UnitEvent
+        data class CallbackQueryReceived(val callbackQuery: CallbackQuery) : Telegram(), UnitEvent
+        data class RestartCommandReceived(val message: Message, val args: String?) : Telegram(), UnitEvent
+        data class StopCommandReceived(val message: Message, val args: String?) : Telegram(), UnitEvent
     }
 }

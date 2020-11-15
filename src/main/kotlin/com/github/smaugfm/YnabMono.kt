@@ -9,7 +9,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.smaugfm.events.EventDispatcher
 import com.github.smaugfm.mono.MonoApi
-import com.github.smaugfm.mono.MonoApi.Companion.setupWebhook
+import com.github.smaugfm.mono.MonoApi.Companion.setupWebhookAll
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.telegram.handlers.TelegramHandler
@@ -48,14 +48,13 @@ class YnabMono : CliktCommand() {
                 val telegramApi = TelegramApi(
                     settings.telegramBotUsername,
                     settings.telegramBotToken,
-                    settings.mappings.getTelegramChatIds(),
                 )
                 logger.info("Created telegram api.")
                 val ynabApi = YnabApi(settings.ynabToken, settings.ynabBudgetId)
                 logger.info("Created ynab api.")
 
                 if (!dontSetWebhook) {
-                    monoApis.setupWebhook(monoWebhookUrl, monoWebhookPort ?: monoWebhookUrl.port)
+                    monoApis.setupWebhookAll(monoWebhookUrl, monoWebhookPort ?: monoWebhookUrl.port)
                     logger.info("Mono webhook setup successful. $monoWebhookUrl")
                 } else {
                     logger.info("Skipping mono webhook setup.")

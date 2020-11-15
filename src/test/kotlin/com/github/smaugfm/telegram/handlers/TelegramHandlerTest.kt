@@ -2,6 +2,7 @@ package com.github.smaugfm.telegram.handlers
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.elbekD.bot.types.CallbackQuery
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.elbekD.bot.types.Message
@@ -28,7 +29,7 @@ import java.util.UUID
 import kotlin.time.days
 
 class TelegramHandlerTest {
-    val chatId = 0
+    val chatId = 12322
     val api = mockk<TelegramApi>()
     val mappings = mockk<Mappings>()
     val sendStatementMessageHandler = SendStatementMessageHandler(api, mappings)
@@ -38,8 +39,10 @@ class TelegramHandlerTest {
         description: String,
         payee: String,
         monoAccount: String,
-        id: String
+        id: String,
     ): Pair<MonoWebHookResponseData, YnabTransactionDetail> {
+        every { mappings.getTelegramChatIds() } returns setOf(chatId)
+
         val statementItem = mockk<MonoStatementItem>()
         every { statementItem.time } returns Clock.System.now() - 2.days
         every { statementItem.amount } returns -11500
@@ -65,6 +68,7 @@ class TelegramHandlerTest {
         val monoAccount = "vasility"
         val payee = "Rozetka"
         coEvery { api.sendMessage(any(), any(), any(), any(), any(), any(), any()) } returns Unit
+        every { mappings.getTelegramChatIds() } returns setOf(chatId)
         every { mappings.getTelegramChatIdAccByMono(any()) } returns chatId
         every { mappings.getAccountCurrency(any()) } returns Currency.getInstance("UAH")
 
@@ -171,11 +175,10 @@ class TelegramHandlerTest {
         )
         val keyboard = formatInlineKeyboard(emptySet())
 
-        val chatId = 123241231L
         val messageId = 123413
         val messageMock = mockk<Message>() {
             every { text } returns messageText
-            every { chat.id } returns chatId
+            every { chat.id } returns chatId.toLong()
             every { message_id } returns messageId
             every { entities } returns listOf(
                 MessageEntity(
@@ -193,10 +196,14 @@ class TelegramHandlerTest {
         val dispatcher = mockk<IEventDispatcher>()
         coEvery { dispatcher.invoke<Any, IEvent<Any>>(any()) } returns updatedTransaction
 
-        val event = mockk<Event.Telegram.CallbackQueryReceived>() {
-            every { callbackQueryId } returns "vasa"
+        val callbackQueryMock = mockk<CallbackQuery>() {
+            every { id } returns "vasa"
             every { data } returns TransactionActionType.MakePayee::class.simpleName!!
             every { message } returns messageMock
+            every { from.id } returns chatId
+        }
+        val event = mockk<Event.Telegram.CallbackQueryReceived>() {
+            every { callbackQuery } returns callbackQueryMock
         }
 
         runBlocking {
@@ -210,7 +217,7 @@ class TelegramHandlerTest {
         coVerify {
             dispatcher.invoke(Event.Ynab.TransactionAction(TransactionActionType.MakePayee(transactionId, description)))
             api.editMessage(
-                chatId,
+                chatId.toLong(),
                 messageId,
                 text = updatedMessageText,
                 parseMode = "HTML",

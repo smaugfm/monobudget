@@ -17,7 +17,6 @@ private val logger = KotlinLogging.logger {}
 class TelegramApi(
     botUsername: String,
     botToken: String,
-    val allowedChatIds: Set<Int>,
 ) {
     private val bot: Bot =
         Bot.createPolling(botUsername, botToken)
@@ -51,7 +50,7 @@ class TelegramApi(
         text: String,
         parseMode: String? = null,
         disableWebPagePreview: Boolean? = null,
-        markup: InlineKeyboardMarkup? = null
+        markup: InlineKeyboardMarkup? = null,
     ) {
         bot.editMessageText(
             chatId,
@@ -76,13 +75,15 @@ class TelegramApi(
     ): Job {
         bot.onCallbackQuery {
             logger.info("Received callbackQuery.\n\t$it")
-            val chatId = it.from.id
-            if (chatId !in allowedChatIds)
-                return@onCallbackQuery
-
-            it.data?.let { data ->
-                dispatcher(Event.Telegram.CallbackQueryReceived(it.id, data, it.message!!))
-            } ?: logger.error("Received callback query without callback_data.\n$it")
+            dispatcher(Event.Telegram.CallbackQueryReceived(it))
+        }
+        bot.onCommand("/restart") { msg, args ->
+            logger.info("Received message.\n\t$msg")
+            dispatcher(Event.Telegram.RestartCommandReceived(msg, args))
+        }
+        bot.onCommand("/stop") { msg, args ->
+            logger.info("Received message.\n\t$msg")
+            dispatcher(Event.Telegram.StopCommandReceived(msg, args))
         }
 
         return GlobalScope.launch(context) { bot.start() }
