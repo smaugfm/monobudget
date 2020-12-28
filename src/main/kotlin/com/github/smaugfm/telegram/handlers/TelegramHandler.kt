@@ -5,13 +5,13 @@ import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TelegramApi
 
 class TelegramHandler(
-    private val telegram: TelegramApi,
+    telegram: TelegramApi,
     val mappings: Mappings,
 ) : CompositeHandler(
     listOf(
-        SendStatementMessageHandler(telegram, mappings),
+        SendStatementMessageHandler(mappings),
         CallbackQueryHandler(telegram, mappings),
-        MessagesHandler()
+        SendHTMLMessageHandler(telegram, mappings),
     ),
 ) {
     companion object {

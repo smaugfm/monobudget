@@ -2,7 +2,10 @@ package com.github.smaugfm.telegram.handlers
 
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
+import com.github.smaugfm.events.Event
+import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.mono.MonoStatementItem
+import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TransactionActionType
 import com.github.smaugfm.telegram.TransactionActionType.Companion.buttonText
 import com.github.smaugfm.telegram.TransactionActionType.Companion.serialize
@@ -86,3 +89,20 @@ internal inline fun <reified T : TransactionActionType> button(pressed: Set<KCla
             callback_data = serialize<T>()
         )
     }
+
+suspend fun errorHandler(
+    dispatcher: IEventDispatcher,
+    mappings: Mappings,
+) {
+    mappings
+        .getTelegramChatIds()
+        .forEach { chatId ->
+            dispatcher(
+                Event.Telegram.SendHTMLMessage(
+                    chatId,
+                    TelegramHandler.UNKNOWN_ERROR_MSG,
+                    null
+                )
+            )
+        }
+}

@@ -29,5 +29,5 @@ interface IEvent<out T>
 typealias UnitEvent = IEvent<Unit>
 
 interface IEventDispatcher {
-    suspend operator fun <R, E : IEvent<R>> invoke(event: E): R
+    suspend operator fun <R, E : IEvent<R>> invoke(event: E): R?
 }
