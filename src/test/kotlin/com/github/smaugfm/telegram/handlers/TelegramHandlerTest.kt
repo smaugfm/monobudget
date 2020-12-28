@@ -32,7 +32,7 @@ class TelegramHandlerTest {
     val chatId = 12322
     val api = mockk<TelegramApi>()
     val mappings = mockk<Mappings>()
-    val sendStatementMessageHandler = SendStatementMessageHandler(api, mappings)
+    val sendStatementMessageHandler = SendStatementMessageHandler(mappings)
     val callbackQueryHandler = CallbackQueryHandler(api, mappings)
 
     private fun getMonoResponseAndTransaction(
@@ -72,11 +72,13 @@ class TelegramHandlerTest {
         every { mappings.getTelegramChatIdAccByMono(any()) } returns chatId
         every { mappings.getAccountCurrency(any()) } returns Currency.getInstance("UAH")
 
+        val dispatcher = mockk<IEventDispatcher>()
         val (monoResponse, transaction) =
             getMonoResponseAndTransaction(payee, payee, monoAccount, UUID.randomUUID().toString())
 
         runBlocking {
             sendStatementMessageHandler.handle(
+                dispatcher,
                 Event.Telegram.SendStatementMessage(monoResponse, transaction)
             )
         }

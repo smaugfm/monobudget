@@ -77,15 +77,6 @@ class TelegramApi(
             logger.info("Received callbackQuery.\n\t$it")
             dispatcher(Event.Telegram.CallbackQueryReceived(it))
         }
-        bot.onCommand("/restart") { msg, args ->
-            logger.info("Received message.\n\t$msg")
-            dispatcher(Event.Telegram.RestartCommandReceived(msg, args))
-        }
-        bot.onCommand("/stop") { msg, args ->
-            logger.info("Received message.\n\t$msg")
-            dispatcher(Event.Telegram.StopCommandReceived(msg, args))
-        }
-
         return GlobalScope.launch(context) { bot.start() }
     }
 }
