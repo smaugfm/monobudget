@@ -4,7 +4,7 @@ import java.util.Currency
 import kotlin.math.abs
 import kotlin.math.pow
 
-fun Number.formatW(w: Int = 2): String {
+fun Number.formatW(): String {
     return "%02d".format(this)
 }
 

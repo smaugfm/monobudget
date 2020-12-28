@@ -151,7 +151,14 @@ class MonoApi(private val token: String) {
             }
         }
 
-        suspend fun Collection<MonoApi>.setupWebhookAll(webhook: URI, port: Int) =
-            this.forEach { it.setWebHook(webhook, port) }
+        suspend fun Collection<MonoApi>.setupWebhookAll(webhook: URI, port: Int) {
+            for (it in this) {
+                try {
+                    it.setWebHook(webhook, port)
+                } catch (e: Throwable) {
+                    logger.error("Error setting webhook.", e)
+                }
+            }
+        }
     }
 }

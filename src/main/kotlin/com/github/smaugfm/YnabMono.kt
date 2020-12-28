@@ -13,6 +13,7 @@ import com.github.smaugfm.mono.MonoApi.Companion.setupWebhookAll
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.telegram.handlers.TelegramHandler
+import com.github.smaugfm.telegram.handlers.errorHandler
 import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.ynab.YnabHandler
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -25,7 +26,7 @@ import java.util.concurrent.Executors
 private val logger = KotlinLogging.logger {}
 
 class YnabMono : CliktCommand() {
-    val dontSetWebhook by option().flag(default = false)
+    val setWebhook by option().flag(default = false)
     val monoWebhookUrl by option().convert { URI(it) }.required()
     val monoWebhookPort by option().int()
     val settings by option("--settings").convert { Settings.load(Paths.get(it)) }.default(Settings.loadDefault())
@@ -38,56 +39,53 @@ class YnabMono : CliktCommand() {
                 "${this::settings.name}: $settings\n\t" +
                 "${this::monoWebhookUrl.name}: $monoWebhookUrl\n\t" +
                 "${this::monoWebhookPort.name}: $monoWebhookPort\n\t" +
-                "${this::dontSetWebhook.name}: $dontSetWebhook",
+                "${this::setWebhook.name}: $setWebhook",
         )
 
-        try {
-            runBlocking {
-                val monoApis = settings.monoTokens.map(::MonoApi)
-                logger.info("Created monobank apis. ")
-                val telegramApi = TelegramApi(
-                    settings.telegramBotUsername,
-                    settings.telegramBotToken,
-                )
-                logger.info("Created telegram api.")
-                val ynabApi = YnabApi(settings.ynabToken, settings.ynabBudgetId)
-                logger.info("Created ynab api.")
+        runBlocking {
+            val monoApis = settings.monoTokens.map(::MonoApi)
+            logger.info("Created monobank apis. ")
+            val telegramApi = TelegramApi(
+                settings.telegramBotUsername,
+                settings.telegramBotToken,
+            )
+            logger.info("Created telegram api.")
+            val ynabApi = YnabApi(settings.ynabToken, settings.ynabBudgetId)
+            logger.info("Created ynab api.")
 
-                if (!dontSetWebhook) {
-                    monoApis.setupWebhookAll(monoWebhookUrl, monoWebhookPort ?: monoWebhookUrl.port)
-                    logger.info("Mono webhook setup successful. $monoWebhookUrl")
-                } else {
-                    logger.info("Skipping mono webhook setup.")
-                }
-
-                val dispatcher = EventDispatcher(
-                    YnabHandler(ynabApi, settings.mappings),
-                    TelegramHandler(telegramApi, settings.mappings)
-                )
-
-                logger.info("Events dispatcher created.")
-
-                val telegramServerJob = telegramApi
-                    .startServer(serversCoroutinesContext, dispatcher)
-
-                logger.info("Telegram bot started.")
-                val monoWebhookServer =
-                    MonoApi.startMonoWebhookServerAsync(
-                        serversCoroutinesContext,
-                        monoWebhookUrl,
-                        monoWebhookPort ?: monoWebhookUrl.port,
-                        dispatcher
-                    )
-                logger.info("Mono webhook listener started.")
-                logger.info("Setup completed. Listening...\n")
-
-                telegramServerJob.join()
-                monoWebhookServer.join()
+            if (setWebhook) {
+                logger.info("Setting up mono webhooks.")
+                monoApis.setupWebhookAll(monoWebhookUrl, monoWebhookPort ?: monoWebhookUrl.port)
+            } else {
+                logger.info("Skipping mono webhook setup.")
             }
-        } catch (e: Throwable) {
-            logger.error(e) {
-                "Unhandled exception"
-            }
+
+            val dispatcher = EventDispatcher(
+                { dispatcher, _, _ ->
+                    errorHandler(dispatcher, settings.mappings)
+                },
+                YnabHandler(ynabApi, settings.mappings),
+                TelegramHandler(telegramApi, settings.mappings)
+            )
+
+            logger.info("Events dispatcher created.")
+
+            val telegramServerJob = telegramApi
+                .startServer(serversCoroutinesContext, dispatcher)
+
+            logger.info("Telegram bot started.")
+            val monoWebhookServer =
+                MonoApi.startMonoWebhookServerAsync(
+                    serversCoroutinesContext,
+                    monoWebhookUrl,
+                    monoWebhookPort ?: monoWebhookUrl.port,
+                    dispatcher
+                )
+            logger.info("Mono webhook listener started.")
+            logger.info("Setup completed. Listening...\n")
+
+            telegramServerJob.join()
+            monoWebhookServer.join()
         }
     }
 }

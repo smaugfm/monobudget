@@ -52,7 +52,7 @@ class CallbackQueryHandler(
 
         val updatedTransaction = dispatch(Event.Ynab.TransactionAction(type)).also {
             telegram.answerCallbackQuery(callbackQueryId)
-        }
+        } ?: return
 
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
         val updatedMarkup = updateMarkupKeyboard(type, message.reply_markup!!)
