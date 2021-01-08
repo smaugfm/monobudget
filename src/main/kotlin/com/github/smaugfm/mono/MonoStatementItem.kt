@@ -2,8 +2,6 @@ package com.github.smaugfm.mono
 
 import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import com.github.smaugfm.serializers.InstantAsLongSerializer
-import com.github.smaugfm.util.MCC
-import com.github.smaugfm.util.replaceNewLines
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import java.util.Currency
@@ -28,24 +26,4 @@ data class MonoStatementItem(
     val cashbackAmount: Long,
     val balance: Long,
     val hold: Boolean,
-) {
-    override fun toString(): String {
-        val builder = StringBuilder()
-        builder.append("MonoStatementItem {\n")
-        builder.append("\tid: $id\n")
-        builder.append("\tdesc: ${description.replaceNewLines()}\n")
-        builder.append("\tamount: $amount\n")
-        builder.append("\tmcc:$mcc (${MCC.mapRussian.getOrDefault(mcc, "unknown")})\n")
-        builder.append("\ttime: $time\n")
-        if (comment.isNotBlank())
-            builder.append("\tcomment: $comment\n")
-        builder.append("\tbalance: $balance\n")
-        builder.append("\toperationAmount: $operationAmount\n")
-        builder.append("\tcommisionRate: $commissionRate\n")
-        builder.append("\tcashbackAmount: $cashbackAmount\n")
-        builder.append("\tcurrency: $currencyCode\n")
-        builder.append("\thold: $hold\n}\n")
-
-        return builder.toString()
-    }
-}
+)

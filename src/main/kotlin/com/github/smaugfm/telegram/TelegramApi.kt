@@ -5,6 +5,7 @@ import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.events.IEventDispatcher
+import com.github.smaugfm.util.pp
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
@@ -39,7 +40,7 @@ class TelegramApi(
             replyTo,
             markup
         ).asDeferred().also {
-            logger.info("Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: $markup")
+            logger.info("Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}")
         }.await()
     }
 
@@ -61,7 +62,7 @@ class TelegramApi(
             disableWebPagePreview,
             markup
         ).asDeferred().also {
-            logger.info("Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: $markup")
+            logger.info("Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}")
         }.await()
     }
 

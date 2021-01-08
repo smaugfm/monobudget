@@ -1,17 +1,16 @@
 package com.github.smaugfm.ynab
 
+import com.github.smaugfm.util.makeJson
+import com.github.smaugfm.util.requestCatching
 import io.ktor.client.HttpClient
-import io.ktor.client.features.ResponseException
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
-import io.ktor.client.statement.readText
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
-import kotlinx.serialization.decodeFromString
 import mu.KotlinLogging
 import kotlin.reflect.KFunction
 
@@ -21,9 +20,7 @@ class YnabApi(
     private val token: String,
     private val budgetId: String,
 ) {
-    private val json = kotlinx.serialization.json.Json {
-        prettyPrint = true
-    }
+    private val json = makeJson()
     private val jsonSerializer = KotlinxSerializer(json)
     private val httpClient = HttpClient {
         install(JsonFeature) {
@@ -44,35 +41,20 @@ class YnabApi(
             path(listOf("v1") + path)
         }.buildString()
 
-    private suspend inline fun <reified T> requestCatching(
+    private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
-        vararg args: Any,
         block: () -> T,
-    ): T {
-        return try {
-            logger.info(
-                "Performing YNAB request ${method.name}, " +
-                    "args: ${args.joinToString(", ") { "\"it\"" }}"
-            )
-            block().also {
-                logger.info("Request ${method.name} done. Response:\n\t$it")
-            }
-        } catch (e: ResponseException) {
-            val error = json.decodeFromString<YnabErrorResponse>(e.response.readText())
-            logger.info("Request failed ${method.name}. Error response:\n\t$error")
-            throw YnabApiException(e, error)
-        }
-    }
+    ): T = requestCatching("YNAB", logger, method.name, json, block)
 
     suspend fun getPayees(): List<YnabPayee> =
-        requestCatching(this::getPayees) {
+        catching(this::getPayees) {
             httpClient.get<YnabPayeesResponse>(
                 url("budgets", budgetId, "payees")
             )
         }.data.payees
 
     suspend fun getCategories(): List<YnabCategoryGroupWithCategories> =
-        requestCatching(this::getCategories) {
+        catching(this::getCategories) {
             httpClient.get<YnabCategoriesResponse>(
                 url("budgets", budgetId, "categories")
             )
@@ -81,7 +63,7 @@ class YnabApi(
     suspend fun createTransaction(
         transaction: YnabSaveTransaction,
     ): YnabTransactionDetail =
-        requestCatching(this::createTransaction) {
+        catching(this::createTransaction) {
             httpClient.post<YnabSaveTransactionResponse>(
                 url("budgets", budgetId, "transactions")
             ) {
@@ -93,7 +75,7 @@ class YnabApi(
         transactionId: String,
         transaction: YnabSaveTransaction,
     ): YnabTransactionDetail =
-        requestCatching(this::updateTransaction) {
+        catching(this::updateTransaction) {
             httpClient.put<YnabTransactionResponseWithServerKnowledge>(
                 url(
                     "budgets",
@@ -109,7 +91,7 @@ class YnabApi(
     suspend fun getTransaction(
         transactionId: String,
     ): YnabTransactionDetail =
-        requestCatching(this::getTransaction) {
+        catching(this::getTransaction) {
             httpClient.get<YnabTransactionResponse>(
                 url(
                     "budgets",
@@ -123,7 +105,7 @@ class YnabApi(
     suspend fun getAccountTransactions(
         accountId: String,
     ): List<YnabTransactionDetail> =
-        requestCatching(this::getAccountTransactions) {
+        catching(this::getAccountTransactions) {
             httpClient.get<YnabTransactionsResponse>(
                 url(
                     "budgets",

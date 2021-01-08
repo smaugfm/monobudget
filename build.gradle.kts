@@ -1,3 +1,4 @@
+import com.github.breadmoirai.githubreleaseplugin.GithubReleaseTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -7,14 +8,16 @@ plugins {
     id("com.github.johnrengelman.shadow")
     id("org.jlleitschuh.gradle.ktlint")
     id("io.gitlab.arturbosch.detekt")
+    id("com.github.breadmoirai.github-release")
 }
 
 group = "com.github.smaugfm"
-version = "0.2.3-alpha"
+version = "0.2.4"
 
 val myMavenRepoReadUrl: String by project
 val myMavenRepoReadUsername: String by project
 val myMavenRepoReadPassword: String by project
+val githubToken: String by project
 
 repositories {
     maven(url = "https://jitpack.io")
@@ -47,10 +50,27 @@ githook {
     }
 }
 
+githubRelease {
+    token(githubToken)
+    prerelease.set(true)
+    overwrite.set(true)
+    dryRun.set(false)
+    releaseAssets.setFrom(
+        files(
+            "$buildDir/libs/${project.name}-${project.version}-fat.jar"
+        )
+    )
+}
+
+tasks.withType<GithubReleaseTask>().configureEach {
+    dependsOn(":shadowJar")
+}
+
 tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
     }
 
     test {
@@ -87,6 +107,7 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:_")
     implementation("io.github.microutils:kotlin-logging:_")
     implementation("org.slf4j:slf4j-simple:_")
+    implementation("com.google.code.gson:gson:_")
 
     testImplementation("io.mockk:mockk:_")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:_")

@@ -35,7 +35,7 @@ class EventsDispatcherTest {
         private var dispatched = 0
         override fun registerEvents(builder: HandlersBuilder) {
             builder.apply {
-                registerUnit { dispatcher: IEventDispatcher, e: TestEvent.Second ->
+                registerUnit { dispatcher: IEventDispatcher, _: TestEvent.Second ->
                     dispatched++
                     if (dispatched < 2)
                         dispatcher(TestEvent.First(dispatched.toString()))
@@ -45,9 +45,15 @@ class EventsDispatcherTest {
     }
 
     private class TestEventDispatcher :
-        EventDispatcher(FirstHandler(), SecondHandler()) {
+        EventDispatcher(
+            { _, _, _ ->
+                println("error")
+            },
+            FirstHandler(),
+            SecondHandler()
+        ) {
         val dispatchCalled = mutableListOf<TestEvent>()
-        override suspend fun <R, E : IEvent<R>> invoke(event: E): R {
+        override suspend fun <R, E : IEvent<R>> invoke(event: E): R? {
             if (event is TestEvent)
                 dispatchCalled.add(event)
             return super.invoke(event)

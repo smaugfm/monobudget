@@ -15,20 +15,4 @@ data class MonoAccount(
     val iban: String,
     val maskedPan: List<String>,
     val type: String,
-) {
-    override fun toString(): String {
-        val builder = StringBuilder()
-        builder.append("MonoAccount {\n")
-        builder.append("\tid: $id\n")
-        builder.append("\tbalance: $balance\n")
-        builder.append("\tcreditLimit: $creditLimit\n")
-        builder.append("\tcurrencyCode: $currencyCode\n")
-        builder.append("\tcashbackType: $cashbackType\n")
-        builder.append("\tiban: $iban\n")
-        builder.append("\tmaskedPan: $maskedPan\n")
-        builder.append("\ttype: $type\n")
-        builder.append("}")
-
-        return builder.toString()
-    }
-}
+)

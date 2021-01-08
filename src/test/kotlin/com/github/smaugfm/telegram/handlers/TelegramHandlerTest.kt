@@ -23,6 +23,7 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.util.Currency
 import java.util.UUID
@@ -64,6 +65,7 @@ class TelegramHandlerTest {
     }
 
     @Test
+    @Disabled
     fun `Send statement message`() {
         val monoAccount = "vasility"
         val payee = "Rozetka"
