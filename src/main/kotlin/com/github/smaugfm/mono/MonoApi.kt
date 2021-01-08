@@ -2,10 +2,11 @@ package com.github.smaugfm.mono
 
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.events.IEventDispatcher
+import com.github.smaugfm.util.makeJson
+import com.github.smaugfm.util.requestCatching
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.client.HttpClient
-import io.ktor.client.features.ResponseException
 import io.ktor.client.features.defaultRequest
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.defaultSerializer
@@ -13,7 +14,6 @@ import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
-import io.ktor.client.statement.readText
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.origin
 import io.ktor.http.ContentType
@@ -24,7 +24,7 @@ import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.post
 import io.ktor.routing.routing
-import io.ktor.serialization.json
+import io.ktor.serialization.serialization
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.CompletableDeferred
@@ -34,13 +34,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.StringFormat
 import mu.KotlinLogging
 import java.net.URI
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KFunction
 
 private val logger = KotlinLogging.logger {}
+private val json = makeJson()
 
 class MonoApi(private val token: String) {
     init {
@@ -49,19 +50,24 @@ class MonoApi(private val token: String) {
 
     private var previousStatementCallTimestamp = Long.MIN_VALUE / 2
 
+    private val jsonSerializer = KotlinxSerializer(json)
+
     private val httpClient = HttpClient {
         defaultRequest {
             header("X-Token", token)
         }
         install(JsonFeature) {
-            serializer = KotlinxSerializer()
+            serializer = jsonSerializer
         }
     }
 
-    suspend fun fetchUserInfo(): MonoUserInfo {
-        val infoString = httpClient.get<String>(url("personal/client-info"))
-        return Json.decodeFromString(infoString)
-    }
+    private suspend inline fun <reified T : Any> catching(
+        method: KFunction<Any>,
+        block: () -> T,
+    ): T = requestCatching("Monobank", logger, method.name, json, block)
+
+    suspend fun fetchUserInfo(): MonoUserInfo =
+        catching(this::fetchUserInfo) { httpClient.get(url("personal/client-info")) }
 
     suspend fun setWebHook(url: URI, port: Int): MonoStatusResponse {
         require(url.toASCIIString() == url.toString())
@@ -81,17 +87,15 @@ class MonoApi(private val token: String) {
         logger.info("Starting webhook setup server...")
         tempServer.start(wait = false)
 
-        val statusString = try {
-            httpClient.post<String>(url("personal/webhook")) {
-                body = json.write(MonoWebHookRequest(url.toString()))
+        val status =
+            catching(this::setWebHook) {
+                httpClient.post<MonoStatusResponse>(url("personal/webhook")) {
+                    body = json.write(MonoWebHookRequest(url.toString()))
+                }
             }
-        } catch (e: ResponseException) {
-            logger.error(e.response.readText())
-            throw e
-        }
         waitForWebhook.await()
         tempServer.stop(serverStopGracePeriod, serverStopGracePeriod)
-        return Json.decodeFromString(statusString)
+        return status
     }
 
     suspend fun fetchStatementItems(
@@ -104,18 +108,18 @@ class MonoApi(private val token: String) {
             delay(StatementCallRate - (currentTime - previousStatementCallTimestamp))
         }
 
-        val itemsString =
-            httpClient.get<String>(url("personal/statement/$id/${from.epochSeconds}/${to.epochSeconds}")).also {
-                previousStatementCallTimestamp = System.currentTimeMillis()
-            }
-
-        return Json.decodeFromString(itemsString)
+        return catching(this::fetchStatementItems) {
+            httpClient.get<List<MonoStatementItem>>(
+                url("personal/statement/$id/${from.epochSeconds}/${to.epochSeconds}")
+            )
+                .also {
+                    previousStatementCallTimestamp = System.currentTimeMillis()
+                }
+        }
     }
 
-    suspend fun fetchBankCurrency(): List<MonoCurrencyInfo> {
-        val infoString = httpClient.get<String>(url("bank/currency"))
-        return Json.decodeFromString(infoString)
-    }
+    suspend fun fetchBankCurrency(): List<MonoCurrencyInfo> =
+        catching(this::fetchBankCurrency) { httpClient.get(url("bank/currency")) }
 
     companion object {
         private const val StatementCallRate = 60000
@@ -130,7 +134,7 @@ class MonoApi(private val token: String) {
         ): Job {
             val server = embeddedServer(Netty, port = port) {
                 install(ContentNegotiation) {
-                    json()
+                    serialization(ContentType.Application.Json, json as StringFormat)
                 }
                 routing {
                     post(webhook.path) {

@@ -48,8 +48,6 @@ class CallbackQueryHandler(
                 )
             }
 
-        logger.info("Found callbackQuery action type $type")
-
         val updatedTransaction = dispatch(Event.Ynab.TransactionAction(type)).also {
             telegram.answerCallbackQuery(callbackQueryId)
         } ?: return
