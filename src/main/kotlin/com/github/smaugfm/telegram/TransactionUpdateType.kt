@@ -8,18 +8,18 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger { }
 
-sealed class TransactionActionType {
+sealed class TransactionUpdateType {
     abstract val transactionId: String
 
-    data class Uncategorize(override val transactionId: String) : TransactionActionType()
-    data class Unapprove(override val transactionId: String) : TransactionActionType()
-    data class Unknown(override val transactionId: String) : TransactionActionType()
-    data class MakePayee(override val transactionId: String, val payee: String) : TransactionActionType()
+    data class Uncategorize(override val transactionId: String) : TransactionUpdateType()
+    data class Unapprove(override val transactionId: String) : TransactionUpdateType()
+    data class Unknown(override val transactionId: String) : TransactionUpdateType()
+    data class MakePayee(override val transactionId: String, val payee: String) : TransactionUpdateType()
 
     companion object {
-        fun deserialize(callbackData: String, message: Message): TransactionActionType? {
+        fun deserialize(callbackData: String, message: Message): TransactionUpdateType? {
             val cls =
-                TransactionActionType::class.sealedSubclasses.find { it.simpleName == callbackData }
+                TransactionUpdateType::class.sealedSubclasses.find { it.simpleName == callbackData }
             if (cls == null) {
                 logger.error("Cannot find TransactionActionType. Data: $callbackData")
                 return null
@@ -37,11 +37,11 @@ sealed class TransactionActionType {
             }
         }
 
-        inline fun <reified T : TransactionActionType> serialize(): String {
+        inline fun <reified T : TransactionUpdateType> serialize(): String {
             return T::class.simpleName!!
         }
 
-        fun KClass<out TransactionActionType>.buttonWord(): String {
+        fun KClass<out TransactionUpdateType>.buttonWord(): String {
             return when (this) {
                 Uncategorize::class -> "категорию"
                 Unapprove::class -> "unapprove"
@@ -51,7 +51,7 @@ sealed class TransactionActionType {
             }
         }
 
-        fun KClass<out TransactionActionType>.buttonSymbol(): String {
+        fun KClass<out TransactionUpdateType>.buttonSymbol(): String {
             return when (this) {
                 Uncategorize::class -> "❌"
                 Unapprove::class -> "🚫"
@@ -61,7 +61,7 @@ sealed class TransactionActionType {
             }
         }
 
-        inline fun <reified T : TransactionActionType> buttonText(pressed: Boolean): String =
+        inline fun <reified T : TransactionUpdateType> buttonText(pressed: Boolean): String =
             if (pressed)
                 "$pressedChar${T::class.buttonWord()}"
             else

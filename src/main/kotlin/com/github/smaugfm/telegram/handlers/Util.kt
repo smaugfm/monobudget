@@ -6,9 +6,9 @@ import com.github.smaugfm.events.Event
 import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.settings.Mappings
-import com.github.smaugfm.telegram.TransactionActionType
-import com.github.smaugfm.telegram.TransactionActionType.Companion.buttonText
-import com.github.smaugfm.telegram.TransactionActionType.Companion.serialize
+import com.github.smaugfm.telegram.TransactionUpdateType
+import com.github.smaugfm.telegram.TransactionUpdateType.Companion.buttonText
+import com.github.smaugfm.telegram.TransactionUpdateType.Companion.serialize
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.util.replaceNewLines
@@ -17,17 +17,17 @@ import java.util.Currency
 import kotlin.reflect.KClass
 
 internal fun formatInlineKeyboard(
-    pressed: Set<KClass<out TransactionActionType>>,
+    pressed: Set<KClass<out TransactionUpdateType>>,
 ): InlineKeyboardMarkup {
     return InlineKeyboardMarkup(
         listOf(
             listOf(
-                button<TransactionActionType.Uncategorize>(pressed),
-                button<TransactionActionType.Unapprove>(pressed),
+                button<TransactionUpdateType.Uncategorize>(pressed),
+                button<TransactionUpdateType.Unapprove>(pressed),
             ),
             listOf(
-                button<TransactionActionType.Unknown>(pressed),
-                button<TransactionActionType.MakePayee>(pressed),
+                button<TransactionUpdateType.Unknown>(pressed),
+                button<TransactionUpdateType.MakePayee>(pressed),
             )
         )
     )
@@ -82,7 +82,7 @@ internal fun formatHTMLStatementMessage(
     }
 }
 
-internal inline fun <reified T : TransactionActionType> button(pressed: Set<KClass<out TransactionActionType>>) =
+internal inline fun <reified T : TransactionUpdateType> button(pressed: Set<KClass<out TransactionUpdateType>>) =
     with(T::class) {
         InlineKeyboardButton(
             buttonText<T>(this in pressed),

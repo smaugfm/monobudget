@@ -15,7 +15,7 @@ import com.github.smaugfm.telegram.TelegramApi
 import com.github.smaugfm.telegram.handlers.TelegramHandler
 import com.github.smaugfm.telegram.handlers.errorHandler
 import com.github.smaugfm.ynab.YnabApi
-import com.github.smaugfm.ynab.YnabHandler
+import com.github.smaugfm.ynab.handlers.YnabHandler
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging

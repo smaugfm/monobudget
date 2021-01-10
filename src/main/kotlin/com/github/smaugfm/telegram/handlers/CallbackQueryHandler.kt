@@ -10,8 +10,8 @@ import com.github.smaugfm.events.HandlersBuilder
 import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TelegramApi
-import com.github.smaugfm.telegram.TransactionActionType
-import com.github.smaugfm.telegram.TransactionActionType.Companion.buttonWord
+import com.github.smaugfm.telegram.TransactionUpdateType
+import com.github.smaugfm.telegram.TransactionUpdateType.Companion.buttonWord
 import com.github.smaugfm.ynab.YnabTransactionDetail
 import mu.KotlinLogging
 import kotlin.reflect.KClass
@@ -40,7 +40,7 @@ class CallbackQueryHandler(
         val (callbackQueryId, data, message) =
             extractFromCallbackQuery(callbackQuery) ?: return
 
-        val type = TransactionActionType.deserialize(data, message)
+        val type = TransactionUpdateType.deserialize(data, message)
             ?: return Unit.also {
                 telegram.answerCallbackQuery(
                     callbackQueryId,
@@ -48,7 +48,7 @@ class CallbackQueryHandler(
                 )
             }
 
-        val updatedTransaction = dispatch(Event.Ynab.TransactionAction(type)).also {
+        val updatedTransaction = dispatch(Event.Ynab.UpdateTransaction(type)).also {
             telegram.answerCallbackQuery(callbackQueryId)
         } ?: return
 
@@ -105,19 +105,19 @@ class CallbackQueryHandler(
         return Triple(callbackQueryId, data, message)
     }
 
-    private fun pressedButtons(oldKeyboard: InlineKeyboardMarkup): Set<KClass<out TransactionActionType>> =
+    private fun pressedButtons(oldKeyboard: InlineKeyboardMarkup): Set<KClass<out TransactionUpdateType>> =
         oldKeyboard
             .inline_keyboard
             .flatten()
-            .filter { it.text.contains(TransactionActionType.pressedChar) }
+            .filter { it.text.contains(TransactionUpdateType.pressedChar) }
             .mapNotNull { button ->
-                TransactionActionType::class.sealedSubclasses.find {
+                TransactionUpdateType::class.sealedSubclasses.find {
                     button.text.contains(it.buttonWord())
                 }
             }.toSet()
 
     private fun updateMarkupKeyboard(
-        type: TransactionActionType,
+        type: TransactionUpdateType,
         oldKeyboard: InlineKeyboardMarkup,
     ): InlineKeyboardMarkup =
         formatInlineKeyboard(pressedButtons(oldKeyboard) + type::class)

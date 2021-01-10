@@ -2,7 +2,41 @@ package com.github.smaugfm.ynab
 
 import com.github.smaugfm.serializers.LocalDateAsISOSerializer
 import kotlinx.datetime.LocalDate
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+@Serializable
+enum class YnabCleared {
+    @SerialName("cleared")
+    Cleared,
+
+    @SerialName("uncleared")
+    Uncleared,
+
+    @SerialName("reconciled")
+    Reconciled
+}
+
+@Serializable
+enum class YnabFlagColor {
+    @SerialName("red")
+    Red,
+
+    @SerialName("orange")
+    Orange,
+
+    @SerialName("yellow")
+    Yellow,
+
+    @SerialName("green")
+    Green,
+
+    @SerialName("blue")
+    Blue,
+
+    @SerialName("purple")
+    Purple,
+}
 
 @Serializable
 data class YnabPayeesResponse(
@@ -31,7 +65,7 @@ data class YnabCategoriesResponse(
 @Serializable
 data class YnabCategoryGroupsWithCategoriesWrapper(
     val category_groups: List<YnabCategoryGroupWithCategories>,
-    val server_knowledge: Long
+    val server_knowledge: Long,
 )
 
 @Serializable
@@ -40,7 +74,7 @@ data class YnabCategoryGroupWithCategories(
     val name: String,
     val hidden: Boolean,
     val deleted: Boolean,
-    val categories: List<YnabCategory>
+    val categories: List<YnabCategory>,
 )
 
 @Serializable
@@ -161,7 +195,33 @@ data class YnabTransactionDetail(
     val payee_name: String?,
     val category_name: String?,
     val subtransactions: List<YnabSubTransaction>,
-)
+) {
+    fun toSaveTransaction(): YnabSaveTransaction {
+        val t = this
+        return YnabSaveTransaction(
+            t.account_id,
+            t.date,
+            t.amount,
+            t.payee_id,
+            null,
+            t.category_id,
+            t.memo,
+            t.cleared,
+            t.approved,
+            t.flag_color,
+            t.import_id,
+            t.subtransactions.map {
+                YnabSaveSubTransaction(
+                    it.amount,
+                    it.payee_id,
+                    it.payee_name,
+                    it.category_id,
+                    it.memo
+                )
+            }
+        )
+    }
+}
 
 @Serializable
 data class YnabSubTransaction(
