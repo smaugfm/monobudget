@@ -14,8 +14,8 @@ import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TelegramApi
-import com.github.smaugfm.telegram.TransactionActionType
-import com.github.smaugfm.telegram.TransactionActionType.Companion.serialize
+import com.github.smaugfm.telegram.TransactionUpdateType
+import com.github.smaugfm.telegram.TransactionUpdateType.Companion.serialize
 import com.github.smaugfm.ynab.YnabTransactionDetail
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -100,21 +100,21 @@ class TelegramHandlerTest {
                         listOf(
                             InlineKeyboardButton(
                                 "❌категорию",
-                                callback_data = serialize<TransactionActionType.Uncategorize>()
+                                callback_data = serialize<TransactionUpdateType.Uncategorize>()
                             ),
                             InlineKeyboardButton(
                                 "\uD83D\uDEABunapprove",
-                                callback_data = serialize<TransactionActionType.Unapprove>()
+                                callback_data = serialize<TransactionUpdateType.Unapprove>()
                             ),
                         ),
                         listOf(
                             InlineKeyboardButton(
                                 "➡️невыясненные",
-                                callback_data = serialize<TransactionActionType.Unknown>()
+                                callback_data = serialize<TransactionUpdateType.Unknown>()
                             ),
                             InlineKeyboardButton(
                                 "➕payee",
-                                callback_data = serialize<TransactionActionType.MakePayee>()
+                                callback_data = serialize<TransactionUpdateType.MakePayee>()
                             ),
                         )
                     )
@@ -149,7 +149,7 @@ class TelegramHandlerTest {
                 )
             )
         }
-        val (extractedPayee, extractedId) = TransactionActionType.extractDescriptionAndTransactionId(
+        val (extractedPayee, extractedId) = TransactionUpdateType.extractDescriptionAndTransactionId(
             message
         )!!
 
@@ -202,7 +202,7 @@ class TelegramHandlerTest {
 
         val callbackQueryMock = mockk<CallbackQuery>() {
             every { id } returns "vasa"
-            every { data } returns TransactionActionType.MakePayee::class.simpleName!!
+            every { data } returns TransactionUpdateType.MakePayee::class.simpleName!!
             every { message } returns messageMock
             every { from.id } returns chatId
         }
@@ -216,10 +216,10 @@ class TelegramHandlerTest {
 
         val updatedMessageText =
             formatHTMLStatementMessage(Currency.getInstance("UAH"), monoResponse.statementItem, updatedTransaction)
-        val updatedMarkup = formatInlineKeyboard(setOf(TransactionActionType.MakePayee::class))
+        val updatedMarkup = formatInlineKeyboard(setOf(TransactionUpdateType.MakePayee::class))
 
         coVerify {
-            dispatcher.invoke(Event.Ynab.TransactionAction(TransactionActionType.MakePayee(transactionId, description)))
+            dispatcher.invoke(Event.Ynab.UpdateTransaction(TransactionUpdateType.MakePayee(transactionId, description)))
             api.editMessage(
                 chatId.toLong(),
                 messageId,

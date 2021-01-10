@@ -3,7 +3,7 @@ package com.github.smaugfm.events
 import com.elbekD.bot.types.CallbackQuery
 import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.mono.MonoWebHookResponseData
-import com.github.smaugfm.telegram.TransactionActionType
+import com.github.smaugfm.telegram.TransactionUpdateType
 import com.github.smaugfm.ynab.YnabTransactionDetail
 
 sealed class Event {
@@ -12,8 +12,8 @@ sealed class Event {
     }
 
     sealed class Ynab : Event() {
-        data class TransactionAction(
-            val type: TransactionActionType,
+        data class UpdateTransaction(
+            val type: TransactionUpdateType,
         ) : Ynab(), IEvent<YnabTransactionDetail>
     }
 
