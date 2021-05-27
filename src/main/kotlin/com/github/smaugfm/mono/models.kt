@@ -2,9 +2,9 @@ package com.github.smaugfm.mono
 
 import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import com.github.smaugfm.serializers.InstantAsLongSerializer
+import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.Instant
 import java.util.Currency
 
 typealias MonoAccountId = String

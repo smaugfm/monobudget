@@ -5,8 +5,8 @@ package com.github.smaugfm.settings
 import com.github.smaugfm.mono.MonoAccountId
 import com.github.smaugfm.serializers.CurrencyAsStringSerializer
 import com.github.smaugfm.serializers.HashBiMapAsMapSerializer
-import io.michaelrocks.bimap.BiMap
-import io.michaelrocks.bimap.HashBiMap
+import com.uchuhimo.collections.BiMap
+import com.uchuhimo.collections.emptyBiMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import mu.KotlinLogging
@@ -29,19 +29,23 @@ data class Mappings(
 
     fun getMccCategoryOverride(mccCode: Int): String? = mccToCategory[mccCode]
 
-    fun getAccountCurrency(monoAccountId: MonoAccountId): Currency? = monoAccToCurrency[monoAccountId]
+    fun getAccountCurrency(monoAccountId: MonoAccountId): Currency? =
+        monoAccToCurrency[monoAccountId]
 
-    fun getYnabAccByMono(monoAcc: String): String? = monoAcc2Ynab[monoAcc].also {
-        if (it == null)
-            logger.error("Could not find YNAB account for Mono account $monoAcc")
-    }
+    fun getYnabAccByMono(monoAcc: String): String? =
+        monoAcc2Ynab[monoAcc].also {
+            if (it == null)
+                logger.error("Could not find YNAB account for Mono account $monoAcc")
+        }
 
-    fun getTelegramChatIdAccByMono(monoAcc: String): Int? = monoAcc2Telegram[monoAcc].also {
-        if (it == null)
-            logger.error("Could not find Telegram chatID for Mono account $monoAcc")
-    }
+    fun getTelegramChatIdAccByMono(monoAcc: String): Int? =
+        monoAcc2Telegram[monoAcc].also {
+            if (it == null)
+                logger.error("Could not find Telegram chatID for Mono account $monoAcc")
+        }
 
     companion object {
-        val Empty = Mappings(HashBiMap(), emptyMap(), emptyMap(), emptyMap(), "", "")
+        val Empty =
+            Mappings(emptyBiMap(), emptyMap(), emptyMap(), emptyMap(), "", "")
     }
 }
