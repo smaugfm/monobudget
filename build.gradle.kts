@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "com.github.smaugfm"
-version = "0.2.4"
+val version: String by project
 
 val myMavenRepoReadUrl: String by project
 val myMavenRepoReadUsername: String by project
