@@ -4,7 +4,7 @@ import com.github.smaugfm.events.CompositeHandler
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TelegramApi
 
-class TelegramHandler(
+class TelegramHandlers(
     telegram: TelegramApi,
     val mappings: Mappings,
 ) : CompositeHandler(

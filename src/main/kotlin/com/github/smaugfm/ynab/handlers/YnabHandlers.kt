@@ -4,7 +4,7 @@ import com.github.smaugfm.events.CompositeHandler
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.ynab.YnabApi
 
-class YnabHandler(
+class YnabHandlers(
     ynab: YnabApi,
     mappings: Mappings,
 ) : CompositeHandler(

@@ -2,6 +2,7 @@ package com.github.smaugfm.mono
 
 import com.github.smaugfm.serializers.CurrencyAsIntSerializer
 import com.github.smaugfm.serializers.InstantAsLongSerializer
+import com.github.smaugfm.util.IErrorFormattable
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -50,7 +51,9 @@ data class MonoCurrencyInfo(
 @Serializable
 data class MonoErrorResponse(
     val errorDescription: String,
-)
+) : IErrorFormattable {
+    override fun formatError() = errorDescription
+}
 
 @Serializable
 data class MonoStatusResponse(
@@ -64,7 +67,7 @@ data class MonoStatusResponse(
 data class MonoStatementItem(
     val id: String,
     @Serializable(with = InstantAsLongSerializer::class)
-    val time: kotlinx.datetime.Instant,
+    val time: Instant,
     val description: String,
     val mcc: Int,
     val amount: Long,

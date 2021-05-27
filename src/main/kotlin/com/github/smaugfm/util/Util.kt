@@ -1,6 +1,5 @@
 package com.github.smaugfm.util
 
-import com.github.smaugfm.ynab.YnabErrorResponse
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext
@@ -37,7 +36,7 @@ fun makeJson(): Json =
         ignoreUnknownKeys = true
     }
 
-suspend inline fun <reified T : Any> requestCatching(
+suspend inline fun <reified T : Any, reified R : IErrorFormattable> requestCatching(
     serviceName: String,
     logger: KLogger,
     methodName: String,
@@ -48,9 +47,9 @@ suspend inline fun <reified T : Any> requestCatching(
         logger,
         methodName,
         { exception ->
-            StringBuilder().also {
-                json.decodeFromString<YnabErrorResponse>(exception.response.readText()).error.pp()
-            }.toString()
+            json
+                .decodeFromString<R>(exception.response.readText())
+                .formatError()
         }
     ) {
         logger.info("Performing $serviceName request $methodName")

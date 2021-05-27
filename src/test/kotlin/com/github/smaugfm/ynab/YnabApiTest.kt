@@ -4,7 +4,7 @@ import com.github.smaugfm.events.Event
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TransactionUpdateType
 import com.github.smaugfm.ynab.handlers.UpdateTransactionHandler
-import com.github.smaugfm.ynab.handlers.YnabHandler
+import com.github.smaugfm.ynab.handlers.YnabHandlers
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -16,7 +16,7 @@ class YnabApiTest {
     private val settings = Settings.loadDefault()
     private val api = YnabApi(settings.ynabToken, "692ab9be-240a-4847-96c1-80aa21709e9c")
 
-    private val handler = YnabHandler(api, settings.mappings)
+    private val handler = YnabHandlers(api, settings.mappings)
     private val accountId = "1355f021-05fc-446b-b2e8-19eb44dd8ede"
 
     @Test
@@ -57,7 +57,7 @@ class YnabApiTest {
                 "vasa",
                 null,
                 null,
-                YnabCleared.Cleared,
+                YnabCleared.cleared,
                 false,
                 null,
                 null,

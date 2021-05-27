@@ -12,10 +12,10 @@ import com.github.smaugfm.mono.MonoApi
 import com.github.smaugfm.mono.MonoApi.Companion.setupWebhookAll
 import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.telegram.TelegramApi
-import com.github.smaugfm.telegram.handlers.TelegramHandler
+import com.github.smaugfm.telegram.handlers.TelegramHandlers
 import com.github.smaugfm.telegram.handlers.errorHandler
 import com.github.smaugfm.ynab.YnabApi
-import com.github.smaugfm.ynab.handlers.YnabHandler
+import com.github.smaugfm.ynab.handlers.YnabHandlers
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -55,7 +55,8 @@ class YnabMono : CliktCommand() {
 
             if (setWebhook) {
                 logger.info("Setting up mono webhooks.")
-                monoApis.setupWebhookAll(monoWebhookUrl, monoWebhookPort ?: monoWebhookUrl.port)
+                if (!monoApis.setupWebhookAll(monoWebhookUrl, monoWebhookPort ?: monoWebhookUrl.port))
+                    return@runBlocking
             } else {
                 logger.info("Skipping mono webhook setup.")
             }
@@ -64,8 +65,8 @@ class YnabMono : CliktCommand() {
                 { dispatcher, _, _ ->
                     errorHandler(dispatcher, settings.mappings)
                 },
-                YnabHandler(ynabApi, settings.mappings),
-                TelegramHandler(telegramApi, settings.mappings)
+                YnabHandlers(ynabApi, settings.mappings),
+                TelegramHandlers(telegramApi, settings.mappings)
             )
 
             logger.info("Events dispatcher created.")

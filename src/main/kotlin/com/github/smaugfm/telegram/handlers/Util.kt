@@ -100,7 +100,7 @@ suspend fun errorHandler(
             dispatcher(
                 Event.Telegram.SendHTMLMessage(
                     chatId,
-                    TelegramHandler.UNKNOWN_ERROR_MSG,
+                    TelegramHandlers.UNKNOWN_ERROR_MSG,
                     null
                 )
             )

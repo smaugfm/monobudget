@@ -7,27 +7,35 @@ import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
-import com.github.smaugfm.util.ExpiryContainer
+import com.github.smaugfm.util.ExpiringMap
 import com.github.smaugfm.ynab.YnabApi
+import com.github.smaugfm.ynab.YnabCleared
 import com.github.smaugfm.ynab.YnabSaveTransaction
 import com.github.smaugfm.ynab.YnabTransactionDetail
+import com.github.smaugfm.ynab.YnabTransferPayeeIdsCache
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.sync.Mutex
+import mu.KotlinLogging
+import kotlin.math.abs
 import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 
-private data class NotCreated(val statement: MonoStatementItem, val transaction: YnabSaveTransaction)
-private data class Created(val statement: MonoStatementItem, val transaction: YnabTransactionDetail)
+private val logger = KotlinLogging.logger {}
 
 class CreateTransactionHandler(
     private val ynab: YnabApi,
-    mappings: Mappings,
+    private val mappings: Mappings,
 ) : Handler() {
     private val webhookResponseToYnabTransactionConverter = MonoWebhookResponseToYnabTransactionConverter(mappings) {
         ynab.getPayees()
     }
+    private val transferPayeeIdsCache = YnabTransferPayeeIdsCache(ynab)
+    private val recentTransactions =
+        ExpiringMap<MonoStatementItem, Deferred<YnabTransactionDetail>>(Duration.minutes(1))
+    private val incomingMutex = Mutex(false)
+
     private fun MonoWebHookResponseData.convertToYnab(): YnabSaveTransaction =
         webhookResponseToYnabTransactionConverter(this)
-
-    private val recentTransactions = ExpiryContainer<Created>(Duration.minutes(1).toJavaDuration())
 
     override fun HandlersBuilder.registerHandlerFunctions() {
         registerUnit(this@CreateTransactionHandler::handle)
@@ -35,49 +43,89 @@ class CreateTransactionHandler(
 
     private suspend fun handle(
         dispatcher: IEventDispatcher,
-        e: Event.Mono.NewStatementReceived,
+        e: Event.Mono.WebHookQueried,
     ) {
-        val saveTransaction = e.data.convertToYnab()
+        val webhookResponseData = e.data
 
-        val target = NotCreated(e.data.statementItem, saveTransaction)
+        if (!UniqueWebhookResponses.isUnique(webhookResponseData)) {
+            logger.info("Duplicate ${MonoWebHookResponseData::class.simpleName} $webhookResponseData")
+            return
+        }
 
-        val transfer = recentTransactions.consumeCollection {
-            firstOrNull {
-                checkIsTransferTransactions(
-                    target,
-                    it
-                )
+        incomingMutex.lock()
+
+        try {
+            val transferDeferred = recentTransactions.consumeCollection {
+                entries.firstOrNull {
+                    checkIsTransferTransactions(
+                        webhookResponseData.statementItem,
+                        it.key
+                    )
+                }?.value
             }
-        }
 
-        if (transfer != null) {
-            createTransferTransaction(saveTransaction, transfer.transaction)
-        } else {
-            createSimpleTransaction(dispatcher, e.data, saveTransaction)
-        }
-    }
+            val newTransaction = if (transferDeferred != null) {
+                incomingMutex.unlock()
+                processTransfer(webhookResponseData, transferDeferred)
+            } else {
+                val transactionDetailDeferred = CompletableDeferred<YnabTransactionDetail>()
+                recentTransactions.add(webhookResponseData.statementItem, transactionDetailDeferred)
 
-    @Suppress("FunctionOnlyReturningConstant", "UNUSED_PARAMETER")
-    private fun checkIsTransferTransactions(a: NotCreated, b: Created): Boolean {
-        return false
-    }
+                incomingMutex.unlock()
+                processSimple(webhookResponseData).also {
+                    transactionDetailDeferred.complete(it)
+                }
+            }
 
-    @Suppress("UNUSED_PARAMETER")
-    private fun createTransferTransaction(toCreate: YnabSaveTransaction, transferTo: YnabTransactionDetail) {
-        // do nothing
-    }
-
-    private suspend fun createSimpleTransaction(
-        dispatcher: IEventDispatcher,
-        webhookResponse: MonoWebHookResponseData,
-        newTransaction: YnabSaveTransaction,
-    ) {
-        val transactionDetail = ynab.createTransaction(newTransaction)
-        dispatcher(
-            Event.Telegram.SendStatementMessage(
-                webhookResponse,
-                transactionDetail,
+            dispatcher(
+                Event.Telegram.SendStatementMessage(
+                    webhookResponseData,
+                    newTransaction
+                )
             )
+        } finally {
+            if (incomingMutex.isLocked)
+                incomingMutex.unlock()
+        }
+    }
+
+    private fun checkIsTransferTransactions(new: MonoStatementItem, existing: MonoStatementItem): Boolean {
+        val amountMatch = abs(new.amount) == abs(existing.amount)
+        val currencyMatch = new.currencyCode == existing.currencyCode
+        val signMatch = new.amount > 0 && existing.amount < 0 || new.amount < 0 && existing.amount > 0
+        val mccMatch = new.mcc == TRANSFER_MCC && existing.mcc == TRANSFER_MCC
+
+        return amountMatch && currencyMatch && signMatch && mccMatch
+    }
+
+    private suspend fun processTransfer(
+        new: MonoWebHookResponseData,
+        existingDeferred: Deferred<YnabTransactionDetail>,
+    ): YnabTransactionDetail {
+        val transferPayeeId =
+            transferPayeeIdsCache.get(mappings.getYnabAccByMono(new.account)!!)
+
+        val existing = existingDeferred.await()
+        val existingUpdated = ynab
+            .updateTransaction(
+                existing.id,
+                existing
+                    .toSaveTransaction()
+                    .copy(payee_id = transferPayeeId, memo = "Перечисление между счетами")
+            )
+
+        val transfer = ynab.getTransaction(existingUpdated.transfer_transaction_id!!)
+
+        return ynab.updateTransaction(
+            transfer.id,
+            transfer.toSaveTransaction().copy(cleared = YnabCleared.cleared)
         )
+    }
+
+    private suspend fun processSimple(webhookResponse: MonoWebHookResponseData): YnabTransactionDetail =
+        ynab.createTransaction(webhookResponse.convertToYnab())
+
+    companion object {
+        private const val TRANSFER_MCC = 4829
     }
 }

@@ -44,7 +44,7 @@ class CallbackQueryHandler(
             ?: return Unit.also {
                 telegram.answerCallbackQuery(
                     callbackQueryId,
-                    TelegramHandler.UNKNOWN_ERROR_MSG
+                    TelegramHandlers.UNKNOWN_ERROR_MSG
                 )
             }
 
