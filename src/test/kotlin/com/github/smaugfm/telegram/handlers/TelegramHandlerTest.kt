@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.util.Currency
 import java.util.UUID
+import kotlin.time.Duration
 import kotlin.time.days
 
 class TelegramHandlerTest {
@@ -45,7 +46,9 @@ class TelegramHandlerTest {
         every { mappings.getTelegramChatIds() } returns setOf(chatId)
 
         val statementItem = mockk<MonoStatementItem>()
-        every { statementItem.time } returns Clock.System.now() - 2.days
+        every { statementItem.time } returns Clock.System.now() - Duration.days(
+            2
+        )
         every { statementItem.amount } returns -11500
         every { statementItem.operationAmount } returns -11500
         every { statementItem.mcc } returns 5722
@@ -158,6 +161,7 @@ class TelegramHandlerTest {
     }
 
     @Test
+    @Suppress("LongMethod")
     fun `Test callbackQueryHandler`() {
         val description = "Галинка Савченко"
         val transactionId = UUID.randomUUID().toString()

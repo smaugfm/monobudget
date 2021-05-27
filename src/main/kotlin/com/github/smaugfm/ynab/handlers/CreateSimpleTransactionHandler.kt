@@ -11,7 +11,7 @@ import com.github.smaugfm.util.ExpiryContainer
 import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.ynab.YnabSaveTransaction
 import com.github.smaugfm.ynab.YnabTransactionDetail
-import kotlin.time.minutes
+import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
 private data class NotCreated(val statement: MonoStatementItem, val transaction: YnabSaveTransaction)
@@ -19,12 +19,15 @@ private data class Created(val statement: MonoStatementItem, val transaction: Yn
 
 class CreateTransactionHandler(
     private val ynab: YnabApi,
-    private val mappings: Mappings,
+    mappings: Mappings,
 ) : Handler() {
-    private val converter = MonoWebhookResponseToYnabTransactionConverter(mappings) {
+    private val webhookResponseToYnabTransactionConverter = MonoWebhookResponseToYnabTransactionConverter(mappings) {
         ynab.getPayees()
     }
-    private val recentTransactions = ExpiryContainer<Created>(1.minutes.toJavaDuration())
+    private fun MonoWebHookResponseData.convertToYnab(): YnabSaveTransaction =
+        webhookResponseToYnabTransactionConverter(this)
+
+    private val recentTransactions = ExpiryContainer<Created>(Duration.minutes(1).toJavaDuration())
 
     override fun HandlersBuilder.registerHandlerFunctions() {
         registerUnit(this@CreateTransactionHandler::handle)
@@ -34,7 +37,8 @@ class CreateTransactionHandler(
         dispatcher: IEventDispatcher,
         e: Event.Mono.NewStatementReceived,
     ) {
-        val saveTransaction = converter(e.data)
+        val saveTransaction = e.data.convertToYnab()
+
         val target = NotCreated(e.data.statementItem, saveTransaction)
 
         val transfer = recentTransactions.consumeCollection {
@@ -53,11 +57,12 @@ class CreateTransactionHandler(
         }
     }
 
-    @Suppress("FunctionOnlyReturningConstant")
+    @Suppress("FunctionOnlyReturningConstant", "UNUSED_PARAMETER")
     private fun checkIsTransferTransactions(a: NotCreated, b: Created): Boolean {
         return false
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun createTransferTransaction(toCreate: YnabSaveTransaction, transferTo: YnabTransactionDetail) {
         // do nothing
     }

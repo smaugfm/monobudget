@@ -43,7 +43,7 @@ class PayeeSuggestor(private val ignoreCase: Boolean = true) {
     private fun jaroWinklerSimilarity(s1: String, s2: String): Double {
         // Unlike classic Jaro-Winkler, we don't set a limit on the prefix length
         val prefixLength = s1.commonPrefixWith(s2, ignoreCase).length
-        val case = { s: String -> if (ignoreCase) s.toLowerCase() else s }
+        val case = { s: String -> if (ignoreCase) s.lowercase() else s }
         val jaro = jaroSimilarity(case(s1), case(s2))
         val winkler = jaro + (0.1 * prefixLength * (1 - jaro))
         return min(winkler, 1.0)

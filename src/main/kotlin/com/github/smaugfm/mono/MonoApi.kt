@@ -28,6 +28,7 @@ import io.ktor.serialization.serialization
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -126,6 +127,7 @@ class MonoApi(private val token: String) {
         private const val serverStopGracePeriod = 100L
         private fun url(endpoint: String) = "https://api.monobank.ua/$endpoint"
 
+        @OptIn(DelicateCoroutinesApi::class)
         fun startMonoWebhookServerAsync(
             context: CoroutineContext,
             webhook: URI,

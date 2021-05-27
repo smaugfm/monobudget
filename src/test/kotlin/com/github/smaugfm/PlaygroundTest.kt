@@ -9,9 +9,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import kotlin.time.days
+import kotlin.time.Duration
 
-class Playground {
+class PlaygroundTest {
     @Test
     @Disabled
     fun `Get last 29 days Mono transactions`() {
@@ -23,9 +23,10 @@ class Playground {
             val mono = MonoApi(settings.monoTokens.drop(1).first())
             val ynab = YnabApi(settings.ynabToken, settings.ynabBudgetId)
             val statementItems = mono.fetchStatementItems(
-                settings.mappings.getMonoAccounts().find { it.startsWith("3") }!!,
-                Clock.System.now() - (window + untilDays).days,
-                Clock.System.now() - untilDays.days,
+                settings.mappings.getMonoAccounts()
+                    .find { it.startsWith("3") }!!,
+                Clock.System.now() - Duration.days((window + untilDays)),
+                Clock.System.now() - Duration.days(untilDays),
             )
 
             val payees = ynab.getPayees()

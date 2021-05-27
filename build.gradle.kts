@@ -70,6 +70,7 @@ tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
+        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
     }
 
@@ -92,7 +93,7 @@ tasks {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("io.michaelrocks:bimap:_")
+    implementation("com.uchuhimo:kotlinx-bimap:_")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:_")
     implementation("com.github.elbekD:kt-telegram-bot:_")
     implementation("com.github.ajalt.clikt:clikt:_")

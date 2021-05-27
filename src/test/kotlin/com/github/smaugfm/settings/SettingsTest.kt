@@ -3,7 +3,7 @@ package com.github.smaugfm.settings
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isSuccess
-import com.github.smaugfm.util.HashBiMap
+import com.uchuhimo.collections.biMapOf
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
 import java.util.Currency
@@ -19,7 +19,7 @@ class SettingsTest {
             "vasa14",
             "vasa1",
             Mappings(
-                HashBiMap.of(
+                biMapOf(
                     "vasa2" to "vasa3",
                     "vasa4" to "vasa5"
                 ),

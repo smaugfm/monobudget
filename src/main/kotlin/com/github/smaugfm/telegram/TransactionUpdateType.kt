@@ -2,6 +2,7 @@ package com.github.smaugfm.telegram
 
 import com.elbekD.bot.types.Message
 import com.elbekD.bot.types.MessageEntity
+import io.ktor.util.error
 import mu.KotlinLogging
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -47,7 +48,7 @@ sealed class TransactionUpdateType {
                 Unapprove::class -> "unapprove"
                 Unknown::class -> "невыясненные"
                 MakePayee::class -> "payee"
-                else -> throw IllegalArgumentException()
+                else -> throw IllegalArgumentException("Unknown ${TransactionUpdateType::class.simpleName} $this")
             }
         }
 
@@ -57,7 +58,7 @@ sealed class TransactionUpdateType {
                 Unapprove::class -> "🚫"
                 Unknown::class -> "➡️"
                 MakePayee::class -> "➕"
-                else -> throw IllegalArgumentException()
+                else -> throw IllegalArgumentException("Unknown ${TransactionUpdateType::class.simpleName} $this")
             }
         }
 
@@ -72,6 +73,7 @@ sealed class TransactionUpdateType {
             val id = try {
                 UUID.fromString(text.substring(text.length - UUIDwidth, text.length))
             } catch (e: IllegalArgumentException) {
+                logger.error(e)
                 return null
             }.toString()
             val payee =

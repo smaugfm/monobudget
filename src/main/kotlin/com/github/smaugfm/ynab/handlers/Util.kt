@@ -7,16 +7,19 @@ import com.github.smaugfm.util.replaceNewLines
 import com.github.smaugfm.ynab.YnabCleared
 import com.github.smaugfm.ynab.YnabPayee
 import com.github.smaugfm.ynab.YnabSaveTransaction
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Duration
 import kotlin.time.hours
 
 private val payeeSuggestor = PayeeSuggestor()
 private const val MONO_TO_YNAB_ADJUST = 10
 
+@OptIn(DelicateCoroutinesApi::class)
 class MonoWebhookResponseToYnabTransactionConverter(
     private val mappings: Mappings,
     private val getPayees: suspend () -> List<YnabPayee>,
@@ -27,7 +30,7 @@ class MonoWebhookResponseToYnabTransactionConverter(
         GlobalScope.launch {
             while (true) {
                 payees = getPayees()
-                delay(1.hours)
+                delay(Duration.hours(1))
             }
         }
     }

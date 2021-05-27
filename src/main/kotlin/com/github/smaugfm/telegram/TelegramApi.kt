@@ -6,6 +6,7 @@ import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.events.IEventDispatcher
 import com.github.smaugfm.util.pp
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
@@ -35,9 +36,11 @@ class TelegramApi(
             chatId,
             text,
             parseMode,
+            null,
             disableWebPagePreview,
             disableNotification,
             replyTo,
+            null,
             markup
         ).asDeferred().also {
             logger.info("Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}")
@@ -59,6 +62,7 @@ class TelegramApi(
             inlineMessageId,
             text,
             parseMode,
+            null,
             disableWebPagePreview,
             markup
         ).asDeferred().also {
@@ -70,6 +74,7 @@ class TelegramApi(
         bot.answerCallbackQuery(id, text = text).asDeferred().await()
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun startServer(
         context: CoroutineContext,
         dispatcher: IEventDispatcher,
