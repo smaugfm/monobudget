@@ -14,7 +14,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Duration
-import kotlin.time.hours
 
 private val payeeSuggestor = PayeeSuggestor()
 private const val MONO_TO_YNAB_ADJUST = 10
@@ -50,7 +49,7 @@ class MonoWebhookResponseToYnabTransactionConverter(
             payee_name = suggestedPayee,
             category_id = mccCategoryOverride,
             memo = response.statementItem.description.replaceNewLines(),
-            cleared = YnabCleared.Cleared,
+            cleared = YnabCleared.cleared,
             approved = true,
             flag_color = null,
             import_id = null,

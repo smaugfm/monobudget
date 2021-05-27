@@ -1,41 +1,27 @@
+@file:Suppress("EnumEntryName", "unused", "EnumNaming")
+
 package com.github.smaugfm.ynab
 
 import com.github.smaugfm.serializers.LocalDateAsISOSerializer
+import com.github.smaugfm.util.IErrorFormattable
 import kotlinx.datetime.LocalDate
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 enum class YnabCleared {
-    @SerialName("cleared")
-    Cleared,
-
-    @SerialName("uncleared")
-    Uncleared,
-
-    @SerialName("reconciled")
-    Reconciled
+    cleared,
+    uncleared,
+    reconciled
 }
 
 @Serializable
 enum class YnabFlagColor {
-    @SerialName("red")
-    Red,
-
-    @SerialName("orange")
-    Orange,
-
-    @SerialName("yellow")
-    Yellow,
-
-    @SerialName("green")
-    Green,
-
-    @SerialName("blue")
-    Blue,
-
-    @SerialName("purple")
-    Purple,
+    red,
+    orange,
+    yellow,
+    green,
+    blue,
+    purple,
 }
 
 @Serializable
@@ -47,6 +33,59 @@ data class YnabPayeesResponse(
 data class YnabPayeesWrapper(
     val payees: List<YnabPayee>,
     val server_knowledge: Long,
+)
+
+@Serializable
+data class YnabAccountsResponse(
+    val data: YnabAccountsWrapper
+)
+
+@Serializable
+data class YnabAccountsWrapper(
+    val accounts: List<YnabAccount>,
+    val server_knowledge: Long,
+)
+
+@Serializable
+data class YnabAccountResponse(
+    val data: YnabAccountWrapper
+)
+
+@Serializable
+data class YnabAccountWrapper(
+    val account: YnabAccount,
+)
+
+@Serializable
+enum class YnabAccountType {
+    checking,
+    savings,
+    cash,
+    creditCard,
+    lineOfCredit,
+    otherAsset,
+    otherLiability,
+    payPal,
+    merchantAccount,
+    investmentAccount,
+    mortgage
+}
+
+@Serializable
+data class YnabAccount(
+    val id: String,
+    val name: String,
+    val type: YnabAccountType,
+    val on_budget: Boolean,
+    val closed: Boolean,
+    val note: String?,
+    val balance: Long,
+    val cleared_balance: Long,
+    val uncleared_balance: Long,
+    val transfer_payee_id: String,
+    val direct_import_linked: Boolean,
+    val direct_import_in_error: Boolean,
+    val deleted: Boolean,
 )
 
 @Serializable
@@ -241,7 +280,9 @@ data class YnabSubTransaction(
 @Serializable
 data class YnabErrorResponse(
     val error: YnabErrorDetail,
-)
+) : IErrorFormattable {
+    override fun formatError() = with(error) { "$name: $detail" }
+}
 
 @Serializable
 data class YnabErrorDetail(

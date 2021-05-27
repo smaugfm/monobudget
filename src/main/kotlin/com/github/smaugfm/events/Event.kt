@@ -8,7 +8,7 @@ import com.github.smaugfm.ynab.YnabTransactionDetail
 
 sealed class Event {
     sealed class Mono : Event() {
-        data class NewStatementReceived(val data: MonoWebHookResponseData) : Mono(), UnitEvent
+        data class WebHookQueried(val data: MonoWebHookResponseData) : Mono(), UnitEvent
     }
 
     sealed class Ynab : Event() {

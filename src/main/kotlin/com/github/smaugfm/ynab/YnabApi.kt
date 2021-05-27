@@ -44,7 +44,21 @@ class YnabApi(
     private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = requestCatching("YNAB", logger, method.name, json, block)
+    ): T = requestCatching<T, YnabErrorResponse>("YNAB", logger, method.name, json, block)
+
+    suspend fun getAccounts(): List<YnabAccount> =
+        catching(this::getPayees) {
+            httpClient.get<YnabAccountsResponse>(
+                url("budgets", budgetId, "accounts")
+            )
+        }.data.accounts
+
+    suspend fun getAccount(accountId: String): YnabAccount =
+        catching(this::getAccount) {
+            httpClient.get<YnabAccountResponse>(
+                url("budgets", budgetId, "accounts", accountId)
+            )
+        }.data.account
 
     suspend fun getPayees(): List<YnabPayee> =
         catching(this::getPayees) {

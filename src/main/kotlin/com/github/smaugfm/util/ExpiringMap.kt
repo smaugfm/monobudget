@@ -4,30 +4,29 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
-import java.time.Duration
 import java.util.concurrent.Executors
+import kotlin.time.Duration
+import kotlin.time.toJavaDuration
 
-class ExpiryContainer<T>(val expiry: Duration) {
-    private val map = mutableMapOf<Long, T>()
-    private var counter = 0L
+class ExpiringMap<T, K>(val expirationTime: Duration) {
+    private val map = mutableMapOf<T, K>()
     private val coroutineScope =
         CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
     @Synchronized
-    fun add(item: T) {
-        val actualCounter = counter++
-        map[actualCounter] = item
+    fun add(item: T, value: K) {
+        map[item] = value
         coroutineScope.launch {
-            delay(expiry)
-            expire(actualCounter)
+            delay(expirationTime.toJavaDuration())
+            expire(item)
         }
     }
 
     @Synchronized
-    private fun expire(counter: Long) {
-        map.remove(counter)
+    private fun expire(item: T) {
+        map.remove(item)
     }
 
     @Synchronized
-    fun <K> consumeCollection(block: Collection<T>.() -> K) = map.values.block()
+    fun <R> consumeCollection(block: Map<T, K>.() -> R): R = map.block()
 }

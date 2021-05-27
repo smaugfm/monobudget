@@ -20,6 +20,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receive
 import io.ktor.request.uri
+import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.get
 import io.ktor.routing.post
@@ -27,6 +28,7 @@ import io.ktor.routing.routing
 import io.ktor.serialization.serialization
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.util.error
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -65,12 +67,13 @@ class MonoApi(private val token: String) {
     private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = requestCatching("Monobank", logger, method.name, json, block)
+    ): T = requestCatching<T, MonoErrorResponse>("Monobank", logger, method.name, json, block)
 
+    @Suppress("unused")
     suspend fun fetchUserInfo(): MonoUserInfo =
         catching(this::fetchUserInfo) { httpClient.get(url("personal/client-info")) }
 
-    suspend fun setWebHook(url: URI, port: Int): MonoStatusResponse {
+    suspend fun setWebHook(url: URI, port: Int): Boolean {
         require(url.toASCIIString() == url.toString())
 
         val waitForWebhook = CompletableDeferred<Unit>()
@@ -88,15 +91,21 @@ class MonoApi(private val token: String) {
         logger.info("Starting webhook setup server...")
         tempServer.start(wait = false)
 
-        val status =
+        try {
             catching(this::setWebHook) {
                 httpClient.post<MonoStatusResponse>(url("personal/webhook")) {
                     body = json.write(MonoWebHookRequest(url.toString()))
                 }
             }
+        } catch (e: Throwable) {
+            logger.error(e)
+            tempServer.stop(serverStopGracePeriod, serverStopGracePeriod)
+            return false
+        }
         waitForWebhook.await()
         tempServer.stop(serverStopGracePeriod, serverStopGracePeriod)
-        return status
+
+        return true
     }
 
     suspend fun fetchStatementItems(
@@ -119,6 +128,7 @@ class MonoApi(private val token: String) {
         }
     }
 
+    @Suppress("unused")
     suspend fun fetchBankCurrency(): List<MonoCurrencyInfo> =
         catching(this::fetchBankCurrency) { httpClient.get(url("bank/currency")) }
 
@@ -140,15 +150,14 @@ class MonoApi(private val token: String) {
                 }
                 routing {
                     post(webhook.path) {
-                        call.request.origin.host
                         logger.info(
                             "Webhook queried. " +
                                 "Host: ${call.request.origin.remoteHost} " +
                                 "Uri: ${call.request.uri}"
                         )
                         val response = call.receive<MonoWebhookResponse>()
-                        call.response.status(HttpStatusCode.OK)
-                        dispatcher(Event.Mono.NewStatementReceived(response.data))
+                        call.respond(HttpStatusCode.OK, "OK")
+                        dispatcher(Event.Mono.WebHookQueried(response.data))
                     }
                 }
             }
@@ -157,14 +166,7 @@ class MonoApi(private val token: String) {
             }
         }
 
-        suspend fun Collection<MonoApi>.setupWebhookAll(webhook: URI, port: Int) {
-            for (it in this) {
-                try {
-                    it.setWebHook(webhook, port)
-                } catch (e: Throwable) {
-                    logger.error("Error setting webhook.", e)
-                }
-            }
-        }
+        suspend fun Collection<MonoApi>.setupWebhookAll(webhook: URI, port: Int): Boolean =
+            this.all { it.setWebHook(webhook, port) }
     }
 }
