@@ -12,4 +12,9 @@ FROM openjdk:11-alpine
 COPY --from=BUILD /opt/app/build/libs/ynab-mono-*-fat.jar /bin/runner/ynab-mono.jar
 WORKDIR /bin/runner
 
-CMD ["java", "-jar", "ynab-mono.jar"]
+ARG monoWebhookUrl
+ARG monoWebhookPort
+
+CMD java -jar ynab-mono.jar --set-webhook --settings settings.json \
+    --mono-webhook-url $monoWebhookUrl \
+    --mono-webhook-port $monoWebhookPort
