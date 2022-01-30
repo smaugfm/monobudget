@@ -7,7 +7,7 @@ RUN gradle dependencies
 COPY src ./src
 RUN gradle shadowJar
 
-FROM openjdk:11-alpine
+FROM openjdk:11-jre-slim
 
 COPY --from=BUILD /opt/app/build/libs/ynab-mono-*-fat.jar /bin/runner/ynab-mono.jar
 WORKDIR /bin/runner
@@ -15,6 +15,6 @@ WORKDIR /bin/runner
 ARG monoWebhookUrl
 ARG monoWebhookPort
 
-CMD java -jar ynab-mono.jar --set-webhook --settings settings.json \
+CMD java -jar ynab-mono.jar --set-webhook --settings /opt/app/settings.json \
     --mono-webhook-url $monoWebhookUrl \
     --mono-webhook-port $monoWebhookPort
