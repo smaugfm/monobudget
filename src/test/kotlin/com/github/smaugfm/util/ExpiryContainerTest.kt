@@ -7,7 +7,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import kotlin.time.Duration
-import kotlin.time.toJavaDuration
 
 class ExpiryContainerTest {
 

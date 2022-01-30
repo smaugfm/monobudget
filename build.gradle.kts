@@ -14,22 +14,12 @@ plugins {
 group = "com.github.smaugfm"
 val version: String by project
 
-val myMavenRepoReadUrl: String by project
-val myMavenRepoReadUsername: String by project
-val myMavenRepoReadPassword: String by project
-val githubToken: String by project
+val githubToken: String? by project
 
 repositories {
     maven(url = "https://jitpack.io")
     mavenCentral()
-    jcenter()
     maven(url = "https://kotlin.bintray.com/kotlinx")
-    maven(url = myMavenRepoReadUrl) {
-        credentials {
-            username = myMavenRepoReadUsername
-            password = myMavenRepoReadPassword
-        }
-    }
 }
 
 detekt {
@@ -50,16 +40,18 @@ githook {
     }
 }
 
-githubRelease {
-    token(githubToken)
-    prerelease.set(true)
-    overwrite.set(true)
-    dryRun.set(false)
-    releaseAssets.setFrom(
-        files(
-            "$buildDir/libs/${project.name}-${project.version}-fat.jar"
+if (githubToken != null) {
+    githubRelease {
+        token(githubToken)
+        prerelease.set(true)
+        overwrite.set(true)
+        dryRun.set(false)
+        releaseAssets.setFrom(
+            files(
+                "$buildDir/libs/${project.name}-${project.version}-fat.jar"
+            )
         )
-    )
+    }
 }
 
 tasks.withType<GithubReleaseTask>().configureEach {
@@ -68,7 +60,7 @@ tasks.withType<GithubReleaseTask>().configureEach {
 
 tasks {
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "1.8"
+        kotlinOptions.jvmTarget = "11"
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
         kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
