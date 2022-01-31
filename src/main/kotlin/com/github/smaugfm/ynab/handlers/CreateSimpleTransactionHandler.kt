@@ -28,7 +28,7 @@ class CreateTransactionHandler(
     private val mappings: Mappings,
 ) : Handler() {
     private val webhookResponseToYnabTransactionConverter = MonoWebhookResponseToYnabTransactionConverter(mappings) {
-        ynab.getPayees()
+        ynab.getPayees(false)
     }
     private val transferPayeeIdsCache = YnabTransferPayeeIdsCache(ynab)
     private val recentTransactions =
