@@ -10,6 +10,5 @@ RUN gradle shadowJar
 FROM openjdk:11-jre-slim
 
 COPY --from=BUILD /opt/app/build/libs/ynab-mono-*-fat.jar /opt/app/ynab-mono.jar
-WORKDIR /bin/runner
 ARG WEBHOOK_PORT=80
 EXPOSE $WEBHOOK_PORT
