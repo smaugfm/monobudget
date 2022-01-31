@@ -38,7 +38,7 @@ fun makeJson(): Json =
 
 suspend inline fun <reified T : Any, reified R : IErrorFormattable> requestCatching(
     serviceName: String,
-    logger: KLogger,
+    logger: KLogger?,
     methodName: String,
     json: Json,
     block: () -> T,
@@ -52,14 +52,14 @@ suspend inline fun <reified T : Any, reified R : IErrorFormattable> requestCatch
                 .formatError()
         }
     ) {
-        logger.info("Performing $serviceName request $methodName")
+        logger?.info("Performing $serviceName request $methodName")
         block().also {
-            logger.info("Response:\n\t${it.pp()}")
+            logger?.info("Response:\n\t${it.pp()}")
         }
     }
 
 inline fun <reified T> catchAndLog(
-    logger: KLogger,
+    logger: KLogger?,
     methodName: String,
     errorHandler: (ResponseException) -> String,
     block: () -> T,
@@ -68,7 +68,7 @@ inline fun <reified T> catchAndLog(
         block()
     } catch (e: ResponseException) {
         val error = errorHandler(e)
-        logger.info("Request failed $methodName. Error response:\n\t$error")
+        logger?.info("Request failed $methodName. Error response:\n\t$error")
         throw e
     }
 
