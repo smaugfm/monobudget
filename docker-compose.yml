@@ -5,8 +5,11 @@ services:
     build:
       context: .
       args:
-        monoWebhookUrl: https://example.com
-        monoWebhookPort: 3000
+        monoWebhookPort: ${MONO_WEBHOOK_PORT}
     restart: unless-stopped
+    working_dir: /opt/app
+    command: java -jar ynab-mono.jar --set-webhook --settings settings.json --mono-webhook-url ${MONO_WEBHOOK_URL} --mono-webhook-port ${MONO_WEBHOOK_PORT}
+    ports:
+      - ${OUTER_PORT}:${MONO_WEBHOOK_PORT}
     volumes:
-      - ./settings.json:/opt/app/settings.json:ro
+      - ${SETTINGS_FILE_PATH}:/opt/app/settings.json:ro

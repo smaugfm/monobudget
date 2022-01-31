@@ -9,15 +9,7 @@ RUN gradle shadowJar
 
 FROM openjdk:11-jre-slim
 
-COPY --from=BUILD /opt/app/build/libs/ynab-mono-*-fat.jar /bin/runner/ynab-mono.jar
+COPY --from=BUILD /opt/app/build/libs/ynab-mono-*-fat.jar /opt/app/ynab-mono.jar
 WORKDIR /bin/runner
-
-ARG monoWebhookUrl
 ARG monoWebhookPort
-ENV envMonoWebhookUrl=$monoWebhookUrl
-ENV envMonoWebhookPort=$monoWebhookPort
-
 EXPOSE $monoWebhookPort
-CMD java -jar ynab-mono.jar --set-webhook --settings /opt/app/settings.json \
-    --mono-webhook-url $envMonoWebhookUrl \
-    --mono-webhook-port $envMonoWebhookPort
