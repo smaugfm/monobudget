@@ -2,7 +2,6 @@ package com.github.smaugfm
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.convert
-import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
@@ -29,7 +28,9 @@ class YnabMono : CliktCommand() {
     val setWebhook by option().flag(default = false)
     val monoWebhookUrl by option().convert { URI(it) }.required()
     val monoWebhookPort by option().int()
-    val settings by option("--settings").convert { Settings.load(Paths.get(it)) }.default(Settings.loadDefault())
+    val settings by option().convert {
+        Settings.load(Paths.get(it))
+    }.required()
 
     private val serversCoroutinesContext = Executors.newFixedThreadPool(2).asCoroutineDispatcher()
 
@@ -92,5 +93,6 @@ class YnabMono : CliktCommand() {
 }
 
 fun main(args: Array<String>) {
+    logger.info("Passed args: ${args.map { "\"$it\"" }.joinToString(", ")}")
     YnabMono().main(args)
 }

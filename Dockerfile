@@ -14,8 +14,10 @@ WORKDIR /bin/runner
 
 ARG monoWebhookUrl
 ARG monoWebhookPort
+ENV envMonoWebhookUrl=$monoWebhookUrl
+ENV envMonoWebhookPort=$monoWebhookPort
 
 EXPOSE $monoWebhookPort
 CMD java -jar ynab-mono.jar --set-webhook --settings /opt/app/settings.json \
-    --mono-webhook-url $monoWebhookUrl \
-    --mono-webhook-port $monoWebhookPort
+    --mono-webhook-url $envMonoWebhookUrl \
+    --mono-webhook-port $envMonoWebhookPort

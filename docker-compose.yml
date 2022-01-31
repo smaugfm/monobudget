@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  ynab-mono:
+    build:
+      context: .
+      args:
+        monoWebhookUrl: https://example.com
+        monoWebhookPort: 3000
+    restart: unless-stopped
+    volumes:
+      - ./settings.json:/opt/app/settings.json:ro
