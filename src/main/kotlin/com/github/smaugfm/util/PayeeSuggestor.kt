@@ -3,7 +3,7 @@ package com.github.smaugfm.util
 import kotlin.math.max
 import kotlin.math.min
 
-class PayeeSuggestor(private val ignoreCase: Boolean = true) {
+class PayeeSuggestor {
 
     private fun jaroSimilarity(s1: String, s2: String): Double {
         if (s1.isEmpty() && s2.isEmpty()) return 1.0
@@ -40,7 +40,7 @@ class PayeeSuggestor(private val ignoreCase: Boolean = true) {
         }
     }
 
-    private fun jaroWinklerSimilarity(s1: String, s2: String): Double {
+    private fun jaroWinklerSimilarity(s1: String, s2: String, ignoreCase: Boolean): Double {
         // Unlike classic Jaro-Winkler, we don't set a limit on the prefix length
         val prefixLength = s1.commonPrefixWith(s2, ignoreCase).length
         val case = { s: String -> if (ignoreCase) s.lowercase() else s }
@@ -50,18 +50,27 @@ class PayeeSuggestor(private val ignoreCase: Boolean = true) {
     }
 
     operator fun invoke(value: String, payees: List<String>): List<String> =
-        value
+        twoPass(value, payees).map { it.first }
+
+    fun twoPass(value: String, payees: List<String>): List<Pair<String, Double>> {
+        val firstPass = value
             .split(spaceRegex)
             .map { word ->
                 payees
-                    .map { it to jaroWinklerSimilarity(word, it) }
-                    .filter { it.second > 0.8 }
+                    .map { it to jaroWinklerSimilarity(word, it, true) }
+                    .filter { it.second > CASE_INSENSITIVE_JARO_THRESHOLD }
             }
             .flatten()
             .sortedByDescending { it.second }
-            .map { it.first }
+        println(firstPass.joinToString(", "))
+
+        return firstPass
+            .map { (result) -> result to jaroWinklerSimilarity(value, result, false) }
+            .sortedByDescending { it.second }
+    }
 
     companion object {
         private val spaceRegex = Regex("\\s+")
+        private const val CASE_INSENSITIVE_JARO_THRESHOLD = 0.9
     }
 }

@@ -1,4 +1,4 @@
-package com.github.smaugfm.ynab.handlers
+package com.github.smaugfm.ynab
 
 import com.github.smaugfm.mono.MonoWebHookResponseData
 

@@ -8,6 +8,7 @@ import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
 import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.util.ExpiringMap
+import com.github.smaugfm.ynab.UniqueWebhookResponses
 import com.github.smaugfm.ynab.YnabApi
 import com.github.smaugfm.ynab.YnabCleared
 import com.github.smaugfm.ynab.YnabSaveTransaction
