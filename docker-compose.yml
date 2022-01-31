@@ -2,14 +2,11 @@ version: '3'
 
 services:
   ynab-mono:
-    build:
-      context: .
-      args:
-        monoWebhookPort: ${MONO_WEBHOOK_PORT}
+    build: .
     restart: unless-stopped
     working_dir: /opt/app
-    command: java -jar ynab-mono.jar --set-webhook --settings settings.json --mono-webhook-url ${MONO_WEBHOOK_URL} --mono-webhook-port ${MONO_WEBHOOK_PORT}
+    command: java -jar ynab-mono.jar --set-webhook --settings settings.json --mono-webhook-url ${MONO_WEBHOOK_URL}
     ports:
-      - ${OUTER_PORT}:${MONO_WEBHOOK_PORT}
+      - ${OUTER_PORT}:80
     volumes:
       - ${SETTINGS_FILE_PATH}:/opt/app/settings.json:ro

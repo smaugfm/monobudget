@@ -2,6 +2,7 @@ package com.github.smaugfm
 
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
@@ -27,7 +28,7 @@ private val logger = KotlinLogging.logger {}
 class YnabMono : CliktCommand() {
     val setWebhook by option().flag(default = false)
     val monoWebhookUrl by option().convert { URI(it) }.required()
-    val monoWebhookPort by option().int()
+    val webhookPort by option().int().default(80)
     val settings by option().convert {
         Settings.load(Paths.get(it))
     }.required()
@@ -39,7 +40,7 @@ class YnabMono : CliktCommand() {
             "Input arguments:\n\t" +
                 "${this::settings.name}: $settings\n\t" +
                 "${this::monoWebhookUrl.name}: $monoWebhookUrl\n\t" +
-                "${this::monoWebhookPort.name}: $monoWebhookPort\n\t" +
+                "${this::webhookPort.name}: $webhookPort\n\t" +
                 "${this::setWebhook.name}: $setWebhook",
         )
 
@@ -56,7 +57,7 @@ class YnabMono : CliktCommand() {
 
             if (setWebhook) {
                 logger.info("Setting up mono webhooks.")
-                if (!monoApis.setupWebhookAll(monoWebhookUrl, monoWebhookPort ?: monoWebhookUrl.port))
+                if (!monoApis.setupWebhookAll(monoWebhookUrl, webhookPort))
                     return@runBlocking
             } else {
                 logger.info("Skipping mono webhook setup.")
@@ -80,7 +81,7 @@ class YnabMono : CliktCommand() {
                 MonoApi.startMonoWebhookServerAsync(
                     serversCoroutinesContext,
                     monoWebhookUrl,
-                    monoWebhookPort ?: monoWebhookUrl.port,
+                    webhookPort,
                     dispatcher
                 )
             logger.info("Mono webhook listener started.")

@@ -10,9 +10,8 @@
     <ID>MagicNumber:CallbackQueryHandler.kt$CallbackQueryHandler$3</ID>
     <ID>MagicNumber:CallbackQueryHandler.kt$CallbackQueryHandler$6</ID>
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.1</ID>
-    <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$0.8</ID>
     <ID>MagicNumber:PayeeSuggestor.kt$PayeeSuggestor$3.0</ID>
-    <ID>MagicNumber:Util.kt$10.0</ID>
+    <ID>MagicNumber:YnabMono.kt$YnabMono$80</ID>
     <ID>ReturnCount:CallbackQueryHandler.kt$CallbackQueryHandler$suspend fun handle( dispatch: IEventDispatcher, event: Event.Telegram.CallbackQueryReceived, )</ID>
     <ID>ReturnCount:PayeeSuggestor.kt$PayeeSuggestor$private fun jaroSimilarity(s1: String, s2: String): Double</ID>
   </CurrentIssues>
