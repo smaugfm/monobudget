@@ -9,6 +9,6 @@ services:
     environment:
       - OUTER_PORT=3332
     ports:
-      - "${OUTER_PORT}:80"
+      - "3332:80"
     volumes:
       - ${SETTINGS_FILE_PATH}:/opt/app/settings.json:ro
