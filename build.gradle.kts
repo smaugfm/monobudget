@@ -85,6 +85,7 @@ tasks {
 
 dependencies {
     implementation(kotlin("stdlib"))
+    implementation(kotlin("reflect"))
     implementation("com.uchuhimo:kotlinx-bimap:_")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:_")
     implementation("com.github.elbekD:kt-telegram-bot:_")
