@@ -1,11 +1,11 @@
 package com.github.smaugfm
 
+import com.github.smaugfm.models.YnabCleared
+import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.mono.MonoApi
-import com.github.smaugfm.settings.Settings
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.PayeeSuggestor
 import com.github.smaugfm.ynab.YnabApi
-import com.github.smaugfm.ynab.YnabCleared
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
 import org.junit.jupiter.api.Disabled

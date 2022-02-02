@@ -1,9 +1,11 @@
 package com.github.smaugfm.ynab
 
 import com.github.smaugfm.events.Event
-import com.github.smaugfm.settings.Settings
+import com.github.smaugfm.models.YnabCleared
+import com.github.smaugfm.models.YnabSaveTransaction
+import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.telegram.TransactionUpdateType
-import com.github.smaugfm.ynab.handlers.UpdateTransactionHandler
+import com.github.smaugfm.workflows.UpdateTransaction
 import com.github.smaugfm.ynab.handlers.YnabHandlers
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Clock
@@ -97,7 +99,7 @@ class YnabApiTest {
         runBlocking {
             val payee = "vasa"
             val id = api.getAccountTransactions(accountId).first().id
-            val updateTransactionHandler = handler.handlers.filterIsInstance<UpdateTransactionHandler>().first()
+            val updateTransactionHandler = handler.handlers.filterIsInstance<UpdateTransaction>().first()
 
             updateTransactionHandler.handle(Event.Ynab.UpdateTransaction(TransactionUpdateType.Uncategorize(id)))
             updateTransactionHandler.handle(Event.Ynab.UpdateTransaction(TransactionUpdateType.Unapprove(id)))

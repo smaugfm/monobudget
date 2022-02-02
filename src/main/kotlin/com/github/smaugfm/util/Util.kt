@@ -22,6 +22,8 @@ fun Number.formatW(): String {
     return "%02d".format(this)
 }
 
+const val DEFAULT_HTTP_PORT = 80
+
 fun Currency.formatAmount(amount: Long): String {
     val delimiter = (10.0.pow(defaultFractionDigits)).toInt()
     return "${amount / delimiter}.${(abs(amount % delimiter).formatW())}"

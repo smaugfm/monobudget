@@ -3,8 +3,8 @@ package com.github.smaugfm.util
 import kotlin.math.max
 import kotlin.math.min
 
+@Suppress("ComplexMethod", "MagicNumber", "LoopWithTooManyJumpStatements", "ReturnCount")
 class PayeeSuggestor {
-
     private fun jaroSimilarity(s1: String, s2: String): Double {
         if (s1.isEmpty() && s2.isEmpty()) return 1.0
         else if (s1.isEmpty() || s2.isEmpty()) return 0.0

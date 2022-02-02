@@ -10,13 +10,16 @@ import com.elbekD.bot.types.MessageEntity
 import com.github.smaugfm.events.Event
 import com.github.smaugfm.events.IEvent
 import com.github.smaugfm.events.IEventDispatcher
+import com.github.smaugfm.models.TransactionUpdateType
+import com.github.smaugfm.models.YnabTransactionDetail
+import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.mono.MonoStatementItem
 import com.github.smaugfm.mono.MonoWebHookResponseData
-import com.github.smaugfm.settings.Mappings
 import com.github.smaugfm.telegram.TelegramApi
-import com.github.smaugfm.telegram.TransactionUpdateType
 import com.github.smaugfm.telegram.TransactionUpdateType.Companion.serialize
-import com.github.smaugfm.ynab.YnabTransactionDetail
+import com.github.smaugfm.workflows.SendTelegramMessageWorkflow
+import com.github.smaugfm.workflows.SendTelegramMessageWorkflow.Companion.formatHTMLStatementMessage
+import com.github.smaugfm.workflows.SendTelegramMessageWorkflow.Companion.formatInlineKeyboard
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -28,14 +31,13 @@ import org.junit.jupiter.api.Test
 import java.util.Currency
 import java.util.UUID
 import kotlin.time.Duration
-import kotlin.time.days
 
 class TelegramHandlerTest {
     val chatId = 12322
     val api = mockk<TelegramApi>()
     val mappings = mockk<Mappings>()
-    val sendStatementMessageHandler = SendStatementMessageHandler(mappings)
-    val callbackQueryHandler = CallbackQueryHandler(api, mappings)
+    val sendStatementMessageHandler = SendTelegramMessageWorkflow(mappings)
+    val callbackQueryHandler = ProcessCallbackQuery(api, mappings)
 
     private fun getMonoResponseAndTransaction(
         description: String,
