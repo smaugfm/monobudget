@@ -76,7 +76,7 @@ tasks {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("fat")
         manifest {
-            attributes(mapOf("Main-Class" to "com.github.smaugfm.YnabMonoKt"))
+            attributes(mapOf("Main-Class" to "com.github.smaugfm.YnabMonoCommandKt"))
         }
     }
 
