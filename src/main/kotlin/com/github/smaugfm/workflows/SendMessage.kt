@@ -13,18 +13,31 @@ import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.util.replaceNewLines
+import mu.KotlinLogging
 import java.util.Currency
 import kotlin.reflect.KClass
 
-class SendTelegramMessageWorkflow(val mappings: Mappings, val telegramApi: TelegramApi) {
+private val logger = KotlinLogging.logger {}
+
+class SendMessage(val mappings: Mappings, val telegramApi: TelegramApi) {
     suspend operator fun invoke(
         monoResponse: MonoWebHookResponseData,
         transaction: YnabTransactionDetail
     ) {
-        val accountCurrency = mappings.getAccountCurrency(monoResponse.account)!!
 
-        val msg = formatHTMLStatementMessage(accountCurrency, monoResponse.statementItem, transaction)
+        val msg = formatHTMLStatementMessage(
+            mappings.getMonoAccAlias(monoResponse.account)!!,
+            mappings.getAccountCurrency(monoResponse.account)!!,
+            monoResponse.statementItem,
+            transaction
+        )
         val markup = formatInlineKeyboard(emptySet())
+
+        val chatId = mappings.getTelegramChatIdAccByMono(monoResponse.account)
+        if (chatId == null) {
+            logger.error { "Failed to map Monobank account to telegram chat id. Account: ${monoResponse.account}" }
+            return
+        }
 
         telegramApi.sendMessage(
             mappings.getTelegramChatIdAccByMono(monoResponse.account) ?: return, msg, "HTML", markup = markup
@@ -51,6 +64,7 @@ class SendTelegramMessageWorkflow(val mappings: Mappings, val telegramApi: Teleg
 
         @Suppress("LongParameterList")
         internal fun formatHTMLStatementMessage(
+            accountAlias: String?,
             description: String,
             mcc: String,
             amount: String,
@@ -58,6 +72,16 @@ class SendTelegramMessageWorkflow(val mappings: Mappings, val telegramApi: Teleg
             payee: String,
             id: String,
         ): String {
+            logger.info {
+                "Formatting message${if (accountAlias != null) " to $accountAlias" else ""}\n" +
+                    "\t$description" +
+                    "\t$mcc" +
+                    "\t$amount" +
+                    "\t$category" +
+                    "\t$payee" +
+                    "\t$id"
+            }
+
             val builder = StringBuilder("Новая транзакция Monobank добавлена в YNAB\n")
             return with(Unit) {
                 builder.append("\uD83D\uDCB3 <b>$description</b>\n")
@@ -72,10 +96,11 @@ class SendTelegramMessageWorkflow(val mappings: Mappings, val telegramApi: Teleg
             }
         }
 
-        internal fun formatAmountWithCurrency(amount: Long, currency: Currency) =
+        private fun formatAmountWithCurrency(amount: Long, currency: Currency) =
             currency.formatAmount(amount) + currency.currencyCode
 
         internal fun formatHTMLStatementMessage(
+            accountAlias: String,
             accountCurrency: Currency,
             monoStatementItem: MonoStatementItem,
             transaction: YnabTransactionDetail,
@@ -84,6 +109,7 @@ class SendTelegramMessageWorkflow(val mappings: Mappings, val telegramApi: Teleg
                 val accountAmount = formatAmountWithCurrency(amount, accountCurrency)
                 val operationAmount = formatAmountWithCurrency(this.operationAmount, currencyCode)
                 return formatHTMLStatementMessage(
+                    accountAlias,
                     description.replaceNewLines(),
                     (MCC.mapRussian[mcc] ?: "Неизвестный MCC") + " ($mcc)",
                     accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),
@@ -94,7 +120,7 @@ class SendTelegramMessageWorkflow(val mappings: Mappings, val telegramApi: Teleg
             }
         }
 
-        internal inline fun <reified T : TransactionUpdateType> button(
+        private inline fun <reified T : TransactionUpdateType> button(
             pressed: Set<KClass<out TransactionUpdateType>>
         ) =
             with(T::class) {

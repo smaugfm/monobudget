@@ -2,13 +2,11 @@ package com.github.smaugfm
 
 import com.github.smaugfm.apis.MonoApis
 import com.github.smaugfm.apis.TelegramApi
-import com.github.smaugfm.models.settings.Mappings
+import com.github.smaugfm.workflows.CreateTransaction
+import com.github.smaugfm.workflows.HandleCallback
 import com.github.smaugfm.workflows.ProcessError
-import com.github.smaugfm.workflows.ProcessTelegramCallbackWorkflow
-import com.github.smaugfm.workflows.ProcessWebhookWorkflow
-import com.github.smaugfm.workflows.SendTelegramMessageWorkflow
+import com.github.smaugfm.workflows.SendMessage
 import io.ktor.util.error
-import kotlinx.coroutines.flow.collect
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -19,37 +17,38 @@ private val logger = KotlinLogging.logger {}
 class YnabMonoApp : KoinComponent {
     val telegramApi by inject<TelegramApi>()
     val monoApis by inject<MonoApis>()
-    val mappings by inject<Mappings>()
 
-    val createTransaction by inject<ProcessWebhookWorkflow>()
-    val sendMessage by inject<SendTelegramMessageWorkflow>()
-    val processCallbackQuery by inject<ProcessTelegramCallbackWorkflow>()
+    val createTransaction by inject<CreateTransaction>()
+    val sendMessage by inject<SendMessage>()
+    val handleCallback by inject<HandleCallback>()
     val processError by inject<ProcessError>()
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
         if (setWebhook) {
-            logger.info("Setting up mono webhooks.")
+            logger.info { "Setting up mono webhooks." }
             if (!monoApis.apis.all { it.setWebHook(monoWebhookUrl, webhookPort) })
                 return
         } else {
-            logger.info("Skipping mono webhook setup.")
+            logger.info { "Skipping mono webhook setup." }
         }
 
-        monoApis.listenWebhooks(
+        val webhookJob = monoApis.listenWebhooks(
             monoWebhookUrl,
             webhookPort,
-        ).collect {
+        ) handler@{
             try {
-                val newTransaction = createTransaction(it) ?: return@collect
+                val newTransaction = createTransaction(it) ?: return@handler
                 sendMessage(it, newTransaction)
             } catch (e: Throwable) {
                 logger.error(e)
                 processError()
             }
         }
-
-        telegramApi.listenForCallbacks().collect {
-            processCallbackQuery(it)
+        val telegramJob = telegramApi.listenForCallbacks {
+            handleCallback(it)
         }
+        logger.info { "Listening for Monobank webhooks and Telegram callbacks..." }
+        webhookJob.join()
+        telegramJob.join()
     }
 }

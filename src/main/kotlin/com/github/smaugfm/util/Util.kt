@@ -54,9 +54,9 @@ suspend inline fun <reified T : Any, reified R : IErrorFormattable> requestCatch
                 .formatError()
         }
     ) {
-        logger?.info("Performing $serviceName request $methodName")
+        logger?.debug { "Performing $serviceName request $methodName" }
         block().also {
-            logger?.info("Response:\n\t${it.pp()}")
+            logger?.debug { "Response:\n\t${it.pp()}" }
         }
     }
 
@@ -70,7 +70,7 @@ inline fun <reified T> catchAndLog(
         block()
     } catch (e: ResponseException) {
         val error = errorHandler(e)
-        logger?.info("Request failed $methodName. Error response:\n\t$error")
+        logger?.error { "Request failed $methodName. Error response:\n\t$error" }
         throw e
     }
 
@@ -83,7 +83,7 @@ suspend inline fun <reified T> catchAndLog(
         block()
     } catch (e: ResponseException) {
         val error = e.response.readText()
-        logger.info("Request failed $methodName. Error response:\n\t$error")
+        logger.error { "Request failed $methodName. Error response:\n\t$error" }
         throw e
     }
 

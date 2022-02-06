@@ -21,12 +21,16 @@ class SettingsTest {
             "vasa14",
             "vasa1",
             Mappings(
+                mapOf(
+                    "vasa2" to "vasa2",
+                    "vasa4" to "vasa4"
+                ),
                 biMapOf(
                     "vasa2" to "vasa3",
                     "vasa4" to "vasa5"
                 ),
                 mapOf("aaa" to Currency.getInstance("UAH")),
-                mapOf(
+                biMapOf(
                     "vasa6" to 12324,
                     "vasa7" to 123242,
                 ),

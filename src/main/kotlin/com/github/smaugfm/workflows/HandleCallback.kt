@@ -10,21 +10,21 @@ import com.github.smaugfm.models.TransactionUpdateType
 import com.github.smaugfm.models.TransactionUpdateType.Companion.buttonWord
 import com.github.smaugfm.models.YnabTransactionDetail
 import com.github.smaugfm.models.settings.Mappings
-import com.github.smaugfm.workflows.SendTelegramMessageWorkflow.Companion.formatHTMLStatementMessage
-import com.github.smaugfm.workflows.SendTelegramMessageWorkflow.Companion.formatInlineKeyboard
+import com.github.smaugfm.workflows.SendMessage.Companion.formatHTMLStatementMessage
+import com.github.smaugfm.workflows.SendMessage.Companion.formatInlineKeyboard
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class ProcessTelegramCallbackWorkflow(
+class HandleCallback(
     private val telegram: TelegramApi,
     private val ynabApi: YnabApi,
     val mappings: Mappings,
 ) {
     suspend operator fun invoke(callbackQuery: CallbackQuery) {
         if (callbackQuery.from.id !in mappings.getTelegramChatIds()) {
-            logger.warn("Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}")
+            logger.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }
             return
         }
 
@@ -43,7 +43,7 @@ class ProcessTelegramCallbackWorkflow(
             telegram.answerCallbackQuery(callbackQueryId)
         }
 
-        val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
+        val updatedText = updateHTMLStatementMessage(null, updatedTransaction, message)
         val updatedMarkup = updateMarkupKeyboard(type, message.reply_markup!!)
 
         if (stripHTMLTagsFromMessage(updatedText) != message.text ||
@@ -85,6 +85,7 @@ class ProcessTelegramCallbackWorkflow(
 
     @Suppress("MagicNumber")
     private fun updateHTMLStatementMessage(
+        accountAlias: String?,
         updatedTransaction: YnabTransactionDetail,
         oldMessage: Message,
     ): String {
@@ -98,6 +99,7 @@ class ProcessTelegramCallbackWorkflow(
         val id = oldTextLines[6].trim()
 
         return formatHTMLStatementMessage(
+            accountAlias,
             description,
             mcc,
             currencyText,
@@ -110,10 +112,10 @@ class ProcessTelegramCallbackWorkflow(
     private fun extractFromCallbackQuery(callbackQuery: CallbackQuery): Triple<String, String, Message>? {
         val callbackQueryId = callbackQuery.id
         val data = callbackQuery.data.takeUnless { it.isNullOrBlank() }
-            ?: logger.warn("Received Telegram callbackQuery with empty data.\n$callbackQuery")
+            ?: logger.warn { "Received Telegram callbackQuery with empty data.\n$callbackQuery" }
                 .let { return null }
         val message =
-            callbackQuery.message ?: logger.warn("Received Telegram callbacQuery with empty message")
+            callbackQuery.message ?: logger.warn { "Received Telegram callbackQuery with empty message" }
                 .let { return null }
 
         return Triple(callbackQueryId, data, message)

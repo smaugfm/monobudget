@@ -27,7 +27,6 @@ import io.ktor.client.request.put
 import io.ktor.http.ParametersBuilder
 import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
-import mu.KLogger
 import mu.KotlinLogging
 import kotlin.reflect.KFunction
 
@@ -60,9 +59,13 @@ class YnabApi(settings: Settings) {
 
     private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
-        loggerToUse: KLogger? = logger,
         block: () -> T,
-    ): T = requestCatching<T, YnabErrorResponse>("YNAB", loggerToUse, method.name, json, block)
+    ): T = requestCatching<T, YnabErrorResponse>("YNAB", logger, method.name, json, block)
+
+    private suspend inline fun <reified T : Any> catchingNoLogging(
+        method: KFunction<Any>,
+        block: () -> T,
+    ): T = requestCatching<T, YnabErrorResponse>("YNAB", null, method.name, json, block)
 
     suspend fun getAccounts(): List<YnabAccount> =
         catching(this::getAccounts) {
@@ -78,8 +81,8 @@ class YnabApi(settings: Settings) {
             )
         }.data.account
 
-    suspend fun getPayees(log: Boolean = true): List<YnabPayee> =
-        catching(this::getPayees, if (log) logger else null) {
+    suspend fun getPayees(): List<YnabPayee> =
+        catchingNoLogging(this::getPayees) {
             httpClient.get<YnabPayeesResponse>(
                 url("budgets", budgetId, "payees")
             )

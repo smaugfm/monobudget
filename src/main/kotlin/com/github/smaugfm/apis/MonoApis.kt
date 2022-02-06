@@ -19,14 +19,16 @@ import io.ktor.serialization.serialization
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.serialization.StringFormat
 import mu.KotlinLogging
 import java.net.URI
 
 private val logger = KotlinLogging.logger {}
+
 class MonoApis(
     private val scope: CoroutineScope,
     settings: Settings
@@ -38,7 +40,8 @@ class MonoApis(
     fun listenWebhooks(
         webhook: URI,
         port: Int,
-    ) = scope.produce {
+        callback: suspend (MonoWebHookResponseData) -> Unit,
+    ): Job {
         val server = scope.embeddedServer(Netty, port = port) {
             install(ContentNegotiation) {
                 serialization(ContentType.Application.Json, json as StringFormat)
@@ -51,7 +54,7 @@ class MonoApis(
                             "Uri: ${call.request.uri}"
                     )
                     val response = call.receive<MonoWebhookResponse>()
-                    send(
+                    callback(
                         MonoWebHookResponseData(
                             response.data.account,
                             response.data.statementItem
@@ -61,6 +64,9 @@ class MonoApis(
                 }
             }
         }
-        server.start(true)
-    }.consumeAsFlow()
+
+        return scope.launch(context = Dispatchers.IO) {
+            server.start(true)
+        }
+    }
 }

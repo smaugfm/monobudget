@@ -40,6 +40,7 @@ class MonoApi(private val token: String) {
     init {
         require(token.isNotBlank())
     }
+
     private val json = makeJson()
     private var previousStatementCallTimestamp = Long.MIN_VALUE / 2
     private val jsonSerializer = KotlinxSerializer(json)
@@ -72,12 +73,12 @@ class MonoApi(private val token: String) {
                 get(url.path) {
                     call.response.status(HttpStatusCode.OK)
                     call.respondText("OK\n", ContentType.Text.Plain)
-                    logger.info("Webhook setup successful: $url")
+                    logger.debug { "Webhook setup successful: $url" }
                     waitForWebhook.complete(Unit)
                 }
             }
         }
-        logger.info("Starting webhook setup server...")
+        logger.debug { "Starting temporary webhook setup server..." }
         tempServer.start(wait = false)
 
         try {
@@ -92,6 +93,7 @@ class MonoApi(private val token: String) {
             return false
         }
         waitForWebhook.await()
+        logger.debug { "Webhook setup completed. Stopping temporary server..." }
         tempServer.stop(serverStopGracePeriod, serverStopGracePeriod)
 
         return true

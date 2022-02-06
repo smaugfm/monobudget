@@ -1,5 +1,6 @@
-package com.github.smaugfm.workflows.util
+package com.github.smaugfm.workflows
 
+import com.github.smaugfm.apis.YnabApi
 import com.github.smaugfm.models.MonoWebHookResponseData
 import com.github.smaugfm.models.YnabCleared
 import com.github.smaugfm.models.YnabPayee
@@ -7,34 +8,52 @@ import com.github.smaugfm.models.YnabSaveTransaction
 import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.util.PayeeSuggestor
 import com.github.smaugfm.util.replaceNewLines
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import mu.KotlinLogging
 import kotlin.time.Duration.Companion.hours
 
-private val payeeSuggestor = PayeeSuggestor()
 private const val MONO_TO_YNAB_ADJUST = 10
 
-class MonoWebhookResponseToYnabTransactionConverter(
+private val logger = KotlinLogging.logger {}
+
+class TransformStatementToYnabTransaction(
     scope: CoroutineScope,
     private val mappings: Mappings,
-    private val getPayees: suspend () -> List<YnabPayee>,
+    private val ynabApi: YnabApi,
 ) {
-    private lateinit var payees: List<YnabPayee>
+    @Volatile
+    private var payees: Deferred<List<YnabPayee>>
+    private val payeeSuggestor = PayeeSuggestor()
 
     init {
-        scope.launch {
+        logger.debug { "Launching periodic getPayees fetching." }
+        val initialDeferred = CompletableDeferred<List<YnabPayee>>()
+        payees = initialDeferred
+        scope.launch(context = Dispatchers.IO) {
+            logger.debug { "Loop getPayees periodic" }
             while (true) {
-                payees = getPayees()
+                val result = ynabApi.getPayees()
+                if (payees === initialDeferred)
+                    initialDeferred.complete(result)
+                else
+                    payees = CompletableDeferred(result)
                 delay(1.hours)
             }
         }
     }
 
-    operator fun invoke(response: MonoWebHookResponseData): YnabSaveTransaction {
-        val suggestedPayee = payeeSuggestor(response.statementItem.description, payees.map { it.name }).firstOrNull()
+    suspend operator fun invoke(response: MonoWebHookResponseData): YnabSaveTransaction {
+        logger.debug { "Transforming Monobank statement to Ynab transaction." }
+        val suggestedPayee =
+            payeeSuggestor(response.statementItem.description, payees.await().map { it.name })
+                .firstOrNull()
         val mccCategoryOverride = mappings.getMccCategoryOverride(response.statementItem.mcc)
 
         return YnabSaveTransaction(

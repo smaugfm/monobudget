@@ -12,13 +12,11 @@ import com.github.smaugfm.apis.TelegramApi
 import com.github.smaugfm.apis.YnabApi
 import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.util.DEFAULT_HTTP_PORT
+import com.github.smaugfm.workflows.CreateTransaction
+import com.github.smaugfm.workflows.HandleCallback
 import com.github.smaugfm.workflows.ProcessError
-import com.github.smaugfm.workflows.ProcessTelegramCallbackWorkflow
-import com.github.smaugfm.workflows.ProcessWebhookWorkflow
-import com.github.smaugfm.workflows.SendTelegramMessageWorkflow
-import com.github.smaugfm.workflows.util.MonoWebhookResponseToYnabTransactionConverter
-import com.github.smaugfm.workflows.util.UniqueWebhookResponses
-import com.github.smaugfm.workflows.util.YnabTransferPayeeIdsCache
+import com.github.smaugfm.workflows.SendMessage
+import com.github.smaugfm.workflows.TransformStatementToYnabTransaction
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.koin.core.context.startKoin
@@ -37,7 +35,7 @@ class YnabMonoCommand : CliktCommand() {
     }.required()
 
     override fun run() {
-        logger.info(
+        logger.debug(
             "Parsed args:\n\t" +
                 "${this::settings.name}: $settings\n\t" +
                 "${this::monoWebhookUrl.name}: $monoWebhookUrl\n\t" +
@@ -49,24 +47,22 @@ class YnabMonoCommand : CliktCommand() {
             startKoin {
                 modules(
                     module {
+                        printLogger(org.koin.core.logger.Level.ERROR)
+
                         single { settings }
                         single { settings.mappings }
                         single { YnabApi(get()) }
                         single { TelegramApi(this@runBlocking, get()) }
                         single { MonoApis(this@runBlocking, get()) }
                         single {
-                            MonoWebhookResponseToYnabTransactionConverter(
-                                this@runBlocking,
-                                get()
-                            ) { get<YnabApi>().getPayees(false) }
+                            TransformStatementToYnabTransaction(
+                                this@runBlocking, get(), get()
+                            )
                         }
-                        single { UniqueWebhookResponses() }
-                        single { YnabTransferPayeeIdsCache(get()) }
-
-                        single { ProcessWebhookWorkflow(get(), get(), get(), get(), get()) }
-                        single { SendTelegramMessageWorkflow(get(), get()) }
+                        single { CreateTransaction(get(), get(), get()) }
+                        single { SendMessage(get(), get()) }
                         single { ProcessError(get(), get()) }
-                        single { ProcessTelegramCallbackWorkflow(get(), get(), get()) }
+                        single { HandleCallback(get(), get(), get()) }
                     }
                 )
             }

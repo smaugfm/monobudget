@@ -6,7 +6,6 @@ import com.github.smaugfm.models.MonoAccountId
 import com.github.smaugfm.models.serializers.CurrencyAsStringSerializer
 import com.github.smaugfm.models.serializers.HashBiMapAsMapSerializer
 import com.uchuhimo.collections.BiMap
-import com.uchuhimo.collections.emptyBiMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import mu.KotlinLogging
@@ -16,10 +15,12 @@ private val logger = KotlinLogging.logger { }
 
 @Serializable
 data class Mappings(
+    private val monoAccAliases: Map<String, String>,
     @Serializable(with = HashBiMapAsMapSerializer::class)
     private val monoAccToYnab: BiMap<String, String>,
     private val monoAccToCurrency: Map<String, Currency>,
-    private val monoAccToTelegram: Map<String, Long>,
+    @Serializable(with = HashBiMapAsMapSerializer::class)
+    private val monoAccToTelegram: BiMap<String, Long>,
     private val mccToCategory: Map<Int, String>,
     val unknownPayeeId: String,
     val unknownCategoryId: String,
@@ -35,17 +36,19 @@ data class Mappings(
     fun getYnabAccByMono(monoAcc: String): String? =
         monoAccToYnab[monoAcc].also {
             if (it == null)
-                logger.error("Could not find YNAB account for Mono account $monoAcc")
+                logger.error { "Could not find YNAB account for Monobank account $monoAcc" }
         }
 
     fun getTelegramChatIdAccByMono(monoAcc: String) =
         monoAccToTelegram[monoAcc].also {
             if (it == null)
-                logger.error("Could not find Telegram chatID for Mono account $monoAcc")
+                logger.error { "Could not find Telegram chatID for Monobank account $monoAcc" }
         }
 
-    companion object {
-        val Empty =
-            Mappings(emptyBiMap(), emptyMap(), emptyMap(), emptyMap(), "", "")
+    fun getMonoAccAlias(string: MonoAccountId): String? {
+        return monoAccAliases[string].also {
+            if (it == null)
+                logger.error { "Could not find alias for Monobank account $string" }
+        }
     }
 }

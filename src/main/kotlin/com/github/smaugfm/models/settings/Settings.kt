@@ -9,9 +9,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+
+private val logger = KotlinLogging.logger {}
 
 @Serializable
 data class Settings(
@@ -23,8 +26,12 @@ data class Settings(
     val mappings: Mappings,
 ) {
     companion object {
-        fun load(path: Path) = Json.decodeFromString<Settings>(File(path.toString()).readText())
-        fun loadDefault() = load(Paths.get("settings.json"))
+        fun load(path: Path): Settings =
+            Json.decodeFromString<Settings>(File(path.toString()).readText()).also {
+                logger.debug { "Loaded settings: $it" }
+            }
+
+        fun loadDefault(): Settings = load(Paths.get("settings.json"))
     }
 
     @Suppress("unused")

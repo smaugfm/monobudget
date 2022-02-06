@@ -7,11 +7,11 @@ import com.elbekD.bot.types.ReplyKeyboard
 import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.util.pp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.produce
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
+import kotlinx.coroutines.launch
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -44,7 +44,7 @@ class TelegramApi(
             null,
             markup
         ).asDeferred().also {
-            logger.info("Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}")
+            logger.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}" }
         }.await()
     }
 
@@ -68,7 +68,7 @@ class TelegramApi(
             disableWebPagePreview,
             markup
         ).asDeferred().also {
-            logger.info("Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}")
+            logger.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}" }
         }.await()
     }
 
@@ -77,14 +77,15 @@ class TelegramApi(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun listenForCallbacks(): Flow<CallbackQuery> =
-        scope.produce {
-            bot.onCallbackQuery {
-                logger.info("Received callbackQuery.\n\t$it")
-                send(it)
-            }
+    fun listenForCallbacks(callback: suspend (CallbackQuery) -> Unit): Job {
+        bot.onCallbackQuery {
+            logger.debug { "Received callbackQuery.\n\t$it" }
+            callback(it)
+        }
+        return scope.launch(context = Dispatchers.IO) {
             bot.start()
-        }.consumeAsFlow()
+        }
+    }
 
     companion object {
         const val UNKNOWN_ERROR_MSG = "Произошла непредвиденная ошибка."

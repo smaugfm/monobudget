@@ -4,29 +4,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.time.delay
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
-class ExpiringMap<T, K>(val expirationTime: Duration) {
-    private val map = mutableMapOf<T, K>()
+class ExpiringMap<T : Any, K>(
+    val expirationTime: Duration,
+    private val map: ConcurrentHashMap<T, K> = ConcurrentHashMap()
+) : Map<T, K> by map {
     private val coroutineScope =
         CoroutineScope(Executors.newSingleThreadExecutor().asCoroutineDispatcher())
 
-    @Synchronized
     fun add(item: T, value: K) {
         map[item] = value
         coroutineScope.launch {
             delay(expirationTime.toJavaDuration())
-            expire(item)
+            map.remove(item)
         }
     }
-
-    @Synchronized
-    private fun expire(item: T) {
-        map.remove(item)
-    }
-
-    @Synchronized
-    fun <R> consumeCollection(block: Map<T, K>.() -> R): R = map.block()
 }

@@ -105,7 +105,7 @@ dependencies {
     implementation("io.ktor:ktor-client-json:$ktor")
     implementation("io.ktor:ktor-client-serialization:$ktor")
     implementation("io.github.microutils:kotlin-logging:2.1.21")
-    implementation("org.slf4j:slf4j-simple:1.7.33")
+    implementation("org.slf4j:slf4j-simple:1.7.35")
     implementation("com.google.code.gson:gson:2.8.9")
 
     val junit = "5.8.2"

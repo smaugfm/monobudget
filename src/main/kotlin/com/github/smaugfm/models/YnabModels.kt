@@ -274,7 +274,7 @@ data class YnabSubTransaction(
     val category_name: String?,
     val transfer_account_id: String?,
     val transfer_transaction_id: String?,
-    val delete: Boolean,
+    val delete: Boolean = false,
 )
 
 @Serializable

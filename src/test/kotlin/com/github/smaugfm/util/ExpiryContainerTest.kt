@@ -1,28 +1,22 @@
 package com.github.smaugfm.util
 
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class ExpiryContainerTest {
-
-    @OptIn(DelicateCoroutinesApi::class)
     @Test
     fun simple() {
         val delay = 100L
         val tolerance = 10
 
-        val container = ExpiringMap<String, Int>(Duration.milliseconds(delay))
+        val container = ExpiringMap<String, Int>(delay.milliseconds)
 
         fun checkOne(item: Int) {
             fun contains(): Boolean =
-                container.consumeCollection {
-                    contains(item.toString())
-                }
+                container.contains(item.toString())
 
             container.add(item.toString(), item)
             assert(contains())
@@ -32,7 +26,7 @@ class ExpiryContainerTest {
 
         runBlocking {
             listOf(1, 2, 3).forEach { item ->
-                GlobalScope.launch {
+                launch {
                     checkOne(item)
                 }
                 delay(delay)
