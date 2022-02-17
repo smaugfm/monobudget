@@ -8,6 +8,7 @@ import com.github.smaugfm.models.YnabSaveTransaction
 import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.util.PayeeSuggestor
 import com.github.smaugfm.util.replaceNewLines
+import io.ktor.util.error
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -39,7 +40,12 @@ class TransformStatementToYnabTransaction(
         scope.launch(context = Dispatchers.IO) {
             logger.debug { "Loop getPayees periodic" }
             while (true) {
-                val result = ynabApi.getPayees()
+                val result = try {
+                    ynabApi.getPayees()
+                } catch (e: Throwable) {
+                    logger.error(e)
+                    continue
+                }
                 if (payees === initialDeferred)
                     initialDeferred.complete(result)
                 else
