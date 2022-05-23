@@ -14,26 +14,28 @@ config:
   excludes: ''
 
 exceptions:
+  SwallowedException:
+    ignoredExceptionTypes: [ 'YnabRateLimitException' ]
   TooGenericExceptionCaught:
     active: false
 
 naming:
   ConstructorParameterNaming:
     active: true
-    excludes: ['**/models.kt']
+    excludes: [ '**/models.kt' ]
 
 complexity:
   LargeClass:
     active: true
-    excludes: ['**/MCC.kt']
+    excludes: [ '**/MCC.kt' ]
 
 style:
   MagicNumber:
     active: true
-    excludes: ['**/MCC.kt', '**Test.kt']
+    excludes: [ '**/MCC.kt', '**Test.kt' ]
   MaxLineLength:
     active: true
-    excludes: ['**/MCC.kt']
+    excludes: [ '**/MCC.kt' ]
   ReturnCount:
     active: true
     max: 3

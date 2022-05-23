@@ -3,7 +3,7 @@
 package com.github.smaugfm.models
 
 import com.github.smaugfm.models.serializers.LocalDateAsISOSerializer
-import com.github.smaugfm.util.IErrorFormattable
+import com.github.smaugfm.util.ErrorFormattable
 import kotlinx.datetime.LocalDate
 import kotlinx.serialization.Serializable
 
@@ -280,7 +280,7 @@ data class YnabSubTransaction(
 @Serializable
 data class YnabErrorResponse(
     val error: YnabErrorDetail,
-) : IErrorFormattable {
+) : ErrorFormattable {
     override fun formatError() = with(error) { "$name: $detail" }
 }
 

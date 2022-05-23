@@ -1,5 +1,5 @@
 package com.github.smaugfm.util
 
-interface IErrorFormattable {
+interface ErrorFormattable {
     fun formatError(): String
 }

@@ -45,6 +45,12 @@ data class Mappings(
                 logger.error { "Could not find Telegram chatID for Monobank account $monoAcc" }
         }
 
+    fun getMonoAccIdByTelegramChatId(chatId: Long) =
+        monoAccToTelegram.inverse[chatId].also {
+            if (it == null)
+                logger.error { "Could not find Monobank account for Telegram chatID $chatId" }
+        }
+
     fun getMonoAccAlias(string: MonoAccountId): String? {
         return monoAccAliases[string].also {
             if (it == null)

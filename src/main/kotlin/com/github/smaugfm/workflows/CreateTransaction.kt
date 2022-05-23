@@ -48,6 +48,13 @@ class CreateTransaction(
             }
         }?.value?.await()
 
+        return process(existingTransfer, webhookResponseData)
+    }
+
+    private suspend fun CreateTransaction.process(
+        existingTransfer: YnabTransactionDetail?,
+        webhookResponseData: MonoWebHookResponseData
+    ): YnabTransactionDetail {
         val newTransaction = if (existingTransfer != null) {
             processTransfer(webhookResponseData, existingTransfer)
         } else {
@@ -58,7 +65,6 @@ class CreateTransaction(
                 transactionDetailDeferred.complete(it)
             }
         }
-
         return newTransaction
     }
 

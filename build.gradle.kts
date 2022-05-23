@@ -96,6 +96,7 @@ dependencies {
     implementation("com.github.elbekD:kt-telegram-bot:1.4.1")
     implementation("com.github.ajalt.clikt:clikt:3.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:1.1.0")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
     implementation("io.ktor:ktor-server-core:$ktor")
     implementation("io.ktor:ktor-server-netty:$ktor")

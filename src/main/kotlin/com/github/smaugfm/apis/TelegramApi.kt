@@ -1,6 +1,7 @@
 package com.github.smaugfm.apis
 
 import com.elbekD.bot.Bot
+import com.elbekD.bot.http.await
 import com.elbekD.bot.types.CallbackQuery
 import com.elbekD.bot.types.InlineKeyboardMarkup
 import com.elbekD.bot.types.ReplyKeyboard
@@ -12,13 +13,15 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import java.net.URL
 
 private val logger = KotlinLogging.logger {}
 
 class TelegramApi(
     private val scope: CoroutineScope,
-    settings: Settings
+    private val settings: Settings
 ) {
     private val bot: Bot =
         Bot.createPolling(settings.telegramBotUsername, settings.telegramBotToken)
@@ -77,10 +80,29 @@ class TelegramApi(
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    fun listenForCallbacks(callback: suspend (CallbackQuery) -> Unit): Job {
+    fun start(
+        callbackHandler: suspend (CallbackQuery) -> Unit,
+        csvFileHandler: suspend (Long, String) -> Unit,
+    ): Job {
         bot.onCallbackQuery {
             logger.debug { "Received callbackQuery.\n\t$it" }
-            callback(it)
+            callbackHandler(it)
+        }
+        bot.onMessage { msg ->
+            val doc = msg.document
+            if (doc != null && doc.file_name?.endsWith(".csv") == true) {
+                val file = bot.getFile(doc.file_id).await()
+                val url = URL(
+                    "https://api.telegram.org/" +
+                        "file/${settings.telegramBotToken}/${file.file_path}"
+                )
+                csvFileHandler(
+                    msg.chat.id,
+                    withContext(Dispatchers.IO) {
+                        url.openStream().readAllBytes().toString(Charsets.UTF_8)
+                    }
+                )
+            }
         }
         return scope.launch(context = Dispatchers.IO) {
             bot.start()

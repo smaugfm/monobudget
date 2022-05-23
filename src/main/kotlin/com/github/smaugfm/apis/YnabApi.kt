@@ -16,8 +16,9 @@ import com.github.smaugfm.models.YnabTransactionResponse
 import com.github.smaugfm.models.YnabTransactionResponseWithServerKnowledge
 import com.github.smaugfm.models.YnabTransactionsResponse
 import com.github.smaugfm.models.settings.Settings
+import com.github.smaugfm.util.YnabRateLimitException
+import com.github.smaugfm.util.logError
 import com.github.smaugfm.util.makeJson
-import com.github.smaugfm.util.requestCatching
 import io.ktor.client.HttpClient
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
@@ -60,12 +61,20 @@ class YnabApi(settings: Settings) {
     private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = requestCatching<T, YnabErrorResponse>("YNAB", logger, method.name, json, block)
+    ): T = logError<T, YnabErrorResponse>("YNAB", logger, method.name, json, block) {
+        if (it.error.id == "429") {
+            throw YnabRateLimitException()
+        }
+    }
 
     private suspend inline fun <reified T : Any> catchingNoLogging(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = requestCatching<T, YnabErrorResponse>("YNAB", null, method.name, json, block)
+    ): T = logError<T, YnabErrorResponse>("YNAB", null, method.name, json, block) {
+        if (it.error.id == "429") {
+            throw YnabRateLimitException()
+        }
+    }
 
     suspend fun getAccounts(): List<YnabAccount> =
         catching(this::getAccounts) {

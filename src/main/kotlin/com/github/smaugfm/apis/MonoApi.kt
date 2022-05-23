@@ -7,8 +7,8 @@ import com.github.smaugfm.models.MonoStatementItem
 import com.github.smaugfm.models.MonoStatusResponse
 import com.github.smaugfm.models.MonoUserInfo
 import com.github.smaugfm.models.MonoWebHookRequest
+import com.github.smaugfm.util.logError
 import com.github.smaugfm.util.makeJson
-import com.github.smaugfm.util.requestCatching
 import io.ktor.application.call
 import io.ktor.client.HttpClient
 import io.ktor.client.features.defaultRequest
@@ -57,7 +57,9 @@ class MonoApi(private val token: String) {
     private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = requestCatching<T, MonoErrorResponse>("Monobank", logger, method.name, json, block)
+    ): T = logError<T, MonoErrorResponse>("Monobank", logger, method.name, json, block) {
+        // do nothing
+    }
 
     @Suppress("unused")
     suspend fun fetchUserInfo(): MonoUserInfo =

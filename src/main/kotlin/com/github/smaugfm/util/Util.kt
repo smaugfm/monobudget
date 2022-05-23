@@ -10,6 +10,8 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.csv.Csv
+import kotlinx.serialization.csv.CsvConfiguration
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KLogger
@@ -38,12 +40,17 @@ fun makeJson(): Json =
         ignoreUnknownKeys = true
     }
 
-suspend inline fun <reified T : Any, reified R : IErrorFormattable> requestCatching(
+fun makeCsv(): Csv =
+    Csv(CsvConfiguration())
+
+@Suppress("LongParameterList")
+suspend inline fun <reified T : Any, reified R : ErrorFormattable> logError(
     serviceName: String,
     logger: KLogger?,
     methodName: String,
     json: Json,
     block: () -> T,
+    error: (R) -> Unit,
 ) =
     catchAndLog(
         logger,
@@ -51,6 +58,7 @@ suspend inline fun <reified T : Any, reified R : IErrorFormattable> requestCatch
         { exception ->
             json
                 .decodeFromString<R>(exception.response.readText())
+                .also(error)
                 .formatError()
         }
     ) {
@@ -71,19 +79,6 @@ inline fun <reified T> catchAndLog(
     } catch (e: ResponseException) {
         val error = errorHandler(e)
         logger?.error { "Request failed $methodName. Error response:\n\t$error" }
-        throw e
-    }
-
-suspend inline fun <reified T> catchAndLog(
-    logger: KLogger,
-    methodName: String,
-    block: () -> T,
-): T =
-    try {
-        block()
-    } catch (e: ResponseException) {
-        val error = e.response.readText()
-        logger.error { "Request failed $methodName. Error response:\n\t$error" }
         throw e
     }
 

@@ -4,8 +4,10 @@ import com.github.smaugfm.apis.MonoApis
 import com.github.smaugfm.apis.TelegramApi
 import com.github.smaugfm.workflows.CreateTransaction
 import com.github.smaugfm.workflows.HandleCallback
+import com.github.smaugfm.workflows.HandleCsv
 import com.github.smaugfm.workflows.ProcessError
-import com.github.smaugfm.workflows.SendMessage
+import com.github.smaugfm.workflows.RetryWithRateLimit
+import com.github.smaugfm.workflows.SendTransactionCreatedMessage
 import io.ktor.util.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -19,8 +21,10 @@ class YnabMonoApp : KoinComponent {
     val monoApis by inject<MonoApis>()
 
     val createTransaction by inject<CreateTransaction>()
-    val sendMessage by inject<SendMessage>()
+    val retryWithRateLimit by inject<RetryWithRateLimit>()
+    val sendTransactionCreatedMessage by inject<SendTransactionCreatedMessage>()
     val handleCallback by inject<HandleCallback>()
+    val handleCsv by inject<HandleCsv>()
     val processError by inject<ProcessError>()
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
@@ -35,17 +39,21 @@ class YnabMonoApp : KoinComponent {
         val webhookJob = monoApis.listenWebhooks(
             monoWebhookUrl,
             webhookPort,
-        ) handler@{
+        ) { responseData ->
             try {
-                val newTransaction = createTransaction(it) ?: return@handler
-                sendMessage(it, newTransaction)
+                retryWithRateLimit(responseData.account) retry@{
+                    val newTransaction = createTransaction(responseData) ?: return@retry
+                    sendTransactionCreatedMessage(responseData, newTransaction)
+                }
             } catch (e: Throwable) {
                 logger.error(e)
                 processError()
             }
         }
-        val telegramJob = telegramApi.listenForCallbacks {
-            handleCallback(it)
+        val telegramJob = telegramApi.start(
+            handleCallback::invoke,
+        ) { chatId, file ->
+            handleCsv(chatId, file)
         }
         logger.info { "Listening for Monobank webhooks and Telegram callbacks..." }
         webhookJob.join()

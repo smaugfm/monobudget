@@ -10,8 +10,8 @@ import com.github.smaugfm.models.TransactionUpdateType
 import com.github.smaugfm.models.TransactionUpdateType.Companion.buttonWord
 import com.github.smaugfm.models.YnabTransactionDetail
 import com.github.smaugfm.models.settings.Mappings
-import com.github.smaugfm.workflows.SendMessage.Companion.formatHTMLStatementMessage
-import com.github.smaugfm.workflows.SendMessage.Companion.formatInlineKeyboard
+import com.github.smaugfm.workflows.SendTransactionCreatedMessage.Companion.formatHTMLStatementMessage
+import com.github.smaugfm.workflows.SendTransactionCreatedMessage.Companion.formatInlineKeyboard
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -19,6 +19,7 @@ private val logger = KotlinLogging.logger {}
 
 class HandleCallback(
     private val telegram: TelegramApi,
+    private val retryWithRateLimit: RetryWithRateLimit,
     private val ynabApi: YnabApi,
     val mappings: Mappings,
 ) {
@@ -39,11 +40,21 @@ class HandleCallback(
                 )
             }
 
+        retryWithRateLimit(message.chat.id) {
+            updateAndSendMessage(type, callbackQueryId, message)
+        }
+    }
+
+    private suspend fun updateAndSendMessage(
+        type: TransactionUpdateType,
+        callbackQueryId: String,
+        message: Message
+    ) {
         val updatedTransaction = updateTransaction(type).also {
             telegram.answerCallbackQuery(callbackQueryId)
         }
 
-        val updatedText = updateHTMLStatementMessage(null, updatedTransaction, message)
+        val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
         val updatedMarkup = updateMarkupKeyboard(type, message.reply_markup!!)
 
         if (stripHTMLTagsFromMessage(updatedText) != message.text ||
@@ -85,7 +96,6 @@ class HandleCallback(
 
     @Suppress("MagicNumber")
     private fun updateHTMLStatementMessage(
-        accountAlias: String?,
         updatedTransaction: YnabTransactionDetail,
         oldMessage: Message,
     ): String {
@@ -99,7 +109,7 @@ class HandleCallback(
         val id = oldTextLines[6].trim()
 
         return formatHTMLStatementMessage(
-            accountAlias,
+            null,
             description,
             mcc,
             currencyText,

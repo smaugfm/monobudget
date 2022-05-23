@@ -1,11 +1,14 @@
 package com.github.smaugfm.models
 
 import com.github.smaugfm.models.serializers.CurrencyAsIntSerializer
+import com.github.smaugfm.models.serializers.CurrencyAsStringSerializer
+import com.github.smaugfm.models.serializers.HumanReadableDateSerializer
 import com.github.smaugfm.models.serializers.InstantAsLongSerializer
-import com.github.smaugfm.util.IErrorFormattable
+import com.github.smaugfm.util.ErrorFormattable
 import kotlinx.datetime.Instant
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 import java.util.Currency
 
 typealias MonoAccountId = String
@@ -51,7 +54,7 @@ data class MonoCurrencyInfo(
 @Serializable
 data class MonoErrorResponse(
     val errorDescription: String,
-) : IErrorFormattable {
+) : ErrorFormattable {
     override fun formatError() = errorDescription
 }
 
@@ -108,4 +111,20 @@ data class MonoWebhookResponse(
 data class MonoWebHookResponseData(
     val account: MonoAccountId,
     val statementItem: MonoStatementItem,
+)
+
+@Serializable
+data class MonoExportCsvRow(
+    @Serializable(with = HumanReadableDateSerializer::class)
+    val time: LocalDateTime,
+    val description: String,
+    val mcc: Int,
+    val amount: Double,
+    val operationAmount: Double,
+    @Serializable(with = CurrencyAsStringSerializer::class)
+    val currency: Currency,
+    val exchangeRate: Double,
+    val comission: Double,
+    val cashbackAmount: Double,
+    val balance: Double,
 )

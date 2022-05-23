@@ -14,8 +14,11 @@ import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.util.DEFAULT_HTTP_PORT
 import com.github.smaugfm.workflows.CreateTransaction
 import com.github.smaugfm.workflows.HandleCallback
+import com.github.smaugfm.workflows.HandleCsv
 import com.github.smaugfm.workflows.ProcessError
-import com.github.smaugfm.workflows.SendMessage
+import com.github.smaugfm.workflows.RetryWithRateLimit
+import com.github.smaugfm.workflows.SendHTMLMessageToTelegram
+import com.github.smaugfm.workflows.SendTransactionCreatedMessage
 import com.github.smaugfm.workflows.TransformStatementToYnabTransaction
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -60,9 +63,12 @@ class YnabMonoCommand : CliktCommand() {
                             )
                         }
                         single { CreateTransaction(get(), get(), get()) }
-                        single { SendMessage(get(), get()) }
+                        single { SendHTMLMessageToTelegram(get(), get()) }
+                        single { RetryWithRateLimit(get()) }
+                        single { SendTransactionCreatedMessage(get(), get()) }
                         single { ProcessError(get(), get()) }
-                        single { HandleCallback(get(), get(), get()) }
+                        single { HandleCallback(get(), get(), get(), get()) }
+                        single { HandleCsv(get(), get(), get()) }
                     }
                 )
             }

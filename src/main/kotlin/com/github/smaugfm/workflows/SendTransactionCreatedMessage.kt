@@ -2,7 +2,6 @@ package com.github.smaugfm.workflows
 
 import com.elbekD.bot.types.InlineKeyboardButton
 import com.elbekD.bot.types.InlineKeyboardMarkup
-import com.github.smaugfm.apis.TelegramApi
 import com.github.smaugfm.models.MonoStatementItem
 import com.github.smaugfm.models.MonoWebHookResponseData
 import com.github.smaugfm.models.TransactionUpdateType
@@ -19,7 +18,10 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class SendMessage(val mappings: Mappings, val telegramApi: TelegramApi) {
+class SendTransactionCreatedMessage(
+    val mappings: Mappings,
+    val sendMessage: SendHTMLMessageToTelegram
+) {
     suspend operator fun invoke(
         monoResponse: MonoWebHookResponseData,
         transaction: YnabTransactionDetail
@@ -39,8 +41,10 @@ class SendMessage(val mappings: Mappings, val telegramApi: TelegramApi) {
             return
         }
 
-        telegramApi.sendMessage(
-            mappings.getTelegramChatIdAccByMono(monoResponse.account) ?: return, msg, "HTML", markup = markup
+        sendMessage(
+            monoResponse.account,
+            msg,
+            markup
         )
     }
 
