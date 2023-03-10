@@ -1,7 +1,4 @@
 # ynab-mono
 
-Интеграция украинского банка [Monobank](https://www.monobank.ua/) в приложение для планирования бюджета [YNAB](https://www.youneedabudget.com/).
-
-- автоматическое добавление транзакций из Monobank
-- интерфейс посредством Telegram бота
-- work in progress и пока только для себя
+Automatically imports transactions from Ukrainian digital bank [Monobank](https://www.monobank.ua/) into [YNAB](https://www.youneedabudget.com/) budgeting app.
+This app is not in development anymore as I moved from YNAB to Lunchmoney.
