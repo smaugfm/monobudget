@@ -8,7 +8,7 @@ import com.github.smaugfm.models.YnabSaveTransaction
 import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.util.PayeeSuggestor
 import com.github.smaugfm.util.replaceNewLines
-import io.ktor.util.error
+import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred

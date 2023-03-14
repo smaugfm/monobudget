@@ -4,23 +4,22 @@ import com.github.smaugfm.models.MonoWebHookResponseData
 import com.github.smaugfm.models.MonoWebhookResponse
 import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.util.makeJson
-import io.ktor.application.call
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.origin
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.request.receive
-import io.ktor.request.uri
-import io.ktor.response.respond
-import io.ktor.routing.post
-import io.ktor.routing.routing
-import io.ktor.serialization.serialization
+import io.ktor.serialization.kotlinx.serialization
+import io.ktor.server.application.call
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.origin
+import io.ktor.server.request.receive
+import io.ktor.server.request.uri
+import io.ktor.server.response.respond
+import io.ktor.server.routing.post
+import io.ktor.server.routing.routing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.serialization.StringFormat
@@ -36,7 +35,6 @@ class MonoApis(
     val apis = settings.monoTokens.map(::MonoApi)
     private val json = makeJson()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun listenWebhooks(
         webhook: URI,
         port: Int,

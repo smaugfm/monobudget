@@ -1,6 +1,8 @@
 package com.github.smaugfm.workflows
 
-import com.elbekD.bot.types.ReplyKeyboard
+import com.elbekd.bot.model.ChatId
+import com.elbekd.bot.types.ParseMode
+import com.elbekd.bot.types.ReplyKeyboard
 import com.github.smaugfm.apis.TelegramApi
 import com.github.smaugfm.models.MonoAccountId
 import com.github.smaugfm.models.settings.Mappings
@@ -10,15 +12,15 @@ class SendHTMLMessageToTelegram(
     private val telegramApi: TelegramApi
 ) {
     suspend operator fun invoke(
-        chatId: Long,
+        chatId: ChatId,
         msg: String,
         markup: ReplyKeyboard? = null,
     ) {
         telegramApi.sendMessage(
             chatId,
             msg,
-            "HTML",
-            markup = markup
+            ParseMode.Html,
+            markup
         )
     }
 
@@ -28,7 +30,7 @@ class SendHTMLMessageToTelegram(
         markup: ReplyKeyboard? = null,
     ) {
         this.invoke(
-            mappings.getTelegramChatIdAccByMono(monoAccountId) ?: return,
+            mappings.getTelegramChatIdAccByMono(monoAccountId)?.let(ChatId::IntegerId) ?: return,
             msg,
             markup
         )

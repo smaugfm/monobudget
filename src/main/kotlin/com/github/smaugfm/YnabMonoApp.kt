@@ -4,11 +4,10 @@ import com.github.smaugfm.apis.MonoApis
 import com.github.smaugfm.apis.TelegramApi
 import com.github.smaugfm.workflows.CreateTransaction
 import com.github.smaugfm.workflows.HandleCallback
-import com.github.smaugfm.workflows.HandleCsv
 import com.github.smaugfm.workflows.ProcessError
 import com.github.smaugfm.workflows.RetryWithRateLimit
 import com.github.smaugfm.workflows.SendTransactionCreatedMessage
-import io.ktor.util.error
+import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -24,7 +23,6 @@ class YnabMonoApp : KoinComponent {
     val retryWithRateLimit by inject<RetryWithRateLimit>()
     val sendTransactionCreatedMessage by inject<SendTransactionCreatedMessage>()
     val handleCallback by inject<HandleCallback>()
-    val handleCsv by inject<HandleCsv>()
     val processError by inject<ProcessError>()
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
@@ -50,11 +48,7 @@ class YnabMonoApp : KoinComponent {
                 processError()
             }
         }
-        val telegramJob = telegramApi.start(
-            handleCallback::invoke,
-        ) { chatId, file ->
-            handleCsv(chatId, file)
-        }
+        val telegramJob = telegramApi.start(handleCallback::invoke)
         logger.info { "Listening for Monobank webhooks and Telegram callbacks..." }
         webhookJob.join()
         telegramJob.join()

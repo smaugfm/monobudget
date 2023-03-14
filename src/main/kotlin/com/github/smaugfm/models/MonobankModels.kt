@@ -28,7 +28,7 @@ data class MonoAccount(
     val creditLimit: Long,
     @Serializable(with = CurrencyAsIntSerializer::class)
     val currencyCode: Currency,
-    val cashbackType: MonoCashbackType,
+    val cashbackType: MonoCashbackType = MonoCashbackType.None,
     val iban: String,
     val maskedPan: List<String>,
     val type: String,

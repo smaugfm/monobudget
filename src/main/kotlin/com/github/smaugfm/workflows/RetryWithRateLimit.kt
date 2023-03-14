@@ -1,5 +1,6 @@
 package com.github.smaugfm.workflows
 
+import com.elbekd.bot.model.ChatId
 import com.github.smaugfm.models.MonoAccountId
 import com.github.smaugfm.util.YnabRateLimitException
 import kotlinx.coroutines.coroutineScope
@@ -24,7 +25,7 @@ class RetryWithRateLimit(private val sendMessage: SendHTMLMessageToTelegram) {
         }
     }
 
-    suspend operator fun invoke(chatId: Long, block: suspend () -> Unit) {
+    suspend operator fun invoke(chatId: ChatId, block: suspend () -> Unit) {
         try {
             block()
         } catch (e: YnabRateLimitException) {

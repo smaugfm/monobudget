@@ -8,7 +8,9 @@ import com.github.smaugfm.models.settings.Settings
 import com.uchuhimo.collections.biMapOf
 import org.junit.jupiter.api.Test
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.util.Currency
+import kotlin.io.path.readText
 
 class SettingsTest {
     @Test
@@ -51,6 +53,6 @@ class SettingsTest {
 
     @Test
     fun defaultLoad() {
-        assertThat { Settings.loadDefault() }.isSuccess()
+        assertThat { Settings.load(Paths.get("settings.json").readText()) }.isSuccess()
     }
 }

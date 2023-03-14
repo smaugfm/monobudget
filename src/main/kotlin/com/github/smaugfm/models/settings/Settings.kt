@@ -12,7 +12,6 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.Paths
 
 private val logger = KotlinLogging.logger {}
 
@@ -27,11 +26,12 @@ data class Settings(
 ) {
     companion object {
         fun load(path: Path): Settings =
-            Json.decodeFromString<Settings>(File(path.toString()).readText()).also {
+            load(File(path.toString()).readText())
+
+        fun load(content: String) =
+            Json.decodeFromString<Settings>(content).also {
                 logger.debug { "Loaded settings: $it" }
             }
-
-        fun loadDefault(): Settings = load(Paths.get("settings.json"))
     }
 
     @Suppress("unused")

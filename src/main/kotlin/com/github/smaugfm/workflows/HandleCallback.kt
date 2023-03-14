@@ -1,9 +1,11 @@
 package com.github.smaugfm.workflows
 
-import com.elbekD.bot.types.CallbackQuery
-import com.elbekD.bot.types.InlineKeyboardMarkup
-import com.elbekD.bot.types.Message
-import com.elbekD.bot.types.MessageEntity
+import com.elbekd.bot.model.ChatId
+import com.elbekd.bot.types.CallbackQuery
+import com.elbekd.bot.types.InlineKeyboardMarkup
+import com.elbekd.bot.types.Message
+import com.elbekd.bot.types.MessageEntity
+import com.elbekd.bot.types.ParseMode
 import com.github.smaugfm.apis.TelegramApi
 import com.github.smaugfm.apis.YnabApi
 import com.github.smaugfm.models.TransactionUpdateType
@@ -40,7 +42,7 @@ class HandleCallback(
                 )
             }
 
-        retryWithRateLimit(message.chat.id) {
+        retryWithRateLimit(ChatId.IntegerId(message.chat.id)) {
             updateAndSendMessage(type, callbackQueryId, message)
         }
     }
@@ -55,18 +57,18 @@ class HandleCallback(
         }
 
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
-        val updatedMarkup = updateMarkupKeyboard(type, message.reply_markup!!)
+        val updatedMarkup = updateMarkupKeyboard(type, message.replyMarkup!!)
 
         if (stripHTMLTagsFromMessage(updatedText) != message.text ||
-            updatedMarkup != message.reply_markup
+            updatedMarkup != message.replyMarkup
         ) {
             with(message) {
                 telegram.editMessage(
-                    chat.id,
-                    message_id,
-                    text = updatedText,
-                    parseMode = "HTML",
-                    markup = updatedMarkup
+                    ChatId.IntegerId(chat.id),
+                    messageId,
+                    updatedText,
+                    ParseMode.Html,
+                    updatedMarkup
                 )
             }
         }
@@ -81,13 +83,16 @@ class HandleCallback(
         val newTransaction = when (type) {
             is TransactionUpdateType.Uncategorize ->
                 saveTransaction.copy(category_id = null, payee_name = null, payee_id = null)
+
             is TransactionUpdateType.Unapprove ->
                 saveTransaction.copy(approved = false)
+
             is TransactionUpdateType.Unknown -> saveTransaction.copy(
                 payee_id = mappings.unknownPayeeId,
                 category_id = mappings.unknownCategoryId,
                 payee_name = null
             )
+
             is TransactionUpdateType.MakePayee -> saveTransaction.copy(payee_id = null, payee_name = type.payee)
         }
 
@@ -101,7 +106,7 @@ class HandleCallback(
     ): String {
         val oldText = oldMessage.text!!
         val oldTextLines = oldText.split("\n").filter { it.isNotBlank() }
-        val description = oldMessage.entities?.find { it.type == MessageEntity.Types.BOLD.type }
+        val description = oldMessage.entities.find { it.type == MessageEntity.Type.BOLD }
             ?.run { oldMessage.text!!.substring(offset, offset + length) }!!
 
         val mcc = oldTextLines[2].trim()
@@ -133,7 +138,7 @@ class HandleCallback(
 
     private fun pressedButtons(oldKeyboard: InlineKeyboardMarkup): Set<KClass<out TransactionUpdateType>> =
         oldKeyboard
-            .inline_keyboard
+            .inlineKeyboard
             .flatten()
             .filter { it.text.contains(TransactionUpdateType.pressedChar) }
             .mapNotNull { button ->

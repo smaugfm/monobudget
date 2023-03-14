@@ -1,7 +1,7 @@
 package com.github.smaugfm.workflows
 
-import com.elbekD.bot.types.InlineKeyboardButton
-import com.elbekD.bot.types.InlineKeyboardMarkup
+import com.elbekd.bot.types.InlineKeyboardButton
+import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.github.smaugfm.models.MonoStatementItem
 import com.github.smaugfm.models.MonoWebHookResponseData
 import com.github.smaugfm.models.TransactionUpdateType
@@ -129,7 +129,7 @@ class SendTransactionCreatedMessage(
         ) =
             with(T::class) {
                 InlineKeyboardButton(
-                    buttonText<T>(this in pressed), callback_data = serialize<T>()
+                    buttonText<T>(this in pressed), callbackData = serialize<T>()
                 )
             }
     }

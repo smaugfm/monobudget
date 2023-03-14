@@ -10,7 +10,7 @@ import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
 class ExpiringMap<T : Any, K>(
-    val expirationTime: Duration,
+    private val expirationTime: Duration,
     private val map: ConcurrentHashMap<T, K> = ConcurrentHashMap()
 ) : Map<T, K> by map {
     private val coroutineScope =

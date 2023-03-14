@@ -2,7 +2,7 @@ import com.github.breadmoirai.githubreleaseplugin.GithubReleaseTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    val kotlin = "1.6.10"
+    val kotlin = "1.8.10"
 
     kotlin("jvm") version kotlin
     kotlin("plugin.serialization") version kotlin
@@ -19,9 +19,8 @@ val version: String by project
 val githubToken: String? by project
 
 repositories {
-    maven(url = "https://jitpack.io")
     mavenCentral()
-    maven(url = "https://kotlin.bintray.com/kotlinx")
+    maven("https://jitpack.io")
 }
 
 detekt {
@@ -63,9 +62,6 @@ tasks.withType<GithubReleaseTask>().configureEach {
 tasks {
     withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "11"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.time.ExperimentalTime"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-        kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlinx.serialization.ExperimentalSerializationApi"
     }
 
     test {
@@ -86,32 +82,32 @@ tasks {
 }
 
 dependencies {
-    val ktor = "1.6.7"
+    val ktor = "2.2.4"
 
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("io.insert-koin:koin-core:3.1.5")
+    implementation("io.insert-koin:koin-core:3.3.3")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines:0.19.2")
-    implementation("com.github.elbekD:kt-telegram-bot:1.4.1")
-    implementation("com.github.ajalt.clikt:clikt:3.4.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
-    implementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:1.1.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("com.github.elbekD:kt-telegram-bot:2.2.0")
+    implementation("com.github.ajalt.clikt:clikt:3.5.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
+    implementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:2.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("io.ktor:ktor-server-core:$ktor")
     implementation("io.ktor:ktor-server-netty:$ktor")
-    implementation("io.ktor:ktor-serialization:$ktor")
     implementation("io.ktor:ktor-client-core:$ktor")
     implementation("io.ktor:ktor-client-cio:$ktor")
-    implementation("io.ktor:ktor-client-json:$ktor")
-    implementation("io.ktor:ktor-client-serialization:$ktor")
-    implementation("io.github.microutils:kotlin-logging:2.1.21")
-    implementation("org.slf4j:slf4j-simple:1.7.35")
-    implementation("com.google.code.gson:gson:2.8.9")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktor")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktor")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor")
+    implementation("io.github.microutils:kotlin-logging:3.0.5")
+    implementation("org.slf4j:slf4j-simple:2.0.6")
+    implementation("com.google.code.gson:gson:2.10.1")
 
-    val junit = "5.8.2"
+    val junit = "5.9.2"
 
-    testImplementation("io.mockk:mockk:1.12.2")
+    testImplementation("io.mockk:mockk:1.13.4")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit")

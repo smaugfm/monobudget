@@ -1,21 +1,19 @@
 package com.github.smaugfm.apis
 
-import com.elbekD.bot.Bot
-import com.elbekD.bot.http.await
-import com.elbekD.bot.types.CallbackQuery
-import com.elbekD.bot.types.InlineKeyboardMarkup
-import com.elbekD.bot.types.ReplyKeyboard
+import com.elbekd.bot.Bot
+import com.elbekd.bot.model.ChatId
+import com.elbekd.bot.types.CallbackQuery
+import com.elbekd.bot.types.InlineKeyboardMarkup
+import com.elbekd.bot.types.ParseMode
+import com.elbekd.bot.types.ReplyKeyboard
 import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.util.pp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.future.asDeferred
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import java.net.URL
 
 private val logger = KotlinLogging.logger {}
 
@@ -26,83 +24,61 @@ class TelegramApi(
     private val bot: Bot =
         Bot.createPolling(settings.telegramBotUsername, settings.telegramBotToken)
 
-    @Suppress("LongParameterList")
     suspend fun sendMessage(
-        chatId: Any,
+        chatId: ChatId,
         text: String,
-        parseMode: String? = null,
-        disableWebPagePreview: Boolean? = null,
-        disableNotification: Boolean? = null,
-        replyTo: Long? = null,
-        markup: ReplyKeyboard? = null,
+        parseMode: ParseMode? = null,
+        replyMarkup: ReplyKeyboard? = null
     ) {
         bot.sendMessage(
             chatId,
             text,
+            null,
             parseMode,
             null,
-            disableWebPagePreview,
-            disableNotification,
-            replyTo,
             null,
-            markup
-        ).asDeferred().also {
-            logger.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}" }
-        }.await()
+            true,
+            null,
+            null,
+            null,
+            replyMarkup
+        ).also {
+            logger.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup?.pp()}" }
+        }
     }
 
     @Suppress("LongParameterList")
     suspend fun editMessage(
-        chatId: Any? = null,
-        messageId: Long? = null,
-        inlineMessageId: String? = null,
+        chatId: ChatId,
+        messageId: Long,
         text: String,
-        parseMode: String? = null,
-        disableWebPagePreview: Boolean? = null,
-        markup: InlineKeyboardMarkup? = null,
+        parseMode: ParseMode,
+        replyMarkup: InlineKeyboardMarkup
     ) {
         bot.editMessageText(
             chatId,
             messageId,
-            inlineMessageId,
+            null,
             text,
             parseMode,
             null,
-            disableWebPagePreview,
-            markup
-        ).asDeferred().also {
-            logger.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${markup?.pp()}" }
-        }.await()
+            false,
+            replyMarkup
+        ).also {
+            logger.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup.pp()}" }
+        }
     }
 
     suspend fun answerCallbackQuery(id: String, text: String? = null) {
-        bot.answerCallbackQuery(id, text = text).asDeferred().await()
+        bot.answerCallbackQuery(id, text = text)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     fun start(
         callbackHandler: suspend (CallbackQuery) -> Unit,
-        csvFileHandler: suspend (Long, String) -> Unit,
     ): Job {
         bot.onCallbackQuery {
             logger.debug { "Received callbackQuery.\n\t$it" }
             callbackHandler(it)
-        }
-        bot.onMessage { msg ->
-            val doc = msg.document
-            if (doc != null && doc.file_name?.endsWith(".csv") == true) {
-                val file = bot.getFile(doc.file_id).await()
-                val url = URL(
-                    "https://api.telegram.org/" +
-                        "file/${settings.telegramBotToken}/${file.file_path}"
-                )
-                csvFileHandler(
-                    msg.chat.id,
-                    withContext(Dispatchers.IO) {
-                        url.openStream().readAllBytes().toString(Charsets.UTF_8)
-                    }
-                )
-            }
         }
         return scope.launch(context = Dispatchers.IO) {
             bot.start()

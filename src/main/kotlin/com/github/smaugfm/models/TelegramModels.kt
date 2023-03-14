@@ -1,8 +1,8 @@
 package com.github.smaugfm.models
 
-import com.elbekD.bot.types.Message
-import com.elbekD.bot.types.MessageEntity
-import io.ktor.util.error
+import com.elbekd.bot.types.Message
+import com.elbekd.bot.types.MessageEntity
+import io.ktor.util.logging.error
 import mu.KotlinLogging
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -68,7 +68,7 @@ sealed class TransactionUpdateType {
             else
                 "${T::class.buttonSymbol()}${T::class.buttonWord()}"
 
-        fun extractDescriptionAndTransactionId(message: Message): Pair<String, String>? {
+        private fun extractDescriptionAndTransactionId(message: Message): Pair<String, String>? {
             val text = message.text!!
             val id = try {
                 UUID.fromString(text.substring(text.length - UUIDwidth, text.length))
@@ -77,7 +77,7 @@ sealed class TransactionUpdateType {
                 return null
             }.toString()
             val payee =
-                message.entities?.find { it.type == MessageEntity.Types.BOLD.type }?.run {
+                message.entities.find { it.type == MessageEntity.Type.BOLD }?.run {
                     text.substring(offset, offset + length)
                 } ?: return null
 

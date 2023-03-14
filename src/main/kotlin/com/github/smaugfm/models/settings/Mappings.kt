@@ -2,6 +2,7 @@
 
 package com.github.smaugfm.models.settings
 
+import com.elbekd.bot.model.ChatId
 import com.github.smaugfm.models.MonoAccountId
 import com.github.smaugfm.models.serializers.CurrencyAsStringSerializer
 import com.github.smaugfm.models.serializers.HashBiMapAsMapSerializer
@@ -43,12 +44,6 @@ data class Mappings(
         monoAccToTelegram[monoAcc].also {
             if (it == null)
                 logger.error { "Could not find Telegram chatID for Monobank account $monoAcc" }
-        }
-
-    fun getMonoAccIdByTelegramChatId(chatId: Long) =
-        monoAccToTelegram.inverse[chatId].also {
-            if (it == null)
-                logger.error { "Could not find Monobank account for Telegram chatID $chatId" }
         }
 
     fun getMonoAccAlias(string: MonoAccountId): String? {

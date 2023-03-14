@@ -4,14 +4,12 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
-import io.ktor.client.features.ResponseException
-import io.ktor.client.statement.readText
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.statement.bodyAsText
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.csv.Csv
-import kotlinx.serialization.csv.CsvConfiguration
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KLogger
@@ -40,9 +38,6 @@ fun makeJson(): Json =
         ignoreUnknownKeys = true
     }
 
-fun makeCsv(): Csv =
-    Csv(CsvConfiguration())
-
 @Suppress("LongParameterList")
 suspend inline fun <reified T : Any, reified R : ErrorFormattable> logError(
     serviceName: String,
@@ -57,7 +52,7 @@ suspend inline fun <reified T : Any, reified R : ErrorFormattable> logError(
         methodName,
         { exception ->
             json
-                .decodeFromString<R>(exception.response.readText())
+                .decodeFromString<R>(exception.response.bodyAsText())
                 .also(error)
                 .formatError()
         }

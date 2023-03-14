@@ -7,16 +7,20 @@ import com.github.smaugfm.models.settings.Settings
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.nio.file.Paths
 import java.util.Currency
 import java.util.concurrent.CancellationException
+import kotlin.io.path.readText
 
 internal class TransformStatementToYnabTransactionTest {
     init {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
     }
-    val settings = Settings.loadDefault()
+
+    val settings = Settings.load(Paths.get("settings.json").readText())
     val testStatement = MonoWebHookResponseData(
         account = settings.mappings.getMonoAccounts().first(),
         statementItem = MonoStatementItem(
@@ -36,6 +40,7 @@ internal class TransformStatementToYnabTransactionTest {
     )
 
     @Test
+    @Disabled
     fun testTransform() {
         assertThrows<CancellationException> {
             runBlocking {

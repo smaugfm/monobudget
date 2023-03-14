@@ -1,5 +1,6 @@
 package com.github.smaugfm.workflows
 
+import com.elbekd.bot.model.ChatId
 import com.github.smaugfm.apis.TelegramApi
 import com.github.smaugfm.models.settings.Mappings
 
@@ -8,7 +9,7 @@ class ProcessError(val mappings: Mappings, val telegramApi: TelegramApi) {
         mappings
             .getTelegramChatIds()
             .forEach { chatId ->
-                telegramApi.sendMessage(chatId, TelegramApi.UNKNOWN_ERROR_MSG)
+                telegramApi.sendMessage(ChatId.IntegerId(chatId), TelegramApi.UNKNOWN_ERROR_MSG)
             }
     }
 }
