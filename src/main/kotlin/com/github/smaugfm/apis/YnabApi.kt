@@ -57,8 +57,8 @@ class YnabApi(settings: Settings) {
     private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = logError<T, YnabErrorResponse>("YNAB", logger, method.name, json, block) {
-        if (it.error.id == "429") {
+    ): T = logError("YNAB", logger, method.name, json, block) {
+        if (it.response.status.value == 429) {
             throw YnabRateLimitException()
         }
     }
@@ -66,17 +66,11 @@ class YnabApi(settings: Settings) {
     private suspend inline fun <reified T : Any> catchingNoLogging(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = logError<T, YnabErrorResponse>("YNAB", null, method.name, json, block) {
-        if (it.error.id == "429") {
+    ): T = logError("YNAB", null, method.name, json, block) {
+        if (it.response.status.value == 429) {
             throw YnabRateLimitException()
         }
     }
-
-    suspend fun getAccounts(): List<YnabAccount> =
-        catching(this::getAccounts) {
-            httpClient.get(buildUrl("budgets", budgetId, "accounts"))
-                .body<YnabAccountsResponse>()
-        }.data.accounts
 
     suspend fun getAccount(accountId: String): YnabAccount =
         catching(this::getAccount) {
@@ -89,12 +83,6 @@ class YnabApi(settings: Settings) {
             httpClient.get(buildUrl("budgets", budgetId, "payees"))
                 .body<YnabPayeesResponse>()
         }.data.payees
-
-    suspend fun getCategories(): List<YnabCategoryGroupWithCategories> =
-        catching(this::getCategories) {
-            httpClient.get(buildUrl("budgets", budgetId, "categories"))
-                .body<YnabCategoriesResponse>()
-        }.data.category_groups
 
     suspend fun createTransaction(
         transaction: YnabSaveTransaction,
@@ -135,19 +123,4 @@ class YnabApi(settings: Settings) {
                 )
             ).body<YnabTransactionResponse>()
         }.data.transaction
-
-    suspend fun getAccountTransactions(
-        accountId: String,
-    ): List<YnabTransactionDetail> =
-        catching(this::getAccountTransactions) {
-            httpClient.get(
-                buildUrl(
-                    "budgets",
-                    budgetId,
-                    "accounts",
-                    accountId,
-                    "transactions"
-                )
-            ).body<YnabTransactionsResponse>()
-        }.data.transactions
 }

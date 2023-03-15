@@ -1,6 +1,7 @@
 build/
 out/
 .gradle/
+.idea/misc.xml
 
 settings.json
 docker-compose.yml

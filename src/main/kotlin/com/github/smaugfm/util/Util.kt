@@ -5,12 +5,10 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import io.ktor.client.plugins.ResponseException
-import io.ktor.client.statement.bodyAsText
 import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KLogger
 import java.lang.reflect.Type
@@ -39,22 +37,21 @@ fun makeJson(): Json =
     }
 
 @Suppress("LongParameterList")
-suspend inline fun <reified T : Any, reified R : ErrorFormattable> logError(
+suspend inline fun <reified T : Any> logError(
     serviceName: String,
     logger: KLogger?,
     methodName: String,
     json: Json,
     block: () -> T,
-    error: (R) -> Unit,
+    error: (ResponseException) -> Unit,
 ) =
     catchAndLog(
         logger,
         methodName,
         { exception ->
-            json
-                .decodeFromString<R>(exception.response.bodyAsText())
+            exception
                 .also(error)
-                .formatError()
+                .toString()
         }
     ) {
         logger?.debug { "Performing $serviceName request $methodName" }

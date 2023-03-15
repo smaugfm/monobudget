@@ -1,9 +1,5 @@
 package com.github.smaugfm.apis
 
-import com.github.smaugfm.models.MonoAccountId
-import com.github.smaugfm.models.MonoCurrencyInfo
-import com.github.smaugfm.models.MonoErrorResponse
-import com.github.smaugfm.models.MonoStatementItem
 import com.github.smaugfm.models.MonoUserInfo
 import com.github.smaugfm.models.MonoWebHookRequest
 import com.github.smaugfm.util.logError
@@ -28,9 +24,6 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import mu.KotlinLogging
 import java.net.URI
 import java.net.URL
@@ -44,7 +37,6 @@ class MonoApi(private val token: String) {
     }
 
     private val json = makeJson()
-    private var previousStatementCallTimestamp = Long.MIN_VALUE / 2
 
     private val httpClient = HttpClient {
         defaultRequest {
@@ -58,17 +50,9 @@ class MonoApi(private val token: String) {
     private suspend inline fun <reified T : Any> catching(
         method: KFunction<Any>,
         block: () -> T,
-    ): T = logError<T, MonoErrorResponse>("Monobank", logger, method.name, json, block) {
+    ): T = logError("Monobank", logger, method.name, json, block) {
         // do nothing
     }
-
-    @Suppress("unused")
-    suspend fun fetchUserInfo(): MonoUserInfo =
-        catching(this::fetchUserInfo) {
-            httpClient.get {
-                url(buildUrl("personal/client-info"))
-            }.body()
-        }
 
     suspend fun setWebHook(url: URI, port: Int): Boolean {
         require(url.toASCIIString() == url.toString())
@@ -106,36 +90,7 @@ class MonoApi(private val token: String) {
         return true
     }
 
-    suspend fun fetchStatementItems(
-        id: MonoAccountId,
-        from: Instant,
-        to: Instant = Clock.System.now(),
-    ): List<MonoStatementItem> {
-        val currentTime = System.currentTimeMillis()
-        if (currentTime - previousStatementCallTimestamp < StatementCallRate) {
-            delay(StatementCallRate - (currentTime - previousStatementCallTimestamp))
-        }
-
-        return catching(this::fetchStatementItems) {
-            httpClient.get {
-                url(buildUrl("personal/statement/$id/${from.epochSeconds}/${to.epochSeconds}"))
-            }.body<List<MonoStatementItem>>()
-                .also {
-                    previousStatementCallTimestamp = System.currentTimeMillis()
-                }
-        }
-    }
-
-    @Suppress("unused")
-    suspend fun fetchBankCurrency(): List<MonoCurrencyInfo> =
-        catching(this::fetchBankCurrency) {
-            httpClient.get {
-                url(buildUrl("bank/currency"))
-            }.body()
-        }
-
     companion object {
-        private const val StatementCallRate = 60000
         private const val serverStopGracePeriod = 100L
         private fun buildUrl(endpoint: String) = URL("https://api.monobank.ua/$endpoint")
     }
