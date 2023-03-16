@@ -1,10 +1,10 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service.telegram
 
 import com.elbekd.bot.model.ChatId
 import com.github.smaugfm.api.TelegramApi
 import com.github.smaugfm.models.settings.Mappings
 
-class ProcessError(val mappings: Mappings, val telegramApi: TelegramApi) {
+class TelegramErrorUnknownErrorHandler(private val mappings: Mappings, private val telegramApi: TelegramApi) {
     suspend operator fun invoke() {
         mappings
             .getTelegramChatIds()

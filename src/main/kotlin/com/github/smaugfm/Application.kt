@@ -2,11 +2,11 @@ package com.github.smaugfm
 
 import com.github.smaugfm.server.MonoWebhookListenerServer
 import com.github.smaugfm.api.TelegramApi
-import com.github.smaugfm.workflow.CreateTransaction
-import com.github.smaugfm.workflow.HandleTelegramCallback
-import com.github.smaugfm.workflow.ProcessError
-import com.github.smaugfm.workflow.RetryWithRateLimit
-import com.github.smaugfm.workflow.SendTransactionCreatedMessage
+import com.github.smaugfm.service.ynab.CreateYnabTransaction
+import com.github.smaugfm.service.telegram.TelegramCallbackHandler
+import com.github.smaugfm.service.telegram.TelegramErrorUnknownErrorHandler
+import com.github.smaugfm.service.ynab.RetryWithYnabRateLimit
+import com.github.smaugfm.service.ynab.SendYnabTransactionCreatedMessage
 import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -19,11 +19,11 @@ class Application : KoinComponent {
     private val telegramApi by inject<TelegramApi>()
     private val monoApis by inject<MonoWebhookListenerServer>()
 
-    private val createTransaction by inject<CreateTransaction>()
-    private val retryWithRateLimit by inject<RetryWithRateLimit>()
-    private val sendTransactionCreatedMessage by inject<SendTransactionCreatedMessage>()
-    private val handleCallback by inject<HandleTelegramCallback>()
-    private val processError by inject<ProcessError>()
+    private val createTransaction by inject<CreateYnabTransaction>()
+    private val retryWithRateLimit by inject<RetryWithYnabRateLimit>()
+    private val sendTransactionCreatedMessage by inject<SendYnabTransactionCreatedMessage>()
+    private val handleCallback by inject<TelegramCallbackHandler>()
+    private val processError by inject<TelegramErrorUnknownErrorHandler>()
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
         if (setWebhook) {

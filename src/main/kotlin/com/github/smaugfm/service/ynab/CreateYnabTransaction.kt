@@ -1,9 +1,9 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service.ynab
 
 import com.github.smaugfm.api.YnabApi
+import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.models.ynab.YnabCleared
 import com.github.smaugfm.models.ynab.YnabTransactionDetail
-import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.util.ExpiringMap
 import com.github.smaugfm.util.SimpleCache
 import io.github.smaugfm.monobank.model.MonoStatementItem
@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.minutes
 
 private val logger = KotlinLogging.logger {}
 
-class CreateTransaction(
+class CreateYnabTransaction(
     private val ynab: YnabApi,
     private val mappings: Mappings,
     private val transform: TransformStatementToYnabTransaction,

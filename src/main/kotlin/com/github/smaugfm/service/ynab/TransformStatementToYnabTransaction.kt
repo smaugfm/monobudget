@@ -1,11 +1,11 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service.ynab
 
 import com.github.smaugfm.api.YnabApi
+import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.models.ynab.YnabCleared
 import com.github.smaugfm.models.ynab.YnabPayee
 import com.github.smaugfm.models.ynab.YnabSaveTransaction
-import com.github.smaugfm.models.settings.Mappings
-import com.github.smaugfm.util.PayeeSuggestor
+import com.github.smaugfm.util.PayeeSuggestingService
 import com.github.smaugfm.util.replaceNewLines
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.ktor.util.logging.error
@@ -31,7 +31,6 @@ class TransformStatementToYnabTransaction(
 ) {
     @Volatile
     private var payees: Deferred<List<YnabPayee>>
-    private val payeeSuggestor = PayeeSuggestor()
 
     init {
         logger.debug { "Launching periodic getPayees fetching." }
@@ -58,7 +57,9 @@ class TransformStatementToYnabTransaction(
     suspend operator fun invoke(response: MonoWebhookResponseData): YnabSaveTransaction {
         logger.debug { "Transforming Monobank statement to Ynab transaction." }
         val suggestedPayee =
-            payeeSuggestor(response.statementItem.description, payees.await().map { it.name })
+            PayeeSuggestingService.suggest(
+                response.statementItem.description ?: "",
+                payees.await().map { it.name })
                 .firstOrNull()
         val mccCategoryOverride = mappings.getMccCategoryOverride(response.statementItem.mcc)
 
@@ -70,7 +71,7 @@ class TransformStatementToYnabTransaction(
             payeeId = null,
             payeeName = suggestedPayee,
             categoryId = mccCategoryOverride,
-            memo = response.statementItem.description.replaceNewLines(),
+            memo = (response.statementItem.description ?: "").replaceNewLines(),
             cleared = YnabCleared.cleared,
             approved = true,
             flagColor = null,

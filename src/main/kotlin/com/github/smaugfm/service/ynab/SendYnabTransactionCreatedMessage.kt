@@ -1,4 +1,4 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service.ynab
 
 import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
@@ -10,6 +10,7 @@ import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.util.replaceNewLines
+import com.github.smaugfm.service.telegram.TelegramHTMLMessageSender
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import mu.KotlinLogging
@@ -18,9 +19,9 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class SendTransactionCreatedMessage(
+class SendYnabTransactionCreatedMessage(
     val mappings: Mappings,
-    val sendMessage: SendHTMLMessageToTelegram
+    val sendMessage: TelegramHTMLMessageSender
 ) {
     suspend operator fun invoke(
         monoResponse: MonoWebhookResponseData,
@@ -114,7 +115,7 @@ class SendTransactionCreatedMessage(
                 val operationAmount = formatAmountWithCurrency(this.operationAmount, currencyCode)
                 return formatHTMLStatementMessage(
                     accountAlias,
-                    description.replaceNewLines(),
+                    (description ?: "").replaceNewLines(),
                     (MCC.map[mcc]?.shortDescription ?: "Невідомий MCC") + " ($mcc)",
                     accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),
                     transaction.categoryName ?: "",

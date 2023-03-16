@@ -1,4 +1,4 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service.telegram
 
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.ParseMode
@@ -6,7 +6,7 @@ import com.elbekd.bot.types.ReplyKeyboard
 import com.github.smaugfm.api.TelegramApi
 import com.github.smaugfm.models.settings.Mappings
 
-class SendHTMLMessageToTelegram(
+class TelegramHTMLMessageSender(
     private val mappings: Mappings,
     private val telegramApi: TelegramApi
 ) {

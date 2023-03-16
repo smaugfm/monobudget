@@ -1,7 +1,8 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service
 
 import com.github.smaugfm.api.YnabApi
 import com.github.smaugfm.models.settings.Settings
+import com.github.smaugfm.service.ynab.TransformStatementToYnabTransaction
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import kotlinx.coroutines.cancel
@@ -35,7 +36,13 @@ internal class TransformStatementToYnabTransactionTest {
             commissionRate = 0,
             cashbackAmount = 0,
             balance = 1674202,
-            hold = true
+            hold = true,
+            originalMcc = 4829,
+            receiptId = "vasa",
+            invoiceId = "vasa",
+            counterEdrpou = "vasa",
+            counterIban = "vasa",
+            counterName = "vasa"
         )
     )
 

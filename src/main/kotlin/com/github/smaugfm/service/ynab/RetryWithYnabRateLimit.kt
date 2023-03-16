@@ -1,14 +1,15 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service.ynab
 
 import com.elbekd.bot.model.ChatId
 import com.github.smaugfm.util.YnabRateLimitException
+import com.github.smaugfm.service.telegram.TelegramHTMLMessageSender
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.LocalDateTime
 
-class RetryWithRateLimit(private val sendMessage: SendHTMLMessageToTelegram) {
+class RetryWithYnabRateLimit(private val sendMessage: TelegramHTMLMessageSender) {
     private val message = "Сильно багато запитів до YNAB API. " +
         "Я спробую знову через деякий час"
 

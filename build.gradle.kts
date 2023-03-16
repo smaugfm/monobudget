@@ -33,7 +33,9 @@ dependencies {
 
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("io.github.smaugfm:monobank:0.0.+")
+    implementation("io.github.smaugfm:monobank:0.0.1-SNAPSHOT") {
+        isChanging = true
+    }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("io.insert-koin:koin-core:3.3.3")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
@@ -56,6 +58,10 @@ dependencies {
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit")
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor(1, TimeUnit.SECONDS)
 }
 
 configure<KtlintExtension> {
@@ -123,7 +129,7 @@ tasks {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("fat")
         manifest {
-            attributes(mapOf("Main-Class" to "com.github.smaugfm.YnabMonoCommandKt"))
+            attributes(mapOf("Main-Class" to "com.github.smaugfm.MainKt"))
         }
     }
 

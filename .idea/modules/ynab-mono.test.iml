@@ -15,12 +15,13 @@
             <stringArg name="classpath">
               <args>
                 <arg>$MODULE_DIR$/../../build/classes/kotlin/main</arg>
+                <arg>$MODULE_DIR$/../../build/resources/main</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.ktor/ktor-server-content-negotiation-jvm/2.2.4/e1112e49ae6ea1a4b8aef6e6950f7d3fe4897ccb/ktor-server-content-negotiation-jvm-2.2.4.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.ktor/ktor-server-netty-jvm/2.2.4/c1c38d575c80e17b252d9caf811a09d395316901/ktor-server-netty-jvm-2.2.4.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.ktor/ktor-server-host-common-jvm/2.2.4/7a7dff7672a67e10293c887b4232ea3722824b3/ktor-server-host-common-jvm-2.2.4.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.ktor/ktor-server-core-jvm/2.2.4/74c77c5cf1b6c7fb8394eb7d1251b68b39497c7/ktor-server-core-jvm-2.2.4.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-reflect/1.8.10/1e90b778ea4669b6bcbfaca57313665ddd804779/kotlin-reflect-1.8.10.jar</arg>
-                <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.github.smaugfm/monobank/0.0.1-SNAPSHOT/2521ffcb1366977fddc48481c9654b9bcd13b6eb/monobank-0.0.1-SNAPSHOT.jar</arg>
+                <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.github.smaugfm/monobank/0.0.1-SNAPSHOT/e592680fa547137e080b8063ba7a6254ac2077e5/monobank-0.0.1-SNAPSHOT.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlinx/kotlinx-coroutines-reactive/1.6.4/e35b77a7cb75319cc59d4a174c58739887c4aafc/kotlinx-coroutines-reactive-1.6.4.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.ktor/ktor-client-cio-jvm/2.2.4/f42433246a8425edda4250e7ff5c3995d5f451fa/ktor-client-cio-jvm-2.2.4.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.ktor/ktor-client-content-negotiation-jvm/2.2.4/8ed92855654138bb87c1e45c7975e918fa260e54/ktor-client-content-negotiation-jvm-2.2.4.jar</arg>
@@ -44,7 +45,6 @@
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/de.brudaswen.kotlinx.serialization/kotlinx-serialization-csv/2.0.0/83ae0d3196bfc257b5e70f1c4830c21bc11035ee/kotlinx-serialization-csv-2.0.0.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.willowtreeapps.assertk/assertk-jvm/0.25/d73c9ae2bf9c06fed343e26157522f67e0a4d5b6/assertk-jvm-0.25.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.insert-koin/koin-core-jvm/3.3.3/125216617ea8d01d523c758d638f67a2fba639d5/koin-core-jvm-3.3.3.jar</arg>
-                <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.ajalt.clikt/clikt-jvm/3.5.2/c2260b9cd50ee1a2c68936b72235b19e001cf8c1/clikt-jvm-3.5.2.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.github.microutils/kotlin-logging-jvm/3.0.5/82f2256aeedccfd9c27ea585274a50bf06517383/kotlin-logging-jvm-3.0.5.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.mockk/mockk-jvm/1.13.4/e57714f14d47597dc875ce32e2fabc21ab3fae05/mockk-jvm-1.13.4.jar</arg>
                 <arg>$USER_HOME$/.gradle/caches/modules-2/files-2.1/io.mockk/mockk-dsl-jvm/1.13.4/1325a59316ede5cc6069ea0dc0557660903efe75/mockk-dsl-jvm-1.13.4.jar</arg>
@@ -178,7 +178,6 @@
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-coroutines-reactive:1.6.4" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlin:kotlin-stdlib-common:1.8.10" level="project" />
     <orderEntry type="library" name="Gradle: io.insert-koin:koin-core-jvm:3.3.3" level="project" />
-    <orderEntry type="library" name="Gradle: com.github.ajalt.clikt:clikt-jvm:3.5.2" level="project" />
     <orderEntry type="library" name="Gradle: io.github.microutils:kotlin-logging-jvm:3.0.5" level="project" />
     <orderEntry type="library" name="Gradle: io.mockk:mockk-jvm:1.13.4" level="project" />
     <orderEntry type="library" name="Gradle: org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.5.0" level="project" />

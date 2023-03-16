@@ -1,4 +1,4 @@
-package com.github.smaugfm.workflow
+package com.github.smaugfm.service.telegram
 
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.CallbackQuery
@@ -12,16 +12,17 @@ import com.github.smaugfm.models.TransactionUpdateType
 import com.github.smaugfm.models.TransactionUpdateType.Companion.buttonWord
 import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.models.settings.Mappings
-import com.github.smaugfm.workflow.SendTransactionCreatedMessage.Companion.formatHTMLStatementMessage
-import com.github.smaugfm.workflow.SendTransactionCreatedMessage.Companion.formatInlineKeyboard
+import com.github.smaugfm.service.ynab.SendYnabTransactionCreatedMessage.Companion.formatHTMLStatementMessage
+import com.github.smaugfm.service.ynab.SendYnabTransactionCreatedMessage.Companion.formatInlineKeyboard
+import com.github.smaugfm.service.ynab.RetryWithYnabRateLimit
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class HandleTelegramCallback(
+class TelegramCallbackHandler(
     private val telegram: TelegramApi,
-    private val retryWithRateLimit: RetryWithRateLimit,
+    private val retryWithRateLimit: RetryWithYnabRateLimit,
     private val ynabApi: YnabApi,
     val mappings: Mappings,
 ) {
