@@ -2,15 +2,15 @@ package com.github.smaugfm.service.ynab
 
 import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
+import com.elbekd.bot.types.ReplyKeyboard
 import com.github.smaugfm.models.TransactionUpdateType
 import com.github.smaugfm.models.TransactionUpdateType.Companion.buttonText
 import com.github.smaugfm.models.TransactionUpdateType.Companion.serialize
-import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.models.settings.Mappings
+import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.util.replaceNewLines
-import com.github.smaugfm.service.telegram.TelegramHTMLMessageSender
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import mu.KotlinLogging
@@ -19,14 +19,13 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class SendYnabTransactionCreatedMessage(
+class YnabTransactionTelegramMessageFormatter(
     val mappings: Mappings,
-    val sendMessage: TelegramHTMLMessageSender
 ) {
-    suspend operator fun invoke(
+    fun format(
         monoResponse: MonoWebhookResponseData,
         transaction: YnabTransactionDetail
-    ) {
+    ): Triple<String, String, ReplyKeyboard>? {
 
         val msg = formatHTMLStatementMessage(
             mappings.getMonoAccAlias(monoResponse.account)!!,
@@ -39,10 +38,10 @@ class SendYnabTransactionCreatedMessage(
         val chatId = mappings.getTelegramChatIdAccByMono(monoResponse.account)
         if (chatId == null) {
             logger.error { "Failed to map Monobank account to telegram chat id. Account: ${monoResponse.account}" }
-            return
+            return null
         }
 
-        sendMessage(
+        return Triple(
             monoResponse.account,
             msg,
             markup

@@ -5,12 +5,12 @@ import com.github.smaugfm.api.YnabApi
 import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.server.MonoWebhookListenerServer
 import com.github.smaugfm.util.DEFAULT_HTTP_PORT
-import com.github.smaugfm.service.ynab.CreateYnabTransaction
+import com.github.smaugfm.service.ynab.YnabTransactionCreator
 import com.github.smaugfm.service.telegram.TelegramCallbackHandler
 import com.github.smaugfm.service.telegram.TelegramErrorUnknownErrorHandler
 import com.github.smaugfm.service.ynab.RetryWithYnabRateLimit
 import com.github.smaugfm.service.telegram.TelegramHTMLMessageSender
-import com.github.smaugfm.service.ynab.SendYnabTransactionCreatedMessage
+import com.github.smaugfm.service.ynab.YnabTransactionTelegramMessageFormatter
 import com.github.smaugfm.service.ynab.TransformStatementToYnabTransaction
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -51,10 +51,10 @@ fun main() {
                             this@runBlocking, get(), get()
                         )
                     }
-                    single { CreateYnabTransaction(get(), get(), get()) }
+                    single { YnabTransactionCreator(get(), get(), get()) }
                     single { TelegramHTMLMessageSender(get(), get()) }
                     single { RetryWithYnabRateLimit(get()) }
-                    single { SendYnabTransactionCreatedMessage(get(), get()) }
+                    single { YnabTransactionTelegramMessageFormatter(get(), get()) }
                     single { TelegramErrorUnknownErrorHandler(get(), get()) }
                     single { TelegramCallbackHandler(get(), get(), get(), get()) }
                 }

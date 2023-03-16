@@ -13,11 +13,11 @@ class RetryWithYnabRateLimit(private val sendMessage: TelegramHTMLMessageSender)
     private val message = "Сильно багато запитів до YNAB API. " +
         "Я спробую знову через деякий час"
 
-    suspend operator fun invoke(id: String, block: suspend () -> Unit) {
+    suspend fun retryingRateLimitErrors(id: String, block: suspend () -> Unit) {
         try {
             block()
         } catch (e: YnabRateLimitException) {
-            sendMessage(
+            sendMessage.send(
                 id,
                 this.message,
             )
@@ -29,7 +29,7 @@ class RetryWithYnabRateLimit(private val sendMessage: TelegramHTMLMessageSender)
         try {
             block()
         } catch (e: YnabRateLimitException) {
-            sendMessage(
+            sendMessage.send(
                 chatId,
                 this.message,
             )

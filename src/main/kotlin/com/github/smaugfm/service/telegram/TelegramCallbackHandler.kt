@@ -12,8 +12,8 @@ import com.github.smaugfm.models.TransactionUpdateType
 import com.github.smaugfm.models.TransactionUpdateType.Companion.buttonWord
 import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.models.settings.Mappings
-import com.github.smaugfm.service.ynab.SendYnabTransactionCreatedMessage.Companion.formatHTMLStatementMessage
-import com.github.smaugfm.service.ynab.SendYnabTransactionCreatedMessage.Companion.formatInlineKeyboard
+import com.github.smaugfm.service.ynab.YnabTransactionTelegramMessageFormatter.Companion.formatHTMLStatementMessage
+import com.github.smaugfm.service.ynab.YnabTransactionTelegramMessageFormatter.Companion.formatInlineKeyboard
 import com.github.smaugfm.service.ynab.RetryWithYnabRateLimit
 import mu.KotlinLogging
 import kotlin.reflect.KClass

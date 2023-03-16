@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.minutes
 
 private val logger = KotlinLogging.logger {}
 
-class CreateYnabTransaction(
+class YnabTransactionCreator(
     private val ynab: YnabApi,
     private val mappings: Mappings,
     private val transform: TransformStatementToYnabTransaction,
@@ -28,7 +28,7 @@ class CreateYnabTransaction(
     private val recentTransactions =
         ExpiringMap<MonoStatementItem, Deferred<YnabTransactionDetail>>(1.minutes)
 
-    suspend operator fun invoke(webhookResponseData: MonoWebhookResponseData): YnabTransactionDetail? {
+    suspend fun create(webhookResponseData: MonoWebhookResponseData): YnabTransactionDetail? {
         logIncoming(mappings, webhookResponseData)
 
         if (!webhookResponsesCache.alreadyHasKey(webhookResponseData, Unit)) {

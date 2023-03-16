@@ -10,7 +10,7 @@ class TelegramHTMLMessageSender(
     private val mappings: Mappings,
     private val telegramApi: TelegramApi
 ) {
-    suspend operator fun invoke(
+    suspend fun send(
         chatId: ChatId,
         msg: String,
         markup: ReplyKeyboard? = null,
@@ -23,12 +23,12 @@ class TelegramHTMLMessageSender(
         )
     }
 
-    suspend operator fun invoke(
+    suspend fun send(
         monoAccountId: String,
         msg: String,
         markup: ReplyKeyboard? = null,
     ) {
-        this.invoke(
+        this.send(
             mappings.getTelegramChatIdAccByMono(monoAccountId)?.let(ChatId::IntegerId) ?: return,
             msg,
             markup
