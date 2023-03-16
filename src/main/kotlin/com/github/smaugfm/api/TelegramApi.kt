@@ -85,6 +85,6 @@ class TelegramApi(
     }
 
     companion object {
-        const val UNKNOWN_ERROR_MSG = "Произошла непредвиденная ошибка."
+        const val UNKNOWN_ERROR_MSG = "Виникла невідома помилка"
     }
 }

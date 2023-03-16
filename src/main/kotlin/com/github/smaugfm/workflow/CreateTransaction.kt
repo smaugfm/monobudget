@@ -85,7 +85,7 @@ class CreateTransaction(
                 existing.id,
                 existing
                     .toSaveTransaction()
-                    .copy(payeeId = transferPayeeId, memo = "Перечисление между счетами")
+                    .copy(payeeId = transferPayeeId, memo = "Переказ між рахунками")
             )
 
         val transfer = ynab.getTransaction(existingUpdated.transferTransactionId!!)

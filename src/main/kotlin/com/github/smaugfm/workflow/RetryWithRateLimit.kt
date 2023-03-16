@@ -9,8 +9,8 @@ import java.time.Duration
 import java.time.LocalDateTime
 
 class RetryWithRateLimit(private val sendMessage: SendHTMLMessageToTelegram) {
-    private val message = "Слишком много запросов на YNAB API. " +
-        "Я попробую снова через некоторое время."
+    private val message = "Сильно багато запитів до YNAB API. " +
+        "Я спробую знову через деякий час"
 
     suspend operator fun invoke(id: String, block: suspend () -> Unit) {
         try {

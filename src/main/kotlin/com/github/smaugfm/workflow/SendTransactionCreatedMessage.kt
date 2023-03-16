@@ -86,7 +86,7 @@ class SendTransactionCreatedMessage(
                     "\t$id"
             }
 
-            val builder = StringBuilder("Новая транзакция Monobank добавлена в YNAB\n")
+            val builder = StringBuilder("Нова транзакція Monobank додана в YNAB\n")
             return with(Unit) {
                 builder.append("\uD83D\uDCB3 <b>$description</b>\n")
                 builder.append("      $mcc\n")
@@ -115,7 +115,7 @@ class SendTransactionCreatedMessage(
                 return formatHTMLStatementMessage(
                     accountAlias,
                     description.replaceNewLines(),
-                    (MCC.mapRussian[mcc] ?: "Неизвестный MCC") + " ($mcc)",
+                    (MCC.map[mcc]?.shortDescription ?: "Невідомий MCC") + " ($mcc)",
                     accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),
                     transaction.categoryName ?: "",
                     transaction.payeeName ?: "",

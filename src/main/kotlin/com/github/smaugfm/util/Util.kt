@@ -15,6 +15,7 @@ import kotlinx.serialization.json.JsonBuilder
 import kotlinx.serialization.json.JsonNamingStrategy
 import mu.KLogger
 import java.lang.reflect.Type
+import java.net.URL
 import java.util.Currency
 import kotlin.math.abs
 import kotlin.math.max
@@ -26,6 +27,12 @@ fun Number.formatW(): String {
 }
 
 const val DEFAULT_HTTP_PORT = 80
+
+fun resource(path: String): URL =
+    MCC.javaClass.classLoader.getResource(path)!!
+
+fun resourceAsString(path: String): String =
+    resource(path).readText()
 
 fun Currency.formatAmount(amount: Long): String {
     val delimiter = (10.0.pow(defaultFractionDigits)).toInt()
