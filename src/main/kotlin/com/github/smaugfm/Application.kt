@@ -1,7 +1,11 @@
 package com.github.smaugfm
 
 import com.github.smaugfm.api.TelegramApi
+import com.github.smaugfm.models.BudgetBackend
+import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.server.MonoWebhookListenerServer
+import com.github.smaugfm.service.MonoTransferBetweenAccountsDetector
+import com.github.smaugfm.service.mono.DuplicateWebhooksFilter
 import com.github.smaugfm.service.telegram.TelegramCallbackHandler
 import com.github.smaugfm.service.telegram.TelegramErrorUnknownErrorHandler
 import com.github.smaugfm.service.telegram.TelegramHTMLMessageSender
@@ -12,6 +16,7 @@ import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import org.koin.core.qualifier.qualifier
 import java.net.URI
 
 private val logger = KotlinLogging.logger {}
@@ -26,6 +31,12 @@ class Application : KoinComponent {
     private val handleCallback by inject<TelegramCallbackHandler>()
     private val processError by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramHTMLMessageSender>()
+    private val webhookResponseDuplicateFilter by inject<DuplicateWebhooksFilter>()
+    private val monoTransferDetector by inject<MonoTransferBetweenAccountsDetector<YnabTransactionDetail>>(
+        qualifier(
+            BudgetBackend.YNAB
+        )
+    )
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
         if (setWebhook) {
@@ -42,7 +53,16 @@ class Application : KoinComponent {
         ) { responseData ->
             try {
                 retryYnabRateLimitError.retryingRateLimitErrors(responseData.account) retry@{
-                    val newYnabTransaction = ynabTransactionCreator.create(responseData) ?: return@retry
+                    if (webhookResponseDuplicateFilter.checkIsDuplicate(responseData))
+                        return@retry
+
+
+
+                    val maybeTransfer = monoTransferDetector.checkTransfer(responseData)
+
+                    val newYnabTransaction =
+                        ynabTransactionCreator.create(maybeTransfer)
+
                     val (monoId, msg, markup) = ynabNewTransactionMessageFormatter.format(
                         responseData,
                         newYnabTransaction

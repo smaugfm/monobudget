@@ -24,7 +24,7 @@ private const val MONO_TO_YNAB_ADJUST = 10
 
 private val logger = KotlinLogging.logger {}
 
-class TransformStatementToYnabTransaction(
+class MonoStatementToYnabTransactionTransformer(
     scope: CoroutineScope,
     private val mappings: Mappings,
     private val ynabApi: YnabApi,

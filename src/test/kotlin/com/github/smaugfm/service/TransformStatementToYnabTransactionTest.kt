@@ -2,7 +2,7 @@ package com.github.smaugfm.service
 
 import com.github.smaugfm.api.YnabApi
 import com.github.smaugfm.models.settings.Settings
-import com.github.smaugfm.service.ynab.TransformStatementToYnabTransaction
+import com.github.smaugfm.service.ynab.MonoStatementToYnabTransactionTransformer
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import kotlinx.coroutines.cancel
@@ -52,7 +52,7 @@ internal class TransformStatementToYnabTransactionTest {
         assertThrows<CancellationException> {
             runBlocking {
                 val transform =
-                    TransformStatementToYnabTransaction(
+                    MonoStatementToYnabTransactionTransformer(
                         this@runBlocking,
                         settings.mappings,
                         YnabApi(settings)
