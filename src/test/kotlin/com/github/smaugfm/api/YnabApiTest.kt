@@ -17,7 +17,7 @@ class YnabApiTest {
     private val api = YnabApi(Settings.load(Paths.get("settings.json").readText()))
 
     @Test
-    @Disabled
+    // @Disabled
     fun testAllEndpointsDontFail() {
         runBlocking {
             val accountsDeferred = assertDoesNotThrow { api.getAccounts() }

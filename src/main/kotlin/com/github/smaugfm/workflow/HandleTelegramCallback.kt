@@ -19,7 +19,7 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class HandleCallback(
+class HandleTelegramCallback(
     private val telegram: TelegramApi,
     private val retryWithRateLimit: RetryWithRateLimit,
     private val ynabApi: YnabApi,

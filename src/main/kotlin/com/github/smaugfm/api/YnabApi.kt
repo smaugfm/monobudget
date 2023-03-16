@@ -1,7 +1,11 @@
 package com.github.smaugfm.api
 
+import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.models.ynab.YnabAccount
 import com.github.smaugfm.models.ynab.YnabAccountResponse
+import com.github.smaugfm.models.ynab.YnabAccountsResponse
+import com.github.smaugfm.models.ynab.YnabCategoriesResponse
+import com.github.smaugfm.models.ynab.YnabCategoryGroupWithCategories
 import com.github.smaugfm.models.ynab.YnabPayee
 import com.github.smaugfm.models.ynab.YnabPayeesResponse
 import com.github.smaugfm.models.ynab.YnabSaveTransaction
@@ -10,7 +14,7 @@ import com.github.smaugfm.models.ynab.YnabSaveTransactionWrapper
 import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.models.ynab.YnabTransactionResponse
 import com.github.smaugfm.models.ynab.YnabTransactionResponseWithServerKnowledge
-import com.github.smaugfm.models.settings.Settings
+import com.github.smaugfm.models.ynab.YnabTransactionsResponse
 import com.github.smaugfm.util.YnabRateLimitException
 import com.github.smaugfm.util.logError
 import com.github.smaugfm.util.makeJson
@@ -49,7 +53,7 @@ class YnabApi(settings: Settings) {
             path("v1", *path)
         }
 
-    private suspend inline fun <reified T : Any> catching(
+    private inline fun <reified T : Any> catching(
         method: KFunction<Any>,
         block: () -> T,
     ): T = logError("YNAB", logger, method.name, json, block) {
@@ -58,7 +62,7 @@ class YnabApi(settings: Settings) {
         }
     }
 
-    private suspend inline fun <reified T : Any> catchingNoLogging(
+    private inline fun <reified T : Any> catchingNoLogging(
         method: KFunction<Any>,
         block: () -> T,
     ): T = logError("YNAB", null, method.name, json, block) {
@@ -73,11 +77,24 @@ class YnabApi(settings: Settings) {
                 .body<YnabAccountResponse>()
         }.data.account
 
+    @Suppress("MemberVisibilityCanBePrivate", "unused")
+    suspend fun getAccounts(): List<YnabAccount> =
+        catching(this::getAccounts) {
+            httpClient.get(buildUrl("budgets", budgetId, "accounts"))
+                .body<YnabAccountsResponse>()
+        }.data.accounts
+
     suspend fun getPayees(): List<YnabPayee> =
         catchingNoLogging(this::getPayees) {
             httpClient.get(buildUrl("budgets", budgetId, "payees"))
                 .body<YnabPayeesResponse>()
         }.data.payees
+
+    suspend fun getCategories(): List<YnabCategoryGroupWithCategories> =
+        catching(this::getCategories) {
+            httpClient.get(buildUrl("budgets", budgetId, "categories"))
+                .body<YnabCategoriesResponse>()
+        }.data.categoryGroups
 
     suspend fun createTransaction(
         transaction: YnabSaveTransaction,
@@ -118,4 +135,19 @@ class YnabApi(settings: Settings) {
                 )
             ).body<YnabTransactionResponse>()
         }.data.transaction
+
+    suspend fun getAccountTransactions(
+        accountId: String,
+    ): List<YnabTransactionDetail> =
+        catching(this::getAccountTransactions) {
+            httpClient.get(
+                buildUrl(
+                    "budgets",
+                    budgetId,
+                    "accounts",
+                    accountId,
+                    "transactions"
+                )
+            ).body<YnabTransactionsResponse>()
+        }.data.transactions
 }

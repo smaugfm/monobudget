@@ -3,7 +3,7 @@ package com.github.smaugfm
 import com.github.smaugfm.server.MonoWebhookListenerServer
 import com.github.smaugfm.api.TelegramApi
 import com.github.smaugfm.workflow.CreateTransaction
-import com.github.smaugfm.workflow.HandleCallback
+import com.github.smaugfm.workflow.HandleTelegramCallback
 import com.github.smaugfm.workflow.ProcessError
 import com.github.smaugfm.workflow.RetryWithRateLimit
 import com.github.smaugfm.workflow.SendTransactionCreatedMessage
@@ -22,7 +22,7 @@ class Application : KoinComponent {
     private val createTransaction by inject<CreateTransaction>()
     private val retryWithRateLimit by inject<RetryWithRateLimit>()
     private val sendTransactionCreatedMessage by inject<SendTransactionCreatedMessage>()
-    private val handleCallback by inject<HandleCallback>()
+    private val handleCallback by inject<HandleTelegramCallback>()
     private val processError by inject<ProcessError>()
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {

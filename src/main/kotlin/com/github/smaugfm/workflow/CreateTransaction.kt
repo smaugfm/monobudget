@@ -50,7 +50,7 @@ class CreateTransaction(
         return process(existingTransfer, webhookResponseData)
     }
 
-    private suspend fun CreateTransaction.process(
+    private suspend fun process(
         existingTransfer: YnabTransactionDetail?,
         webhookResponseData: MonoWebhookResponseData
     ): YnabTransactionDetail {

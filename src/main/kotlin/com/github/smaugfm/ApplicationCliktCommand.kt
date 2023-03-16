@@ -13,7 +13,7 @@ import com.github.smaugfm.api.YnabApi
 import com.github.smaugfm.models.settings.Settings
 import com.github.smaugfm.util.DEFAULT_HTTP_PORT
 import com.github.smaugfm.workflow.CreateTransaction
-import com.github.smaugfm.workflow.HandleCallback
+import com.github.smaugfm.workflow.HandleTelegramCallback
 import com.github.smaugfm.workflow.ProcessError
 import com.github.smaugfm.workflow.RetryWithRateLimit
 import com.github.smaugfm.workflow.SendHTMLMessageToTelegram
@@ -66,7 +66,7 @@ class ApplicationCliktCommand : CliktCommand() {
                         single { RetryWithRateLimit(get()) }
                         single { SendTransactionCreatedMessage(get(), get()) }
                         single { ProcessError(get(), get()) }
-                        single { HandleCallback(get(), get(), get(), get()) }
+                        single { HandleTelegramCallback(get(), get(), get(), get()) }
                     }
                 )
             }
