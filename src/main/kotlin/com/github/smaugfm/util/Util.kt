@@ -9,7 +9,10 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonBuilder
+import kotlinx.serialization.json.JsonNamingStrategy
 import mu.KLogger
 import java.lang.reflect.Type
 import java.util.Currency
@@ -30,11 +33,16 @@ fun Currency.formatAmount(amount: Long): String {
 fun String.replaceNewLines(): String =
     replace("\n", " ").replace("\r", "")
 
-fun makeJson(): Json =
-    Json {
-        prettyPrint = true
-        ignoreUnknownKeys = true
-    }
+fun makeJson(convertSnakeCase: Boolean = false): Json =
+    Json { buildJson(convertSnakeCase) }
+
+@OptIn(ExperimentalSerializationApi::class)
+fun JsonBuilder.buildJson(convertSnakeCase: Boolean = false) {
+    if (convertSnakeCase)
+        namingStrategy = JsonNamingStrategy.SnakeCase
+    prettyPrint = true
+    ignoreUnknownKeys = true
+}
 
 @Suppress("LongParameterList")
 suspend inline fun <reified T : Any> logError(

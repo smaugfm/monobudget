@@ -2,9 +2,7 @@
 
 package com.github.smaugfm.models.settings
 
-import com.github.smaugfm.models.serializers.HashBiMapAsMapSerializer
-import com.github.smaugfm.util.makeJson
-import kotlinx.serialization.Contextual
+import com.github.smaugfm.models.serializer.HashBiMapAsMapSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlinx.serialization.decodeFromString
@@ -33,12 +31,4 @@ data class Settings(
                 logger.debug { "Loaded settings: $it" }
             }
     }
-
-    @Suppress("unused")
-    fun save(path: Path) {
-        File(path.toString()).writeText(json.encodeToString(serializer(), this))
-    }
 }
-
-@Contextual
-private val json = makeJson()

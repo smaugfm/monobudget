@@ -5,14 +5,19 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isSuccess
 import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.models.settings.Settings
+import com.github.smaugfm.models.settings.Settings.Companion.serializer
+import com.github.smaugfm.util.makeJson
 import com.uchuhimo.collections.biMapOf
 import org.junit.jupiter.api.Test
+import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.Currency
 import kotlin.io.path.readText
 
 class SettingsTest {
+    private val json = makeJson()
+
     @Test
     fun testSaveLoad() {
         val file = Files.createTempFile("settings-ynab-bot", ".json")
@@ -45,7 +50,7 @@ class SettingsTest {
             )
         )
 
-        settings.save(file)
+        File(file.toString()).writeText(json.encodeToString(serializer(), settings))
         val loaded = Settings.load(file)
 
         assertThat(settings).isEqualTo(loaded)

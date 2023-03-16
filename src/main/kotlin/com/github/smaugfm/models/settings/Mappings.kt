@@ -2,10 +2,8 @@
 
 package com.github.smaugfm.models.settings
 
-import com.elbekd.bot.model.ChatId
-import com.github.smaugfm.models.MonoAccountId
-import com.github.smaugfm.models.serializers.CurrencyAsStringSerializer
-import com.github.smaugfm.models.serializers.HashBiMapAsMapSerializer
+import com.github.smaugfm.models.serializer.CurrencyAsStringSerializer
+import com.github.smaugfm.models.serializer.HashBiMapAsMapSerializer
 import com.uchuhimo.collections.BiMap
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -31,7 +29,7 @@ data class Mappings(
 
     fun getMccCategoryOverride(mccCode: Int): String? = mccToCategory[mccCode]
 
-    fun getAccountCurrency(monoAccountId: MonoAccountId): Currency? =
+    fun getAccountCurrency(monoAccountId: String): Currency? =
         monoAccToCurrency[monoAccountId]
 
     fun getYnabAccByMono(monoAcc: String): String? =
@@ -46,7 +44,7 @@ data class Mappings(
                 logger.error { "Could not find Telegram chatID for Monobank account $monoAcc" }
         }
 
-    fun getMonoAccAlias(string: MonoAccountId): String? {
+    fun getMonoAccAlias(string: String): String? {
         return monoAccAliases[string].also {
             if (it == null)
                 logger.error { "Could not find alias for Monobank account $string" }

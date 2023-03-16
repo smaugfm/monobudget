@@ -17,7 +17,9 @@ exceptions:
 naming:
   ConstructorParameterNaming:
     active: true
-    excludes: [ '**/models.kt' ]
+    excludes: [ '**/models.kt', '**/models/ynab/Ynab*.kt' ]
+  EnumNaming:
+    excludes: [ '**/models/ynab/Ynab*.kt']
 
 complexity:
   LargeClass:
