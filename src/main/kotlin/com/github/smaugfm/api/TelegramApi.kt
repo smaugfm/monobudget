@@ -18,7 +18,7 @@ private val logger = KotlinLogging.logger {}
 
 class TelegramApi(
     private val scope: CoroutineScope,
-    private val settings: Settings
+    settings: Settings
 ) {
     private val bot: Bot =
         Bot.createPolling(settings.telegramBotUsername, settings.telegramBotToken)

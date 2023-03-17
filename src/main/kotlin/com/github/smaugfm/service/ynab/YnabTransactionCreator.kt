@@ -5,6 +5,7 @@ import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.models.ynab.YnabCleared
 import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.service.MonoTransferBetweenAccountsDetector.MaybeTransfer
+import com.github.smaugfm.service.mono.MonoAccountsService
 import com.github.smaugfm.util.SimpleCache
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import mu.KotlinLogging
@@ -13,7 +14,7 @@ private val logger = KotlinLogging.logger {}
 
 class YnabTransactionCreator(
     private val ynab: YnabApi,
-    private val mappings: Mappings,
+    private val monoAccountsService: MonoAccountsService,
     private val statementTransformer: MonoStatementToYnabTransactionTransformer,
 ) {
     private val transferPayeeIdsCache = SimpleCache<String, String> {
@@ -33,7 +34,7 @@ class YnabTransactionCreator(
         logger.debug { "Processing transfer transaction: $new. Existing YnabTransactionDetail: $existing" }
 
         val transferPayeeId =
-            transferPayeeIdsCache.get(mappings.getYnabAccByMono(new.account)!!)
+            transferPayeeIdsCache.get(monoAccountsService.getYnabAccByMono(new.account)!!)
 
         val existingUpdated = ynab
             .updateTransaction(
@@ -57,8 +58,5 @@ class YnabTransactionCreator(
         val ynabTransaction = statementTransformer(webhookResponse)
 
         return ynab.createTransaction(ynabTransaction)
-    }
-
-    companion object {
     }
 }

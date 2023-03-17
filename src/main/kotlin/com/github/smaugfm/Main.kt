@@ -8,10 +8,12 @@ import com.github.smaugfm.models.ynab.YnabTransactionDetail
 import com.github.smaugfm.server.MonoWebhookListenerServer
 import com.github.smaugfm.service.MonoTransferBetweenAccountsDetector
 import com.github.smaugfm.service.mono.DuplicateWebhooksFilter
+import com.github.smaugfm.service.mono.MonoAccountsService
 import com.github.smaugfm.service.telegram.TelegramCallbackHandler
 import com.github.smaugfm.service.telegram.TelegramErrorUnknownErrorHandler
-import com.github.smaugfm.service.telegram.TelegramHTMLMessageSender
-import com.github.smaugfm.service.ynab.RetryWithYnabRateLimit
+import com.github.smaugfm.service.telegram.TelegramMessageSender
+import com.github.smaugfm.service.transaction.CategorySuggestingService
+import com.github.smaugfm.service.transaction.PayeeSuggestingService
 import com.github.smaugfm.service.ynab.MonoStatementToYnabTransactionTransformer
 import com.github.smaugfm.service.ynab.YnabTransactionCreator
 import com.github.smaugfm.service.ynab.YnabTransactionTelegramMessageFormatter
@@ -45,25 +47,33 @@ fun main() {
             modules(
                 module {
                     printLogger(Level.ERROR)
-
                     single { settings }
-                    single { settings.mappings }
+                    single { MonoAccountsService(settings) }
+                    single { CategorySuggestingService(settings) }
+                    single { PayeeSuggestingService() }
                     single { YnabApi(get()) }
                     single { TelegramApi(this@runBlocking, get()) }
                     single { MonoWebhookListenerServer(this@runBlocking, get()) }
                     single { DuplicateWebhooksFilter(get()) }
                     single(qualifier(BudgetBackend.YNAB)) { MonoTransferBetweenAccountsDetector<YnabTransactionDetail>() }
                     single {
-                        MonoStatementToYnabTransactionTransformer(
-                            this@runBlocking, get(), get()
-                        )
+                        MonoStatementToYnabTransactionTransformer(this@runBlocking, get(), get(), get(), get())
                     }
                     single { YnabTransactionCreator(get(), get(), get()) }
-                    single { TelegramHTMLMessageSender(get(), get()) }
-                    single { RetryWithYnabRateLimit(get()) }
+                    single { TelegramMessageSender(get(), get()) }
                     single { YnabTransactionTelegramMessageFormatter(get()) }
-                    single { TelegramErrorUnknownErrorHandler(get(), get()) }
-                    single { TelegramCallbackHandler(get(), get(), get(), get()) }
+
+                    val telegramChaIds = settings.mappings.monoAccToTelegram.values.toSet()
+                    single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
+                    single {
+                        TelegramCallbackHandler(
+                            get(),
+                            get(),
+                            telegramChaIds,
+                            settings.mappings.unknownCategoryId,
+                            settings.mappings.unknownCategoryId
+                        )
+                    }
                 }
             )
         }

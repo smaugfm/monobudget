@@ -1,11 +1,12 @@
 package com.github.smaugfm.service.ynab
 
 import com.github.smaugfm.api.YnabApi
-import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.models.ynab.YnabCleared
 import com.github.smaugfm.models.ynab.YnabPayee
 import com.github.smaugfm.models.ynab.YnabSaveTransaction
-import com.github.smaugfm.util.PayeeSuggestingService
+import com.github.smaugfm.service.mono.MonoAccountsService
+import com.github.smaugfm.service.transaction.CategorySuggestingService
+import com.github.smaugfm.service.transaction.PayeeSuggestingService
 import com.github.smaugfm.util.replaceNewLines
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.ktor.util.logging.error
@@ -26,7 +27,9 @@ private val logger = KotlinLogging.logger {}
 
 class MonoStatementToYnabTransactionTransformer(
     scope: CoroutineScope,
-    private val mappings: Mappings,
+    private val monoAccountsService: MonoAccountsService,
+    private val payeeSuggestingService: PayeeSuggestingService,
+    private val categorySuggestingService: CategorySuggestingService,
     private val ynabApi: YnabApi,
 ) {
     @Volatile
@@ -57,14 +60,14 @@ class MonoStatementToYnabTransactionTransformer(
     suspend operator fun invoke(response: MonoWebhookResponseData): YnabSaveTransaction {
         logger.debug { "Transforming Monobank statement to Ynab transaction." }
         val suggestedPayee =
-            PayeeSuggestingService.suggest(
+            payeeSuggestingService.suggest(
                 response.statementItem.description ?: "",
                 payees.await().map { it.name })
                 .firstOrNull()
-        val mccCategoryOverride = mappings.getMccCategoryOverride(response.statementItem.mcc)
+        val mccCategoryOverride = categorySuggestingService.suggestByMcc(response.statementItem.mcc)
 
         return YnabSaveTransaction(
-            accountId = mappings.getYnabAccByMono(response.account)
+            accountId = monoAccountsService.getYnabAccByMono(response.account)
                 ?: throw IllegalStateException("Could not find YNAB account for mono account ${response.account}"),
             date = response.statementItem.time.toLocalDateTime(TimeZone.currentSystemDefault()).date,
             amount = response.statementItem.amount * MONO_TO_YNAB_ADJUST,

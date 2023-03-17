@@ -4,10 +4,10 @@ import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.ParseMode
 import com.elbekd.bot.types.ReplyKeyboard
 import com.github.smaugfm.api.TelegramApi
-import com.github.smaugfm.models.settings.Mappings
+import com.github.smaugfm.service.mono.MonoAccountsService
 
-class TelegramHTMLMessageSender(
-    private val mappings: Mappings,
+class TelegramMessageSender(
+    private val monoAccountsService: MonoAccountsService,
     private val telegramApi: TelegramApi
 ) {
     suspend fun send(
@@ -29,7 +29,7 @@ class TelegramHTMLMessageSender(
         markup: ReplyKeyboard? = null,
     ) {
         this.send(
-            mappings.getTelegramChatIdAccByMono(monoAccountId)?.let(ChatId::IntegerId) ?: return,
+            monoAccountsService.getTelegramChatIdAccByMono(monoAccountId)?.let(ChatId::IntegerId) ?: return,
             msg,
             markup
         )

@@ -11,10 +11,8 @@ import com.github.smaugfm.api.YnabApi
 import com.github.smaugfm.models.TransactionUpdateType
 import com.github.smaugfm.models.TransactionUpdateType.Companion.buttonWord
 import com.github.smaugfm.models.ynab.YnabTransactionDetail
-import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.service.ynab.YnabTransactionTelegramMessageFormatter.Companion.formatHTMLStatementMessage
 import com.github.smaugfm.service.ynab.YnabTransactionTelegramMessageFormatter.Companion.formatInlineKeyboard
-import com.github.smaugfm.service.ynab.RetryWithYnabRateLimit
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -22,12 +20,13 @@ private val logger = KotlinLogging.logger {}
 
 class TelegramCallbackHandler(
     private val telegram: TelegramApi,
-    private val retryWithRateLimit: RetryWithYnabRateLimit,
     private val ynabApi: YnabApi,
-    val mappings: Mappings,
+    private val telegramChatIds: Set<Long>,
+    private val unknownPayeeId: String,
+    private val unknownCategoryId: String,
 ) {
     suspend operator fun invoke(callbackQuery: CallbackQuery) {
-        if (callbackQuery.from.id !in mappings.getTelegramChatIds()) {
+        if (callbackQuery.from.id !in telegramChatIds) {
             logger.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }
             return
         }
@@ -43,9 +42,7 @@ class TelegramCallbackHandler(
                 )
             }
 
-        retryWithRateLimit(ChatId.IntegerId(message.chat.id)) {
-            updateAndSendMessage(type, callbackQueryId, message)
-        }
+        updateAndSendMessage(type, callbackQueryId, message)
     }
 
     private suspend fun updateAndSendMessage(
@@ -89,8 +86,8 @@ class TelegramCallbackHandler(
                 saveTransaction.copy(approved = false)
 
             is TransactionUpdateType.Unknown -> saveTransaction.copy(
-                payeeId = mappings.unknownPayeeId,
-                categoryId = mappings.unknownCategoryId,
+                payeeId = unknownPayeeId,
+                categoryId = unknownCategoryId,
                 payeeName = null
             )
 

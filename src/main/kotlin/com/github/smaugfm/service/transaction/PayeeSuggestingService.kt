@@ -1,10 +1,11 @@
-package com.github.smaugfm.util
+package com.github.smaugfm.service.transaction
 
+import com.github.smaugfm.util.jaroWinklerSimilarity
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-object PayeeSuggestingService {
+class PayeeSuggestingService {
     fun suggest(value: String, payees: List<String>): List<String> {
         logger.debug { "Looking for best payee match for memo: $value" }
         return twoPass(value, payees).map { it.first }.also {
@@ -12,7 +13,7 @@ object PayeeSuggestingService {
         }
     }
 
-    private fun twoPass(value: String, payees: List<String>): List<Pair<String, Double>> {
+    internal fun twoPass(value: String, payees: List<String>): List<Pair<String, Double>> {
         val firstPass = value
             .split(spaceRegex)
             .map { word ->
@@ -28,6 +29,8 @@ object PayeeSuggestingService {
             .sortedByDescending { it.second }
     }
 
-    private val spaceRegex = Regex("\\s+")
-    private const val CASE_INSENSITIVE_JARO_THRESHOLD = 0.9
+    companion object {
+        private val spaceRegex = Regex("\\s+")
+        private const val CASE_INSENSITIVE_JARO_THRESHOLD = 0.9
+    }
 }

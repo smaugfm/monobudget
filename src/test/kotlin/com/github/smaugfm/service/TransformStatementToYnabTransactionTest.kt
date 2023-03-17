@@ -2,6 +2,9 @@ package com.github.smaugfm.service
 
 import com.github.smaugfm.api.YnabApi
 import com.github.smaugfm.models.settings.Settings
+import com.github.smaugfm.service.mono.MonoAccountsService
+import com.github.smaugfm.service.transaction.CategorySuggestingService
+import com.github.smaugfm.service.transaction.PayeeSuggestingService
 import com.github.smaugfm.service.ynab.MonoStatementToYnabTransactionTransformer
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
@@ -22,8 +25,9 @@ internal class TransformStatementToYnabTransactionTest {
     }
 
     val settings = Settings.load(Paths.get("settings.json").readText())
+    val monoAccountsService = MonoAccountsService(settings)
     val testStatement = MonoWebhookResponseData(
-        account = settings.mappings.getMonoAccounts().first(),
+        account = monoAccountsService.getMonoAccounts().first(),
         statementItem = MonoStatementItem(
             id = "F8NpbBKuBu2CgubD",
             time = Instant.parse("2022-02-06T11:42:40Z"),
@@ -54,7 +58,9 @@ internal class TransformStatementToYnabTransactionTest {
                 val transform =
                     MonoStatementToYnabTransactionTransformer(
                         this@runBlocking,
-                        settings.mappings,
+                        MonoAccountsService(settings),
+                        PayeeSuggestingService(),
+                        CategorySuggestingService(settings),
                         YnabApi(settings)
                     )
                 val transaction = transform.invoke(testStatement)

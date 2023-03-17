@@ -1,5 +1,6 @@
 package com.github.smaugfm.util
 
+import com.github.smaugfm.service.transaction.PayeeSuggestingService
 import org.junit.jupiter.api.Test
 
 class PayeeSuggestorTest {

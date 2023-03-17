@@ -6,8 +6,8 @@ import com.elbekd.bot.types.ReplyKeyboard
 import com.github.smaugfm.models.TransactionUpdateType
 import com.github.smaugfm.models.TransactionUpdateType.Companion.buttonText
 import com.github.smaugfm.models.TransactionUpdateType.Companion.serialize
-import com.github.smaugfm.models.settings.Mappings
 import com.github.smaugfm.models.ynab.YnabTransactionDetail
+import com.github.smaugfm.service.mono.MonoAccountsService
 import com.github.smaugfm.util.MCC
 import com.github.smaugfm.util.formatAmount
 import com.github.smaugfm.util.replaceNewLines
@@ -20,7 +20,7 @@ import kotlin.reflect.KClass
 private val logger = KotlinLogging.logger {}
 
 class YnabTransactionTelegramMessageFormatter(
-    val mappings: Mappings,
+    private val monoAccountsService: MonoAccountsService,
 ) {
     fun format(
         monoResponse: MonoWebhookResponseData,
@@ -28,14 +28,14 @@ class YnabTransactionTelegramMessageFormatter(
     ): Triple<String, String, ReplyKeyboard>? {
 
         val msg = formatHTMLStatementMessage(
-            mappings.getMonoAccAlias(monoResponse.account)!!,
-            mappings.getAccountCurrency(monoResponse.account)!!,
+            monoAccountsService.getMonoAccAlias(monoResponse.account)!!,
+            monoAccountsService.getAccountCurrency(monoResponse.account)!!,
             monoResponse.statementItem,
             transaction
         )
         val markup = formatInlineKeyboard(emptySet())
 
-        val chatId = mappings.getTelegramChatIdAccByMono(monoResponse.account)
+        val chatId = monoAccountsService.getTelegramChatIdAccByMono(monoResponse.account)
         if (chatId == null) {
             logger.error { "Failed to map Monobank account to telegram chat id. Account: ${monoResponse.account}" }
             return null
