@@ -1,6 +1,5 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
-  <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>TooManyFunctions:YnabApi.kt$YnabApi</ID>
   </CurrentIssues>
