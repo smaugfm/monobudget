@@ -12,12 +12,12 @@ import mu.KotlinLogging
 private val logger = KotlinLogging.logger {}
 
 class YnabTransactionCreator(
-    private val ynab: YnabApi,
+    private val api: YnabApi,
     private val monoAccountsService: MonoAccountsService,
     private val statementTransformer: MonoStatementToYnabTransactionTransformer
 ) {
     private val transferPayeeIdsCache = SimpleCache<String, String> {
-        ynab.getAccount(it).transferPayeeId
+        api.getAccount(it).transferPayeeId
     }
 
     suspend fun create(maybeTransfer: MaybeTransfer): YnabTransactionDetail = when (maybeTransfer) {
@@ -34,7 +34,7 @@ class YnabTransactionCreator(
         val transferPayeeId =
             transferPayeeIdsCache.get(monoAccountsService.getYnabAccByMono(new.account)!!)
 
-        val existingUpdated = ynab
+        val existingUpdated = api
             .updateTransaction(
                 existing.id,
                 existing
@@ -42,9 +42,9 @@ class YnabTransactionCreator(
                     .copy(payeeId = transferPayeeId, memo = "Переказ між рахунками")
             )
 
-        val transfer = ynab.getTransaction(existingUpdated.transferTransactionId!!)
+        val transfer = api.getTransaction(existingUpdated.transferTransactionId!!)
 
-        return ynab.updateTransaction(
+        return api.updateTransaction(
             transfer.id,
             transfer.toSaveTransaction().copy(cleared = YnabCleared.Cleared)
         )
@@ -55,6 +55,6 @@ class YnabTransactionCreator(
 
         val ynabTransaction = statementTransformer(webhookResponse)
 
-        return ynab.createTransaction(ynabTransaction)
+        return api.createTransaction(ynabTransaction)
     }
 }

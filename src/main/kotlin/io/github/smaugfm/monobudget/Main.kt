@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget
 
+import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.Lunchmoney
@@ -24,7 +25,6 @@ import org.koin.core.logger.Level
 import org.koin.dsl.module
 import java.net.URI
 import java.nio.file.Paths
-import io.github.smaugfm.lunchmoney.api.Lunchmoney as LunchmoneyApi
 
 private val logger = KotlinLogging.logger {}
 
