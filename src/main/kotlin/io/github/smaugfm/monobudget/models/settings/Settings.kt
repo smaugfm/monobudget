@@ -2,6 +2,7 @@
 
 package io.github.smaugfm.monobudget.models.settings
 
+import io.github.smaugfm.monobudget.models.BudgetBackend
 import io.github.smaugfm.monobudget.models.serializer.HashBiMapAsMapSerializer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
@@ -15,17 +16,16 @@ private val logger = KotlinLogging.logger {}
 
 @Serializable
 data class Settings(
-    val ynabToken: String,
+    val budgetBackend: BudgetBackend,
     val monoTokens: List<String>,
     val telegramBotToken: String,
     val telegramBotUsername: String,
-    val ynabBudgetId: String,
     val mappings: Mappings
 ) {
     companion object {
         fun load(path: Path): Settings = load(File(path.toString()).readText())
 
-        fun load(content: String) = Json.decodeFromString<Settings>(content).also {
+        internal fun load(content: String) = Json.decodeFromString<Settings>(content).also {
             logger.debug { "Loaded settings: $it" }
         }
     }

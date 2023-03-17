@@ -11,25 +11,30 @@ import kotlin.time.Duration.Companion.minutes
 
 private val logger = KotlinLogging.logger {}
 
-class MonoTransferBetweenAccountsDetector<T> {
+class MonoTransferBetweenAccountsDetector {
 
     private val recentTransactions =
-        ExpiringMap<MonoStatementItem, Deferred<T>>(1.minutes)
+        ExpiringMap<MonoStatementItem, Deferred<Any>>(1.minutes)
 
-    sealed class MaybeTransfer<T> {
-        data class Transfer<T>(
+    sealed class MaybeTransfer {
+        data class Transfer(
             val webhookResponse: MonoWebhookResponseData,
-            val processed: T
-        ) : MaybeTransfer<T>()
+            private val processed: Any
+        ) : MaybeTransfer() {
+            @Suppress("UNCHECKED_CAST")
+            fun <T : Any> processed(): T {
+                return processed as T
+            }
+        }
 
-        class NotTransfer<T>(
+        class NotTransfer(
             private val webhookResponse: MonoWebhookResponseData,
-            private val processedDeferred: CompletableDeferred<T>
-        ) : MaybeTransfer<T>() {
+            private val processedDeferred: CompletableDeferred<Any>
+        ) : MaybeTransfer() {
             @Volatile
             private var ran = false
 
-            suspend fun consume(block: suspend (MonoWebhookResponseData) -> T): T {
+            suspend fun <T : Any> consume(block: suspend (MonoWebhookResponseData) -> T): T {
                 check(!ran) { "Can consume NotTransfer only once" }
 
                 return block(webhookResponse).also {
@@ -40,7 +45,7 @@ class MonoTransferBetweenAccountsDetector<T> {
         }
     }
 
-    suspend fun checkTransfer(webhookResponseData: MonoWebhookResponseData): MaybeTransfer<T> {
+    suspend fun checkTransfer(webhookResponseData: MonoWebhookResponseData): MaybeTransfer {
         val existingTransfer = recentTransactions.entries.firstOrNull { (recentStatementItem) ->
             checkIsTransferTransactions(
                 webhookResponseData.statementItem,
@@ -60,7 +65,7 @@ class MonoTransferBetweenAccountsDetector<T> {
             }
             MaybeTransfer.Transfer(webhookResponseData, existingTransfer)
         } else {
-            val deferred = CompletableDeferred<T>()
+            val deferred = CompletableDeferred<Any>()
             recentTransactions.add(webhookResponseData.statementItem, deferred)
 
             MaybeTransfer.NotTransfer(webhookResponseData, deferred)

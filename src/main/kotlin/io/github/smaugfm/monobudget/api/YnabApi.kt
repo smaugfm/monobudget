@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.api
 
-import io.github.smaugfm.monobudget.models.settings.Settings
+import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.ynab.YnabAccount
 import io.github.smaugfm.monobudget.models.ynab.YnabAccountResponse
 import io.github.smaugfm.monobudget.models.ynab.YnabAccountsResponse
@@ -35,9 +35,9 @@ import kotlin.reflect.KFunction
 
 private val logger = KotlinLogging.logger { }
 
-class YnabApi(settings: Settings) {
-    private val token = settings.ynabToken
-    private val budgetId = settings.ynabBudgetId
+class YnabApi(backend: YNAB) {
+    private val token = backend.token
+    private val budgetId = backend.ynabBudgetId
 
     private val json = makeJson(true)
     private val httpClient = HttpClient {

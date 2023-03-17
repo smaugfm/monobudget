@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.api
 
 import io.github.smaugfm.monobank.MonobankPersonalApi
+import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.settings.Settings
 import io.github.smaugfm.monobudget.util.MCC
 import io.github.smaugfm.monobudget.util.formatAmount
@@ -23,7 +24,9 @@ class YnabApiTest {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn")
     }
 
-    private val api = YnabApi(Settings.load(Paths.get("settings.json").readText()))
+    private val api = YnabApi(
+        Settings.load(Paths.get("settings.json").readText()).budgetBackend as YNAB
+    )
 
     @Disabled
     @Test

@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isSuccess
 import com.uchuhimo.collections.biMapOf
+import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.settings.Mappings
 import io.github.smaugfm.monobudget.models.settings.Settings
 import io.github.smaugfm.monobudget.util.makeJson
@@ -22,11 +23,10 @@ class SettingsTest {
     fun testSaveLoad() {
         val file = Files.createTempFile("settings-ynab-bot", ".json")
         val settings = Settings(
-            "vasa8",
+            YNAB("vasa8", "vasa1"),
             listOf("vasa9", "vasa10"),
             "vasa11",
             "vasa14",
-            "vasa1",
             Mappings(
                 mapOf(
                     "vasa2" to "vasa2",

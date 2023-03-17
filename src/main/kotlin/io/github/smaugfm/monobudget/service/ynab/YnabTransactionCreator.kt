@@ -20,11 +20,10 @@ class YnabTransactionCreator(
         ynab.getAccount(it).transferPayeeId
     }
 
-    suspend fun create(maybeTransfer: MaybeTransfer<YnabTransactionDetail>): YnabTransactionDetail =
-        when (maybeTransfer) {
-            is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed)
-            is MaybeTransfer.NotTransfer -> maybeTransfer.consume(::process)
-        }
+    suspend fun create(maybeTransfer: MaybeTransfer): YnabTransactionDetail = when (maybeTransfer) {
+        is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())
+        is MaybeTransfer.NotTransfer -> maybeTransfer.consume(::process)
+    }
 
     private suspend fun processTransfer(
         new: MonoWebhookResponseData,

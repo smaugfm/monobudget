@@ -36,6 +36,9 @@ dependencies {
     implementation("io.github.smaugfm:monobank:0.0.1-SNAPSHOT") {
         isChanging = true
     }
+    implementation("io.github.smaugfm:lunchmoney:0.0.1-SNAPSHOT") {
+        isChanging = true
+    }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("io.insert-koin:koin-core:3.3.3")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")

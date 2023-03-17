@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.service.telegram
+package io.github.smaugfm.monobudget.service.telegram.ynab
 
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.CallbackQuery
@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class TelegramCallbackHandler(
+class YnabTelegramCallbackHandler(
     private val telegram: TelegramApi,
     private val ynabApi: YnabApi,
     private val telegramChatIds: Set<Long>,

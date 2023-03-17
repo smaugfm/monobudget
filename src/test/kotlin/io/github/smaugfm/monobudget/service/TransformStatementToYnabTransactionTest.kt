@@ -3,6 +3,7 @@ package io.github.smaugfm.monobudget.service
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
+import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.settings.Settings
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.transaction.CategorySuggestingService
@@ -61,7 +62,7 @@ internal class TransformStatementToYnabTransactionTest {
                         MonoAccountsService(settings),
                         PayeeSuggestingService(),
                         CategorySuggestingService(settings),
-                        YnabApi(settings)
+                        YnabApi(settings.budgetBackend as YNAB)
                     )
                 val transaction = transform.invoke(testStatement)
                 println("Result: $transaction")
