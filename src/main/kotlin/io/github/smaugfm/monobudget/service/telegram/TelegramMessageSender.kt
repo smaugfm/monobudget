@@ -4,6 +4,7 @@ import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.ParseMode
 import com.elbekd.bot.types.ReplyKeyboard
 import io.github.smaugfm.monobudget.api.TelegramApi
+import io.github.smaugfm.monobudget.models.telegram.MessageWithReplyKeyboard
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 
 class TelegramMessageSender(
@@ -19,11 +20,11 @@ class TelegramMessageSender(
         )
     }
 
-    suspend fun send(monoAccountId: String, msg: String, markup: ReplyKeyboard? = null) {
+    suspend fun send(monoAccountId: String, newMessage: MessageWithReplyKeyboard) {
         this.send(
             monoAccountsService.getTelegramChatIdAccByMono(monoAccountId)?.let(ChatId::IntegerId) ?: return,
-            msg,
-            markup
+            newMessage.message,
+            newMessage.markup
         )
     }
 }

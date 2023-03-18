@@ -1,23 +1,26 @@
 package io.github.smaugfm.monobudget
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
+import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.settings.Settings
+import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
-import io.github.smaugfm.monobudget.service.MonoTransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.service.callback.YnabTelegramCallbackHandler
+import io.github.smaugfm.monobudget.service.formatter.YnabTransactionMessageFormatter
 import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
+import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.PayeeSuggestingService
 import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.service.telegram.ynab.YnabTelegramCallbackHandler
-import io.github.smaugfm.monobudget.service.transaction.CategorySuggestingService
-import io.github.smaugfm.monobudget.service.transaction.PayeeSuggestingService
-import io.github.smaugfm.monobudget.service.ynab.MonoStatementToYnabTransactionTransformer
-import io.github.smaugfm.monobudget.service.ynab.YnabTransactionCreator
-import io.github.smaugfm.monobudget.service.ynab.YnabTransactionTelegramMessageFormatter
+import io.github.smaugfm.monobudget.service.transaction.LunchmoneyTransactionCreator
+import io.github.smaugfm.monobudget.service.transaction.YnabTransactionCreator
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.koin.core.context.startKoin
@@ -37,6 +40,7 @@ fun main() {
     val monoWebhookUrl = URI(env["MONO_WEBHOOK_URL"]!!)
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
     val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.json"))
+    val budgetBackend = settings.budgetBackend
     logger.debug(
         "Startup options:\n\t" +
             "setWebhook: $setWebhook\n\t",
@@ -52,15 +56,18 @@ fun main() {
                     single { settings }
                     val telegramChaIds = settings.mappings.monoAccToTelegram.values.toSet()
 
-                    when (settings.budgetBackend) {
+                    when (budgetBackend) {
                         is Lunchmoney -> {
-                            single { LunchmoneyApi(settings.budgetBackend.token) }
+                            single { LunchmoneyApi(budgetBackend.token) }
+                            single { MonoTransferBetweenAccountsDetector<LunchmoneyTransaction>() }
+                            single { LunchmoneyTransactionCreator(get(), get()) }
                         }
 
                         is YNAB -> {
-                            single { YnabApi(settings.budgetBackend) }
+                            single { MonoTransferBetweenAccountsDetector<YnabTransactionDetail>() }
+                            single { YnabApi(budgetBackend) }
                             single { YnabTransactionCreator(get(), get(), get()) }
-                            single { YnabTransactionTelegramMessageFormatter(get()) }
+                            single { YnabTransactionMessageFormatter(get()) }
                             single {
                                 YnabTelegramCallbackHandler(
                                     get(),
@@ -86,7 +93,6 @@ fun main() {
                     single { TelegramMessageSender(get(), get()) }
                     single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
                     single { DuplicateWebhooksFilter(get()) }
-                    single { MonoTransferBetweenAccountsDetector() }
                     single { MonoAccountsService(settings) }
                     single { CategorySuggestingService(settings) }
                     single { PayeeSuggestingService() }
@@ -94,6 +100,9 @@ fun main() {
             )
         }
 
-        Application().run(setWebhook, monoWebhookUrl, webhookPort)
+        when (budgetBackend) {
+            is Lunchmoney -> Application<LunchmoneyTransaction>()
+            is YNAB -> Application<YnabTransactionDetail>()
+        }.run(setWebhook, monoWebhookUrl, webhookPort)
     }
 }

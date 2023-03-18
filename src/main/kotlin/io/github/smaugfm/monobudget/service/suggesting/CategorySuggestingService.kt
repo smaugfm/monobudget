@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.service.transaction
+package io.github.smaugfm.monobudget.service.suggesting
 
 import io.github.smaugfm.monobudget.models.settings.Settings
 

@@ -6,9 +6,9 @@ import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.settings.Settings
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.service.transaction.CategorySuggestingService
-import io.github.smaugfm.monobudget.service.transaction.PayeeSuggestingService
-import io.github.smaugfm.monobudget.service.ynab.MonoStatementToYnabTransactionTransformer
+import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
+import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.PayeeSuggestingService
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
@@ -25,9 +25,9 @@ internal class TransformStatementToYnabTransactionTest {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
     }
 
-    val settings = Settings.load(Paths.get("settings.json").readText())
-    val monoAccountsService = MonoAccountsService(settings)
-    val testStatement = MonoWebhookResponseData(
+    private val settings = Settings.load(Paths.get("settings.json").readText())
+    private val monoAccountsService = MonoAccountsService(settings)
+    private val testStatement = MonoWebhookResponseData(
         account = monoAccountsService.getMonoAccounts().first(),
         statementItem = MonoStatementItem(
             id = "F8NpbBKuBu2CgubD",
@@ -64,7 +64,7 @@ internal class TransformStatementToYnabTransactionTest {
                         CategorySuggestingService(settings),
                         YnabApi(settings.budgetBackend as YNAB)
                     )
-                val transaction = transform.invoke(testStatement)
+                val transaction = transform.transform(testStatement)
                 println("Result: $transaction")
                 this.cancel("Finished.")
             }

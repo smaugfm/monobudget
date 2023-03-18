@@ -1,11 +1,12 @@
-package io.github.smaugfm.monobudget.service.ynab
+package io.github.smaugfm.monobudget.service.transaction
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.ynab.YnabCleared
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
-import io.github.smaugfm.monobudget.service.MonoTransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
+import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
 import io.github.smaugfm.monobudget.util.SimpleCache
 import mu.KotlinLogging
 
@@ -15,34 +16,37 @@ class YnabTransactionCreator(
     private val api: YnabApi,
     private val monoAccountsService: MonoAccountsService,
     private val statementTransformer: MonoStatementToYnabTransactionTransformer
-) {
+) : TransactionCreator<YnabTransactionDetail>() {
     private val transferPayeeIdsCache = SimpleCache<String, String> {
         api.getAccount(it).transferPayeeId
     }
 
-    suspend fun create(maybeTransfer: MaybeTransfer): YnabTransactionDetail = when (maybeTransfer) {
+    override suspend fun create(maybeTransfer: MaybeTransfer<YnabTransactionDetail>) = when (maybeTransfer) {
         is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())
-        is MaybeTransfer.NotTransfer -> maybeTransfer.consume(::process)
+        is MaybeTransfer.NotTransfer -> maybeTransfer.consume(::processSingle)
     }
 
     private suspend fun processTransfer(
-        new: MonoWebhookResponseData,
-        existing: YnabTransactionDetail
+        newWebhookResponse: MonoWebhookResponseData,
+        existingTransaction: YnabTransactionDetail
     ): YnabTransactionDetail {
-        logger.debug { "Processing transfer transaction: $new. Existing YnabTransactionDetail: $existing" }
+        logger.debug {
+            "Processing transfer transaction: $newWebhookResponse. " +
+                "Existing YnabTransactionDetail: $existingTransaction"
+        }
 
         val transferPayeeId =
-            transferPayeeIdsCache.get(monoAccountsService.getYnabAccByMono(new.account)!!)
+            transferPayeeIdsCache.get(monoAccountsService.getYnabAccByMono(newWebhookResponse.account)!!)
 
-        val existingUpdated = api
+        val existingTransactionUpdated = api
             .updateTransaction(
-                existing.id,
-                existing
+                existingTransaction.id,
+                existingTransaction
                     .toSaveTransaction()
                     .copy(payeeId = transferPayeeId, memo = "Переказ між рахунками")
             )
 
-        val transfer = api.getTransaction(existingUpdated.transferTransactionId!!)
+        val transfer = api.getTransaction(existingTransactionUpdated.transferTransactionId!!)
 
         return api.updateTransaction(
             transfer.id,
@@ -50,11 +54,11 @@ class YnabTransactionCreator(
         )
     }
 
-    private suspend fun process(webhookResponse: MonoWebhookResponseData): YnabTransactionDetail {
+    private suspend fun processSingle(webhookResponse: MonoWebhookResponseData): YnabTransactionDetail {
         logger.debug { "Processing transaction: $webhookResponse" }
 
-        val ynabTransaction = statementTransformer(webhookResponse)
+        val transaction = statementTransformer.transform(webhookResponse)
 
-        return api.createTransaction(ynabTransaction)
+        return api.createTransaction(transaction)
     }
 }

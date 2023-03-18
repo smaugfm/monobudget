@@ -1,13 +1,11 @@
-package io.github.smaugfm.monobudget.service.ynab
+package io.github.smaugfm.monobudget.service.formatter
 
 import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
-import com.elbekd.bot.types.ReplyKeyboard
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.models.TransactionUpdateType
-import io.github.smaugfm.monobudget.models.TransactionUpdateType.Companion.buttonText
-import io.github.smaugfm.monobudget.models.TransactionUpdateType.Companion.serialize
+import io.github.smaugfm.monobudget.models.YnabTransactionUpdateType
+import io.github.smaugfm.monobudget.models.telegram.MessageWithReplyKeyboard
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.util.MCC
@@ -19,13 +17,13 @@ import kotlin.reflect.KClass
 
 private val logger = KotlinLogging.logger {}
 
-class YnabTransactionTelegramMessageFormatter(
+class YnabTransactionMessageFormatter(
     private val monoAccountsService: MonoAccountsService
-) {
-    fun format(
+) : TransactionMessageFormatter<YnabTransactionDetail>() {
+    override fun format(
         monoResponse: MonoWebhookResponseData,
         transaction: YnabTransactionDetail
-    ): Triple<String, String, ReplyKeyboard>? {
+    ): MessageWithReplyKeyboard? {
         val msg = formatHTMLStatementMessage(
             monoAccountsService.getMonoAccAlias(monoResponse.account)!!,
             monoAccountsService.getAccountCurrency(monoResponse.account)!!,
@@ -40,24 +38,23 @@ class YnabTransactionTelegramMessageFormatter(
             return null
         }
 
-        return Triple(
-            monoResponse.account,
+        return MessageWithReplyKeyboard(
             msg,
             markup
         )
     }
 
     companion object {
-        internal fun formatInlineKeyboard(pressed: Set<KClass<out TransactionUpdateType>>): InlineKeyboardMarkup {
+        internal fun formatInlineKeyboard(pressed: Set<KClass<out YnabTransactionUpdateType>>): InlineKeyboardMarkup {
             return InlineKeyboardMarkup(
                 listOf(
                     listOf(
-                        button<TransactionUpdateType.Uncategorize>(pressed),
-                        button<TransactionUpdateType.Unapprove>(pressed)
+                        button<YnabTransactionUpdateType.Uncategorize>(pressed),
+                        button<YnabTransactionUpdateType.Unapprove>(pressed)
                     ),
                     listOf(
-                        button<TransactionUpdateType.Unknown>(pressed),
-                        button<TransactionUpdateType.MakePayee>(pressed)
+                        button<YnabTransactionUpdateType.Unknown>(pressed),
+                        button<YnabTransactionUpdateType.MakePayee>(pressed)
                     )
                 )
             )
@@ -121,12 +118,13 @@ class YnabTransactionTelegramMessageFormatter(
             }
         }
 
-        private inline fun <reified T : TransactionUpdateType> button(pressed: Set<KClass<out TransactionUpdateType>>) =
-            with(T::class) {
-                InlineKeyboardButton(
-                    buttonText<T>(this in pressed),
-                    callbackData = serialize<T>()
-                )
-            }
+        private inline fun <reified T : YnabTransactionUpdateType> button(
+            pressed: Set<KClass<out YnabTransactionUpdateType>>
+        ) = with(T::class) {
+            InlineKeyboardButton(
+                YnabTransactionUpdateType.buttonText<T>(this in pressed),
+                callbackData = YnabTransactionUpdateType.serialize<T>()
+            )
+        }
     }
 }

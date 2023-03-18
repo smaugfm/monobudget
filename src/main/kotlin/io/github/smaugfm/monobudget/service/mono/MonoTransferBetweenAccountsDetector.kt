@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.service
+package io.github.smaugfm.monobudget.service.mono
 
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
@@ -11,30 +11,30 @@ import kotlin.time.Duration.Companion.minutes
 
 private val logger = KotlinLogging.logger {}
 
-class MonoTransferBetweenAccountsDetector {
+class MonoTransferBetweenAccountsDetector<TTransaction> {
 
     private val recentTransactions =
-        ExpiringMap<MonoStatementItem, Deferred<Any>>(1.minutes)
+        ExpiringMap<MonoStatementItem, Deferred<TTransaction>>(1.minutes)
 
-    sealed class MaybeTransfer {
-        data class Transfer(
+    sealed class MaybeTransfer<TTransaction> {
+        data class Transfer<TTransaction>(
             val webhookResponse: MonoWebhookResponseData,
-            private val processed: Any
-        ) : MaybeTransfer() {
+            private val processed: TTransaction
+        ) : MaybeTransfer<TTransaction>() {
             @Suppress("UNCHECKED_CAST")
             fun <T : Any> processed(): T {
                 return processed as T
             }
         }
 
-        class NotTransfer(
+        class NotTransfer<TTransaction>(
             private val webhookResponse: MonoWebhookResponseData,
-            private val processedDeferred: CompletableDeferred<Any>
-        ) : MaybeTransfer() {
+            private val processedDeferred: CompletableDeferred<TTransaction>
+        ) : MaybeTransfer<TTransaction>() {
             @Volatile
             private var ran = false
 
-            suspend fun <T : Any> consume(block: suspend (MonoWebhookResponseData) -> T): T {
+            suspend fun consume(block: suspend (MonoWebhookResponseData) -> TTransaction): TTransaction {
                 check(!ran) { "Can consume NotTransfer only once" }
 
                 return block(webhookResponse).also {
@@ -45,7 +45,7 @@ class MonoTransferBetweenAccountsDetector {
         }
     }
 
-    suspend fun checkTransfer(webhookResponseData: MonoWebhookResponseData): MaybeTransfer {
+    suspend fun checkTransfer(webhookResponseData: MonoWebhookResponseData): MaybeTransfer<TTransaction> {
         val existingTransfer = recentTransactions.entries.firstOrNull { (recentStatementItem) ->
             checkIsTransferTransactions(
                 webhookResponseData.statementItem,
@@ -65,7 +65,7 @@ class MonoTransferBetweenAccountsDetector {
             }
             MaybeTransfer.Transfer(webhookResponseData, existingTransfer)
         } else {
-            val deferred = CompletableDeferred<Any>()
+            val deferred = CompletableDeferred<TTransaction>()
             recentTransactions.add(webhookResponseData.statementItem, deferred)
 
             MaybeTransfer.NotTransfer(webhookResponseData, deferred)

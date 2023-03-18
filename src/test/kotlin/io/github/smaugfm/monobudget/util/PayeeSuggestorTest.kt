@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.util
 
-import io.github.smaugfm.monobudget.service.transaction.PayeeSuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.PayeeSuggestingService
 import org.junit.jupiter.api.Test
 
 class PayeeSuggestorTest {

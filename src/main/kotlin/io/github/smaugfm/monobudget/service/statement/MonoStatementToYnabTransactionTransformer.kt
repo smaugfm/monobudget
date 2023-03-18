@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.service.ynab
+package io.github.smaugfm.monobudget.service.statement
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
@@ -6,8 +6,8 @@ import io.github.smaugfm.monobudget.models.ynab.YnabCleared
 import io.github.smaugfm.monobudget.models.ynab.YnabPayee
 import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.service.transaction.CategorySuggestingService
-import io.github.smaugfm.monobudget.service.transaction.PayeeSuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.PayeeSuggestingService
 import io.github.smaugfm.monobudget.util.replaceNewLines
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
@@ -58,7 +58,7 @@ class MonoStatementToYnabTransactionTransformer(
         }
     }
 
-    suspend operator fun invoke(response: MonoWebhookResponseData): YnabSaveTransaction {
+    suspend fun transform(response: MonoWebhookResponseData): YnabSaveTransaction {
         logger.debug { "Transforming Monobank statement to Ynab transaction." }
         val suggestedPayee =
             payeeSuggestingService.suggest(
