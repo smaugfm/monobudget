@@ -9,7 +9,7 @@ class YnabCategorySuggestingService(
     mccOverride: Settings.MccOverride,
     private val api: YnabApi
 ) : CategorySuggestingService(mccOverride) {
-    private val categoriesFetcher = periodicFetcherFactory.create("") {
+    private val categoriesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) {
         api.getCategoryGroups().flatMap {
             it.categories
         }

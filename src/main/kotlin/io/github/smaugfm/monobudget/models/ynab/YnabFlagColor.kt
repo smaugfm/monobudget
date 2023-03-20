@@ -1,25 +1,25 @@
 package io.github.smaugfm.monobudget.models.ynab
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 enum class YnabFlagColor {
-    @SerializedName("red")
+    @SerialName("red")
     Red,
 
-    @SerializedName("orange")
+    @SerialName("orange")
     Orange,
 
-    @SerializedName("yellow")
+    @SerialName("yellow")
     Yellow,
 
-    @SerializedName("green")
+    @SerialName("green")
     Green,
 
-    @SerializedName("blue")
+    @SerialName("blue")
     Blue,
 
-    @SerializedName("purple")
+    @SerialName("purple")
     Purple
 }

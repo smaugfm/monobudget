@@ -4,6 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class YnabCategoryGroupsWithCategoriesWrapper(
-    val categoryGroups: List<YnabCategoryGroupWithCategories>,
-    val serverKnowledge: Long
+    val categoryGroups: List<YnabCategoryGroupWithCategories>
 )

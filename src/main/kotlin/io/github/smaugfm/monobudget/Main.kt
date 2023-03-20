@@ -11,17 +11,20 @@ import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.github.smaugfm.monobudget.service.callback.YnabTelegramCallbackHandler
 import io.github.smaugfm.monobudget.service.formatter.LunchmoneyTransactionMessageFormatter
+import io.github.smaugfm.monobudget.service.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.service.formatter.YnabTransactionMessageFormatter
 import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
+import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.LunchmoneyCategorySuggestingServiceImpl
 import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.YnabCategorySuggestingService
 import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.service.transaction.LunchmoneyTransactionCreator
+import io.github.smaugfm.monobudget.service.transaction.TransactionCreator
 import io.github.smaugfm.monobudget.service.transaction.YnabTransactionCreator
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.runBlocking
@@ -43,13 +46,10 @@ fun main() {
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
     val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.json"))
     val budgetBackend = settings.budgetBackend
-    logger.debug(
-        "Startup options:\n\t" +
-            "setWebhook: $setWebhook\n\t",
-        "monoWebhookUrl: $monoWebhookUrl\n\t" +
-            "webhookPort: $webhookPort\n\t" +
-            "settings: $settings"
-    )
+    logger.debug { "Startup options: " }
+    logger.debug { "\tsetWebhook: $setWebhook" }
+    logger.debug { "\tmonoWebhookUrl: $monoWebhookUrl" }
+    logger.debug { "\twebhookPort: $webhookPort" }
     runBlocking {
         startKoin {
             modules(
@@ -61,42 +61,42 @@ fun main() {
                         is Lunchmoney -> {
                             single { LunchmoneyApi(budgetBackend.token) }
                             single { MonoTransferBetweenAccountsDetector<LunchmoneyTransaction>() }
-                            single { LunchmoneyTransactionCreator(get(), get()) }
-                            single { LunchmoneyTransactionMessageFormatter }
-                            single { LunchmoneyCategorySuggestingServiceImpl(get(), settings.mcc, get()) }
+                            single<TransactionCreator<LunchmoneyTransaction>> {
+                                LunchmoneyTransactionCreator(get(), get())
+                            }
+                            single<TransactionMessageFormatter<LunchmoneyTransaction>> { LunchmoneyTransactionMessageFormatter }
+                            single<CategorySuggestingService>(createdAtStart = true) {
+                                LunchmoneyCategorySuggestingServiceImpl(get(), settings.mcc, get())
+                            }
                         }
 
                         is YNAB -> {
-                            single { YnabCategorySuggestingService(get(), settings.mcc, get()) }
+                            single<CategorySuggestingService>(createdAtStart = true) {
+                                YnabCategorySuggestingService(get(), settings.mcc, get())
+                            }
                             single { MonoTransferBetweenAccountsDetector<YnabTransactionDetail>() }
                             single { YnabApi(budgetBackend) }
-                            single { YnabTransactionCreator(get(), get(), get()) }
-                            single { YnabTransactionMessageFormatter(get()) }
-                            single {
-                                YnabTelegramCallbackHandler(
-                                    get(),
-                                    get(),
-                                    telegramChaIds
-                                )
+                            single<TransactionCreator<YnabTransactionDetail>> {
+                                YnabTransactionCreator(get(), get(), get())
+                            }
+                            single<TransactionMessageFormatter<YnabTransactionDetail>> {
+                                YnabTransactionMessageFormatter(get())
                             }
                             single {
-                                MonoStatementToYnabTransactionTransformer(
-                                    get(),
-                                    get(),
-                                    get(),
-                                    get(),
-                                    get()
-                                )
+                                YnabTelegramCallbackHandler(get(), get(), telegramChaIds)
+                            }
+                            single(createdAtStart = true) {
+                                MonoStatementToYnabTransactionTransformer(get(), get(), get(), get(), get())
                             }
                         }
                     }
-                    single { PeriodicFetcherFactory(get()) }
+                    single { PeriodicFetcherFactory(this@runBlocking) }
                     single { MonoWebhookListenerServer(this@runBlocking, settings.mono.apis) }
                     single { TelegramApi(this@runBlocking, settings.bot) }
                     single { TelegramMessageSender(get(), get()) }
                     single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
                     single { DuplicateWebhooksFilter(get()) }
-                    single { MonoAccountsService(get(), settings.mono) }
+                    single(createdAtStart = true) { MonoAccountsService(get(), settings.mono) }
                     single { StringSimilarityPayeeSuggestingService() }
                 }
             )

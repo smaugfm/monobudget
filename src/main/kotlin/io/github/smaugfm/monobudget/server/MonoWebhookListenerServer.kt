@@ -52,13 +52,16 @@ class MonoWebhookListenerServer(
                             "Uri: ${call.request.uri}"
                     )
                     val response = call.receive<MonoWebhookResponse>()
-                    callback(
-                        MonoWebhookResponseData(
-                            response.data.account,
-                            response.data.statementItem
+                    try {
+                        callback(
+                            MonoWebhookResponseData(
+                                response.data.account,
+                                response.data.statementItem
+                            )
                         )
-                    )
-                    call.respond(HttpStatusCode.OK, "OK")
+                    } finally {
+                        call.respond(HttpStatusCode.OK, "OK")
+                    }
                 }
             }
         }

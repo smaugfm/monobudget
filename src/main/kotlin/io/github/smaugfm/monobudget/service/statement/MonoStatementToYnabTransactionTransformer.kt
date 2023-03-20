@@ -24,7 +24,7 @@ class MonoStatementToYnabTransactionTransformer(
     private val categorySuggestingService: CategorySuggestingService,
     private val ynabApi: YnabApi
 ) {
-    private val payeesFetcher = periodicFetcherFactory.create("Ynab.getPayees()") { ynabApi.getPayees() }
+    private val payeesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) { ynabApi.getPayees() }
 
     suspend fun transform(response: MonoWebhookResponseData): YnabSaveTransaction {
         logger.debug { "Transforming Monobank statement to Ynab transaction." }

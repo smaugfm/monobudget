@@ -11,7 +11,7 @@ class LunchmoneyCategorySuggestingServiceImpl(
     mccOverride: Settings.MccOverride,
     private val api: LunchmoneyApi
 ) : CategorySuggestingService(mccOverride) {
-    private val categoriesFetcher = periodicFetcherFactory.create("") {
+    private val categoriesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) {
         api.execute(LunchmoneyGetAllCategoriesRequest())
             .awaitSingle()
             .categories

@@ -18,12 +18,6 @@ class PeriodicFetcherFactory(
 ) {
     fun <T> create(
         name: String,
-        fetch: suspend () -> T,
-        interval: Duration,
-    ) = PeriodicFetcher(name, fetch, interval)
-
-    fun <T> create(
-        name: String,
         fetch: suspend () -> T
     ) = PeriodicFetcher(name, fetch, 1.hours)
 
@@ -39,7 +33,7 @@ class PeriodicFetcherFactory(
             private set
 
         init {
-            logger.debug { "Launching periodic fetcher $name" }
+            logger.info { "Launching periodic fetcher $name" }
             data = initial
             scope.launch(context = Dispatchers.IO) {
                 while (true) {

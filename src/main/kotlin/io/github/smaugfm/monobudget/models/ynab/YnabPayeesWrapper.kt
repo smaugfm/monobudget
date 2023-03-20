@@ -4,6 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class YnabPayeesWrapper(
-    val payees: List<YnabPayee>,
-    val serverKnowledge: Long
+    val payees: List<YnabPayee>
 )

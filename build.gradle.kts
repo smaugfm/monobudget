@@ -14,7 +14,7 @@ plugins {
     id("com.github.breadmoirai.github-release") version "2.2.12"
 }
 
-group = "com.github.smaugfm"
+group = "io.github.smaugfm.monobudget"
 val version: String by project
 
 val jdkVersion = "11"
@@ -30,6 +30,7 @@ repositories {
 dependencies {
     val ktor = "2.2.4"
     val junit = "5.9.2"
+    val logback = "1.4.5"
 
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
@@ -55,8 +56,9 @@ dependencies {
     implementation("io.ktor:ktor-server-content-negotiation:$ktor")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor")
     implementation("io.github.microutils:kotlin-logging:3.0.5")
-    implementation("org.slf4j:slf4j-simple:2.0.6")
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("ch.qos.logback:logback-core:$logback")
+    implementation("ch.qos.logback:logback-classic:$logback")
     testImplementation("io.mockk:mockk:1.13.4")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
@@ -132,7 +134,7 @@ tasks {
         archiveBaseName.set(rootProject.name)
         archiveClassifier.set("fat")
         manifest {
-            attributes(mapOf("Main-Class" to "com.github.smaugfm.MainKt"))
+            attributes(mapOf("Main-Class" to "io.github.smaugfm.monobudget.MainKt"))
         }
     }
 

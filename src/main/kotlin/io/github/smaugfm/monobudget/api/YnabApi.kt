@@ -13,7 +13,6 @@ import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransactionResponse
 import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransactionWrapper
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionResponse
-import io.github.smaugfm.monobudget.models.ynab.YnabTransactionResponseWithServerKnowledge
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionsResponse
 import io.github.smaugfm.monobudget.util.YnabRateLimitException
 import io.github.smaugfm.monobudget.util.logError
@@ -25,8 +24,10 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.URLProtocol
+import io.ktor.http.contentType
 import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.util.url
@@ -91,6 +92,7 @@ class YnabApi(backend: YNAB) {
     suspend fun createTransaction(transaction: YnabSaveTransaction): YnabTransactionDetail =
         catching(this::createTransaction) {
             httpClient.post(buildUrl("budgets", budgetId, "transactions")) {
+                contentType(ContentType.Application.Json)
                 setBody(YnabSaveTransactionWrapper(transaction))
             }.body<YnabSaveTransactionResponse>()
         }.data.transaction
@@ -105,8 +107,9 @@ class YnabApi(backend: YNAB) {
                     transactionId
                 )
             ) {
+                contentType(ContentType.Application.Json)
                 setBody(YnabSaveTransactionWrapper(transaction))
-            }.body<YnabTransactionResponseWithServerKnowledge>()
+            }.body<YnabTransactionResponse>()
         }.data.transaction
 
     suspend fun getTransaction(transactionId: String): YnabTransactionDetail = catching(this::getTransaction) {

@@ -14,7 +14,7 @@ class MonoAccountsService(
     fetcherFactory: PeriodicFetcherFactory,
     private val settings: Settings.MultipleMonoSettings,
 ) {
-    private val monoAccountsFetcher = fetcherFactory.create("monoAccountsFetcher") {
+    private val monoAccountsFetcher = fetcherFactory.create(this::class.simpleName!!) {
         settings.apis
             .mapIndexed { index, api ->
                 val accountId = settings.settings[index].accountId

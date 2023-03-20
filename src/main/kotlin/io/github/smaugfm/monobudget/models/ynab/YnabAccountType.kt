@@ -1,40 +1,40 @@
 package io.github.smaugfm.monobudget.models.ynab
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 enum class YnabAccountType {
-    @SerializedName("checking")
+    @SerialName("checking")
     Checking,
 
-    @SerializedName("savings")
+    @SerialName("savings")
     Savings,
 
-    @SerializedName("cash")
+    @SerialName("cash")
     Cash,
 
-    @SerializedName("creditCard")
+    @SerialName("creditCard")
     CreditCard,
 
-    @SerializedName("lineOfCredit")
+    @SerialName("lineOfCredit")
     LineOfCredit,
 
-    @SerializedName("otherAsset")
+    @SerialName("otherAsset")
     OtherAsset,
 
-    @SerializedName("otherLiability")
+    @SerialName("otherLiability")
     OtherLiability,
 
-    @SerializedName("payPal")
+    @SerialName("payPal")
     PayPal,
 
-    @SerializedName("merchantAccount")
+    @SerialName("merchantAccount")
     MerchantAccount,
 
-    @SerializedName("investmentAccount")
+    @SerialName("investmentAccount")
     InvestmentAccount,
 
-    @SerializedName("mortgage")
+    @SerialName("mortgage")
     Mortgage
 }
