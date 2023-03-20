@@ -5,7 +5,7 @@ import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.ynab.YnabCleared
 import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.service.suggesting.MccCategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.util.replaceNewLines
@@ -21,7 +21,7 @@ class MonoStatementToYnabTransactionTransformer(
     periodicFetcherFactory: PeriodicFetcherFactory,
     private val monoAccountsService: MonoAccountsService,
     private val payeeSuggestingService: StringSimilarityPayeeSuggestingService,
-    private val categorySuggestingService: MccCategorySuggestingService,
+    private val categorySuggestingService: CategorySuggestingService,
     private val ynabApi: YnabApi
 ) {
     private val payeesFetcher = periodicFetcherFactory.create("Ynab.getPayees()") { ynabApi.getPayees() }
@@ -34,7 +34,7 @@ class MonoStatementToYnabTransactionTransformer(
                 payeesFetcher.data.await().map { it.name }
             )
                 .firstOrNull()
-        val mccCategoryOverride = categorySuggestingService.suggestCategoryNameByMcc(response.statementItem.mcc)
+        val categoryId = categorySuggestingService.mapNameToCategoryId(response.statementItem.mcc)
 
         return YnabSaveTransaction(
             accountId = monoAccountsService.getBudgetAccountId(response.account)
@@ -43,7 +43,7 @@ class MonoStatementToYnabTransactionTransformer(
             amount = response.statementItem.amount * MONO_TO_YNAB_ADJUST,
             payeeId = null,
             payeeName = suggestedPayee,
-            categoryId = mccCategoryOverride,
+            categoryId = categoryId,
             memo = (response.statementItem.description ?: "").replaceNewLines(),
             cleared = YnabCleared.Cleared,
             approved = true,

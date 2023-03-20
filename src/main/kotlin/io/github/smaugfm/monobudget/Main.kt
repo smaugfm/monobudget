@@ -16,8 +16,9 @@ import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
-import io.github.smaugfm.monobudget.service.suggesting.MccCategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.LunchmoneyCategorySuggestingServiceImpl
 import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.YnabCategorySuggestingService
 import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.service.transaction.LunchmoneyTransactionCreator
@@ -62,9 +63,11 @@ fun main() {
                             single { MonoTransferBetweenAccountsDetector<LunchmoneyTransaction>() }
                             single { LunchmoneyTransactionCreator(get(), get()) }
                             single { LunchmoneyTransactionMessageFormatter }
+                            single { LunchmoneyCategorySuggestingServiceImpl(get(), settings.mcc, get()) }
                         }
 
                         is YNAB -> {
+                            single { YnabCategorySuggestingService(get(), settings.mcc, get()) }
                             single { MonoTransferBetweenAccountsDetector<YnabTransactionDetail>() }
                             single { YnabApi(budgetBackend) }
                             single { YnabTransactionCreator(get(), get(), get()) }
@@ -94,7 +97,6 @@ fun main() {
                     single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
                     single { DuplicateWebhooksFilter(get()) }
                     single { MonoAccountsService(get(), settings.mono) }
-                    single { MccCategorySuggestingService(settings.mcc) }
                     single { StringSimilarityPayeeSuggestingService() }
                 }
             )

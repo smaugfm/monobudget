@@ -7,7 +7,7 @@ import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
-import io.github.smaugfm.monobudget.service.suggesting.MccCategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.YnabCategorySuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -66,7 +66,7 @@ internal class TransformStatementToYnabTransactionTest {
                         periodicFetcherFactory,
                         MonoAccountsService(periodicFetcherFactory, settings.mono),
                         StringSimilarityPayeeSuggestingService(),
-                        MccCategorySuggestingService(settings.mcc),
+                        YnabCategorySuggestingService(settings.mcc),
                         YnabApi(settings.budgetBackend as YNAB)
                     )
                 val transaction = transform.transform(testStatement)

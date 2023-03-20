@@ -51,7 +51,7 @@ class YnabApiTest {
     fun testAllEndpointsDontFail() {
         runBlocking {
             val accountsDeferred = assertDoesNotThrow { api.getAccounts() }
-            assertDoesNotThrow { api.getCategories() }
+            assertDoesNotThrow { api.getCategoryGroups() }
             assertDoesNotThrow { api.getPayees() }
             accountsDeferred.let { accounts ->
                 if (accounts.isNotEmpty()) {

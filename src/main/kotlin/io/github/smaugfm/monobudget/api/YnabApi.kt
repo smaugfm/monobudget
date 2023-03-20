@@ -83,7 +83,7 @@ class YnabApi(backend: YNAB) {
             .body<YnabPayeesResponse>()
     }.data.payees
 
-    suspend fun getCategories(): List<YnabCategoryGroupWithCategories> = catching(this::getCategories) {
+    suspend fun getCategoryGroups(): List<YnabCategoryGroupWithCategories> = catching(this::getCategoryGroups) {
         httpClient.get(buildUrl("budgets", budgetId, "categories"))
             .body<YnabCategoriesResponse>()
     }.data.categoryGroups
