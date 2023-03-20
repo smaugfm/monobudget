@@ -4,11 +4,14 @@ import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.models.settings.Settings
+import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
-import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
-import io.github.smaugfm.monobudget.service.suggesting.PayeeSuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.MccCategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
+import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
@@ -20,15 +23,17 @@ import java.util.Currency
 import java.util.concurrent.CancellationException
 import kotlin.io.path.readText
 
+@OptIn(DelicateCoroutinesApi::class)
 internal class TransformStatementToYnabTransactionTest {
     init {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
     }
 
+    private val periodicFetcherFactory = PeriodicFetcherFactory(GlobalScope)
     private val settings = Settings.load(Paths.get("settings.json").readText())
-    private val monoAccountsService = MonoAccountsService(settings)
+    private val monoAccountsService = MonoAccountsService(periodicFetcherFactory, settings.mono)
     private val testStatement = MonoWebhookResponseData(
-        account = monoAccountsService.getMonoAccounts().first(),
+        account = "vasa",
         statementItem = MonoStatementItem(
             id = "F8NpbBKuBu2CgubD",
             time = Instant.parse("2022-02-06T11:42:40Z"),
@@ -58,10 +63,10 @@ internal class TransformStatementToYnabTransactionTest {
             runBlocking {
                 val transform =
                     MonoStatementToYnabTransactionTransformer(
-                        this@runBlocking,
-                        MonoAccountsService(settings),
-                        PayeeSuggestingService(),
-                        CategorySuggestingService(settings),
+                        periodicFetcherFactory,
+                        MonoAccountsService(periodicFetcherFactory, settings.mono),
+                        StringSimilarityPayeeSuggestingService(),
+                        MccCategorySuggestingService(settings.mcc),
                         YnabApi(settings.budgetBackend as YNAB)
                     )
                 val transaction = transform.transform(testStatement)

@@ -1,34 +1,48 @@
 package io.github.smaugfm.monobudget.service.mono
 
-import io.github.smaugfm.monobudget.models.settings.Settings
+import io.github.smaugfm.monobudget.models.Settings
+import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
+import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.serialization.ExperimentalSerializationApi
 import mu.KotlinLogging
 import java.util.Currency
 
 private val logger = KotlinLogging.logger { }
 
+@OptIn(ExperimentalSerializationApi::class)
 class MonoAccountsService(
-    settings: Settings
+    fetcherFactory: PeriodicFetcherFactory,
+    private val settings: Settings.MultipleMonoSettings,
 ) {
-    private val mappings = settings.mappings
-    fun getMonoAccounts() = mappings.monoAccToTelegram.keys
-
-    fun getMonoAccAlias(string: String): String? = mappings.monoAccAliases[string].also {
-        if (it == null) {
-            logger.error { "Could not find alias for Monobank account $string" }
-        }
+    private val monoAccountsFetcher = fetcherFactory.create("monoAccountsFetcher") {
+        settings.apis
+            .mapIndexed { index, api ->
+                val accountId = settings.settings[index].accountId
+                api.api.getClientInformation().awaitSingle().accounts.firstOrNull { it.id == accountId }!!
+            }
     }
 
-    fun getAccountCurrency(monoAccountId: String): Currency? = mappings.monoAccToCurrency[monoAccountId]
-
-    fun getTelegramChatIdAccByMono(monoAcc: String) = mappings.monoAccToTelegram[monoAcc].also {
-        if (it == null) {
-            logger.error { "Could not find Telegram chatID for Monobank account $monoAcc" }
-        }
+    private fun <T : Any?> T.logMissing(name: String, monoAccountId: String): T {
+        if (this == null)
+            logger.error { "Could not find alias for $name for Monobank accountId=$monoAccountId" }
+        return this
     }
 
-    fun getYnabAccByMono(monoAcc: String): String? = mappings.monoAccToYnab[monoAcc].also {
-        if (it == null) {
-            logger.error { "Could not find YNAB account for Monobank account $monoAcc" }
-        }
-    }
+    fun getMonoAccAlias(monoAccountId: String): String? =
+        settings.byId[monoAccountId]
+            ?.alias
+            .logMissing("Monobank account", monoAccountId)
+
+    suspend fun getAccountCurrency(monoAccountId: String): Currency? =
+        monoAccountsFetcher.data.await().firstOrNull { it.id == monoAccountId }?.currencyCode
+
+    fun getTelegramChatIdAccByMono(monoAccountId: String) =
+        settings.byId[monoAccountId]
+            ?.telegramChatId
+            .logMissing("Telegram chat ID", monoAccountId)
+
+    fun getBudgetAccountId(monoAccountId: String): String? =
+        settings.byId[monoAccountId]
+            ?.budgetAccountId
+            .logMissing("Budget account ID", monoAccountId)
 }

@@ -21,9 +21,7 @@ private val logger = KotlinLogging.logger {}
 class YnabTelegramCallbackHandler(
     private val telegram: TelegramApi,
     private val ynabApi: YnabApi,
-    private val telegramChatIds: Set<Long>,
-    private val unknownPayeeId: String,
-    private val unknownCategoryId: String
+    private val telegramChatIds: List<Long>
 ) {
     suspend operator fun invoke(callbackQuery: CallbackQuery) {
         if (callbackQuery.from.id !in telegramChatIds) {
@@ -82,12 +80,6 @@ class YnabTelegramCallbackHandler(
 
             is YnabTransactionUpdateType.Unapprove ->
                 saveTransaction.copy(approved = false)
-
-            is YnabTransactionUpdateType.Unknown -> saveTransaction.copy(
-                payeeId = unknownPayeeId,
-                categoryId = unknownCategoryId,
-                payeeName = null
-            )
 
             is YnabTransactionUpdateType.MakePayee -> saveTransaction.copy(payeeId = null, payeeName = type.payee)
         }

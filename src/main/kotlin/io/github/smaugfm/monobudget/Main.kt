@@ -6,21 +6,23 @@ import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.models.settings.Settings
+import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.github.smaugfm.monobudget.service.callback.YnabTelegramCallbackHandler
+import io.github.smaugfm.monobudget.service.formatter.LunchmoneyTransactionMessageFormatter
 import io.github.smaugfm.monobudget.service.formatter.YnabTransactionMessageFormatter
 import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
-import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
-import io.github.smaugfm.monobudget.service.suggesting.PayeeSuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.MccCategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.service.transaction.LunchmoneyTransactionCreator
 import io.github.smaugfm.monobudget.service.transaction.YnabTransactionCreator
+import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.koin.core.context.startKoin
@@ -33,7 +35,6 @@ private val logger = KotlinLogging.logger {}
 
 private const val DEFAULT_HTTP_PORT = 80
 
-@Suppress("LongMethod")
 fun main() {
     val env = System.getenv()
     val setWebhook = env["SET_WEBHOOK"]?.toBoolean() ?: false
@@ -53,14 +54,14 @@ fun main() {
             modules(
                 module {
                     printLogger(Level.ERROR)
-                    single { settings }
-                    val telegramChaIds = settings.mappings.monoAccToTelegram.values.toSet()
+                    val telegramChaIds = settings.mono.telegramChatIds
 
                     when (budgetBackend) {
                         is Lunchmoney -> {
                             single { LunchmoneyApi(budgetBackend.token) }
                             single { MonoTransferBetweenAccountsDetector<LunchmoneyTransaction>() }
                             single { LunchmoneyTransactionCreator(get(), get()) }
+                            single { LunchmoneyTransactionMessageFormatter }
                         }
 
                         is YNAB -> {
@@ -72,14 +73,12 @@ fun main() {
                                 YnabTelegramCallbackHandler(
                                     get(),
                                     get(),
-                                    telegramChaIds,
-                                    settings.mappings.unknownCategoryId,
-                                    settings.mappings.unknownCategoryId
+                                    telegramChaIds
                                 )
                             }
                             single {
                                 MonoStatementToYnabTransactionTransformer(
-                                    this@runBlocking,
+                                    get(),
                                     get(),
                                     get(),
                                     get(),
@@ -88,14 +87,15 @@ fun main() {
                             }
                         }
                     }
-                    single { MonoWebhookListenerServer(this@runBlocking, get()) }
-                    single { TelegramApi(this@runBlocking, get()) }
+                    single { PeriodicFetcherFactory(get()) }
+                    single { MonoWebhookListenerServer(this@runBlocking, settings.mono.apis) }
+                    single { TelegramApi(this@runBlocking, settings.bot) }
                     single { TelegramMessageSender(get(), get()) }
                     single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
                     single { DuplicateWebhooksFilter(get()) }
-                    single { MonoAccountsService(settings) }
-                    single { CategorySuggestingService(settings) }
-                    single { PayeeSuggestingService() }
+                    single { MonoAccountsService(get(), settings.mono) }
+                    single { MccCategorySuggestingService(settings.mcc) }
+                    single { StringSimilarityPayeeSuggestingService() }
                 }
             )
         }

@@ -3,7 +3,6 @@ package io.github.smaugfm.monobudget.server
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.MonoApi
-import io.github.smaugfm.monobudget.models.settings.Settings
 import io.github.smaugfm.monobudget.util.makeJson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -31,10 +30,14 @@ private val logger = KotlinLogging.logger {}
 @Suppress("ExtractKtorModule")
 class MonoWebhookListenerServer(
     private val scope: CoroutineScope,
-    settings: Settings
+    private val monoApis: List<MonoApi>
 ) {
-    val apis = settings.monoTokens.map(::MonoApi)
     private val json = makeJson()
+
+    suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) =
+        monoApis.all {
+            it.setupWebhook(monoWebhookUrl, webhookPort)
+        }
 
     fun start(webhook: URI, port: Int, callback: suspend (MonoWebhookResponseData) -> Unit): Job {
         val server = scope.embeddedServer(Netty, port = port) {

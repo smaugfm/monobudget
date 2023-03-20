@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.api
 
 import io.github.smaugfm.monobank.MonobankPersonalApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.models.settings.Settings
+import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.util.MCC
 import io.github.smaugfm.monobudget.util.formatAmount
 import kotlinx.coroutines.runBlocking

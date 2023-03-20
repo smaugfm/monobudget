@@ -22,15 +22,15 @@ import java.net.URI
 
 private val logger = KotlinLogging.logger {}
 
-class MonoApi(private val token: String) {
+class MonoApi(token: String) {
     init {
         require(token.isNotBlank())
     }
 
-    private val api = MonobankPersonalApi(token, JsonBuilder::buildJson)
+    val api = MonobankPersonalApi(token, JsonBuilder::buildJson)
 
     @Suppress("ExtractKtorModule")
-    suspend fun setWebHook(url: URI, port: Int): Boolean {
+    suspend fun setupWebhook(url: URI, port: Int): Boolean {
         require(url.toASCIIString() == url.toString())
 
         val waitForWebhook = CompletableDeferred<Unit>()

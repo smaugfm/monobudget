@@ -6,7 +6,7 @@ import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.ParseMode
 import com.elbekd.bot.types.ReplyKeyboard
-import io.github.smaugfm.monobudget.models.settings.Settings
+import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.util.pp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -18,10 +18,10 @@ private val logger = KotlinLogging.logger {}
 
 class TelegramApi(
     private val scope: CoroutineScope,
-    settings: Settings
+    botSettings: Settings.TelegramBotSettings
 ) {
     private val bot: Bot =
-        Bot.createPolling(settings.telegramBotUsername, settings.telegramBotToken)
+        Bot.createPolling(botSettings.token, botSettings.username)
 
     suspend fun sendMessage(
         chatId: ChatId,

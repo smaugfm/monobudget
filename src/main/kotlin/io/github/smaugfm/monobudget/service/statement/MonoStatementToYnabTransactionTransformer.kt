@@ -3,73 +3,41 @@ package io.github.smaugfm.monobudget.service.statement
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.ynab.YnabCleared
-import io.github.smaugfm.monobudget.models.ynab.YnabPayee
 import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
-import io.github.smaugfm.monobudget.service.suggesting.PayeeSuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.MccCategorySuggestingService
+import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
+import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.util.replaceNewLines
-import io.ktor.util.logging.error
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import mu.KotlinLogging
-import kotlin.time.Duration.Companion.hours
 
 private const val MONO_TO_YNAB_ADJUST = 10
 
 private val logger = KotlinLogging.logger {}
 
 class MonoStatementToYnabTransactionTransformer(
-    scope: CoroutineScope,
+    periodicFetcherFactory: PeriodicFetcherFactory,
     private val monoAccountsService: MonoAccountsService,
-    private val payeeSuggestingService: PayeeSuggestingService,
-    private val categorySuggestingService: CategorySuggestingService,
+    private val payeeSuggestingService: StringSimilarityPayeeSuggestingService,
+    private val categorySuggestingService: MccCategorySuggestingService,
     private val ynabApi: YnabApi
 ) {
-    @Volatile
-    private var payees: Deferred<List<YnabPayee>>
-
-    init {
-        logger.debug { "Launching periodic getPayees fetching." }
-        val initialDeferred = CompletableDeferred<List<YnabPayee>>()
-        payees = initialDeferred
-        scope.launch(context = Dispatchers.IO) {
-            logger.debug { "Loop getPayees periodic" }
-            while (true) {
-                val result = try {
-                    ynabApi.getPayees()
-                } catch (e: Throwable) {
-                    logger.error(e)
-                    continue
-                }
-                if (payees === initialDeferred) {
-                    initialDeferred.complete(result)
-                } else {
-                    payees = CompletableDeferred(result)
-                }
-                delay(1.hours)
-            }
-        }
-    }
+    private val payeesFetcher = periodicFetcherFactory.create("Ynab.getPayees()") { ynabApi.getPayees() }
 
     suspend fun transform(response: MonoWebhookResponseData): YnabSaveTransaction {
         logger.debug { "Transforming Monobank statement to Ynab transaction." }
         val suggestedPayee =
             payeeSuggestingService.suggest(
                 response.statementItem.description ?: "",
-                payees.await().map { it.name }
+                payeesFetcher.data.await().map { it.name }
             )
                 .firstOrNull()
-        val mccCategoryOverride = categorySuggestingService.suggestByMcc(response.statementItem.mcc)
+        val mccCategoryOverride = categorySuggestingService.suggestCategoryNameByMcc(response.statementItem.mcc)
 
         return YnabSaveTransaction(
-            accountId = monoAccountsService.getYnabAccByMono(response.account)
+            accountId = monoAccountsService.getBudgetAccountId(response.account)
                 ?: error("Could not find YNAB account for mono account ${response.account}"),
             date = response.statementItem.time.toLocalDateTime(TimeZone.currentSystemDefault()).date,
             amount = response.statementItem.amount * MONO_TO_YNAB_ADJUST,

@@ -5,7 +5,7 @@ import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class PayeeSuggestingService {
+class StringSimilarityPayeeSuggestingService {
     fun suggest(value: String, payees: List<String>): List<String> {
         logger.debug { "Looking for best payee match for memo: $value" }
         return twoPass(value, payees).map { it.first }.also {

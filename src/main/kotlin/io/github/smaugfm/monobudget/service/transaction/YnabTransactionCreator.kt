@@ -36,7 +36,7 @@ class YnabTransactionCreator(
         }
 
         val transferPayeeId =
-            transferPayeeIdsCache.get(monoAccountsService.getYnabAccByMono(newWebhookResponse.account)!!)
+            transferPayeeIdsCache.get(monoAccountsService.getBudgetAccountId(newWebhookResponse.account)!!)
 
         val existingTransactionUpdated = api
             .updateTransaction(

@@ -14,7 +14,6 @@ sealed class YnabTransactionUpdateType {
 
     data class Uncategorize(override val transactionId: String) : YnabTransactionUpdateType()
     data class Unapprove(override val transactionId: String) : YnabTransactionUpdateType()
-    data class Unknown(override val transactionId: String) : YnabTransactionUpdateType()
     data class MakePayee(override val transactionId: String, val payee: String) : YnabTransactionUpdateType()
 
     companion object {
@@ -32,7 +31,6 @@ sealed class YnabTransactionUpdateType {
             return when (cls) {
                 Uncategorize::class -> Uncategorize(transactionId)
                 Unapprove::class -> Unapprove(transactionId)
-                Unknown::class -> Unknown(transactionId)
                 MakePayee::class -> MakePayee(transactionId, payee)
                 else -> throw IllegalArgumentException("cls: ${cls.simpleName}")
             }
@@ -46,7 +44,6 @@ sealed class YnabTransactionUpdateType {
             return when (this) {
                 Uncategorize::class -> "категорию"
                 Unapprove::class -> "unapprove"
-                Unknown::class -> "невыясненные"
                 MakePayee::class -> "payee"
                 else -> throw IllegalArgumentException("Unknown ${YnabTransactionUpdateType::class.simpleName} $this")
             }
@@ -56,7 +53,6 @@ sealed class YnabTransactionUpdateType {
             return when (this) {
                 Uncategorize::class -> "❌"
                 Unapprove::class -> "🚫"
-                Unknown::class -> "➡️"
                 MakePayee::class -> "➕"
                 else -> throw IllegalArgumentException("Unknown ${YnabTransactionUpdateType::class.simpleName} $this")
             }

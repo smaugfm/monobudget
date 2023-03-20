@@ -14,12 +14,13 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.net.URI
+import kotlin.system.exitProcess
 
 private val logger = KotlinLogging.logger {}
 
 class Application<TTransaction> : KoinComponent {
     private val telegramApi by inject<TelegramApi>()
-    private val monoApis by inject<MonoWebhookListenerServer>()
+    private val webhooksListener by inject<MonoWebhookListenerServer>()
 
     private val transactionCreator by inject<TransactionCreator<TTransaction>>()
     private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
@@ -33,14 +34,15 @@ class Application<TTransaction> : KoinComponent {
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
         if (setWebhook) {
             logger.info { "Setting up mono webhooks." }
-            if (!monoApis.apis.all { it.setWebHook(monoWebhookUrl, webhookPort) }) {
-                return
+            if (!webhooksListener.setupWebhook(monoWebhookUrl, webhookPort)) {
+                logger.error { "Error settings up webhooks. Exiting application..." }
+                exitProcess(1)
             }
         } else {
             logger.info { "Skipping mono webhook setup." }
         }
 
-        val webhookJob = monoApis.start(
+        val webhookJob = webhooksListener.start(
             monoWebhookUrl,
             webhookPort
         ) handler@{ responseData ->

@@ -64,7 +64,10 @@ class LunchmoneyTransactionCreator(
             val createdId = api.execute(
                 LunchmoneyInsertTransactionsRequest(
                     LunchmoneyInsertTransactionRequestParams(
-                        listOf(this)
+                        listOf(this),
+                        applyRules = true,
+                        checkForRecurring = true,
+                        debitAsNegative = true
                     )
                 )
             ).awaitSingle().ids.first()

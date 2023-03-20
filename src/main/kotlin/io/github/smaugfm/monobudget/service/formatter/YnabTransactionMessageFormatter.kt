@@ -18,9 +18,9 @@ import kotlin.reflect.KClass
 private val logger = KotlinLogging.logger {}
 
 class YnabTransactionMessageFormatter(
-    private val monoAccountsService: MonoAccountsService
+    private val monoAccountsService: MonoAccountsService,
 ) : TransactionMessageFormatter<YnabTransactionDetail>() {
-    override fun format(
+    override suspend fun format(
         monoResponse: MonoWebhookResponseData,
         transaction: YnabTransactionDetail
     ): MessageWithReplyKeyboard? {
@@ -49,11 +49,8 @@ class YnabTransactionMessageFormatter(
             return InlineKeyboardMarkup(
                 listOf(
                     listOf(
+                        button<YnabTransactionUpdateType.Unapprove>(pressed),
                         button<YnabTransactionUpdateType.Uncategorize>(pressed),
-                        button<YnabTransactionUpdateType.Unapprove>(pressed)
-                    ),
-                    listOf(
-                        button<YnabTransactionUpdateType.Unknown>(pressed),
                         button<YnabTransactionUpdateType.MakePayee>(pressed)
                     )
                 )

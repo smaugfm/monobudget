@@ -4,7 +4,7 @@ import com.elbekd.bot.model.ChatId
 import io.github.smaugfm.monobudget.api.TelegramApi
 
 class TelegramErrorUnknownErrorHandler(
-    private val telegramChatIds: Set<Long>,
+    private val telegramChatIds: List<Long>,
     private val telegramApi: TelegramApi
 ) {
     suspend operator fun invoke() {
