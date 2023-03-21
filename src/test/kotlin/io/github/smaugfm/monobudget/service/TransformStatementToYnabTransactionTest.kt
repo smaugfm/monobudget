@@ -6,7 +6,7 @@ import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
+import io.github.smaugfm.monobudget.service.statement.YnabNewTransactionFactory
 import io.github.smaugfm.monobudget.service.suggesting.YnabCategorySuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
@@ -58,14 +58,14 @@ internal class TransformStatementToYnabTransactionTest {
         assertThrows<CancellationException> {
             runBlocking {
                 val transform =
-                    MonoStatementToYnabTransactionTransformer(
+                    YnabNewTransactionFactory(
                         periodicFetcherFactory,
                         MonoAccountsService(periodicFetcherFactory, settings.mono),
                         StringSimilarityPayeeSuggestingService(),
                         YnabCategorySuggestingService(periodicFetcherFactory, settings.mcc, api),
                         YnabApi(settings.budgetBackend as YNAB)
                     )
-                val transaction = transform.transform(testStatement)
+                val transaction = transform.create(testStatement)
                 println("Result: $transaction")
                 this.cancel("Finished.")
             }

@@ -13,11 +13,11 @@ import mu.KotlinLogging
 
 private val log = KotlinLogging.logger {}
 
-class MonoStatementToLunchmoneyTransactionTransformer(
+class LunchmoneyNewTransactionFactory(
     private val monoAccountsService: MonoAccountsService,
     private val categorySuggestingService: CategorySuggestingService,
-) {
-    suspend fun transform(response: MonoWebhookResponseData): LunchmoneyInsertOrUpdateTransaction {
+): NewTransactionFactory<LunchmoneyInsertOrUpdateTransaction>() {
+    override suspend fun create(response: MonoWebhookResponseData): LunchmoneyInsertOrUpdateTransaction {
         log.debug { "Transforming Monobank statement to Lunchmoney transaction." }
 
         val accountId = monoAccountsService.getBudgetAccountId(response.account)?.toLong()

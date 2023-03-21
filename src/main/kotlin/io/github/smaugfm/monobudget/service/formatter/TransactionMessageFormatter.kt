@@ -5,5 +5,5 @@ import io.github.smaugfm.monobudget.models.telegram.MessageWithReplyKeyboard
 
 sealed class TransactionMessageFormatter<T> {
 
-    abstract suspend fun format(monoResponse: MonoWebhookResponseData, transaction: T): MessageWithReplyKeyboard?
+    abstract suspend fun format(monoResponse: MonoWebhookResponseData, transaction: T): MessageWithReplyKeyboard
 }

@@ -23,7 +23,7 @@ class YnabTransactionMessageFormatter(
     override suspend fun format(
         monoResponse: MonoWebhookResponseData,
         transaction: YnabTransactionDetail
-    ): MessageWithReplyKeyboard? {
+    ): MessageWithReplyKeyboard {
         val msg = formatHTMLStatementMessage(
             monoAccountsService.getMonoAccAlias(monoResponse.account)!!,
             monoAccountsService.getAccountCurrency(monoResponse.account)!!,
@@ -31,12 +31,6 @@ class YnabTransactionMessageFormatter(
             transaction
         )
         val markup = formatInlineKeyboard(emptySet())
-
-        val chatId = monoAccountsService.getTelegramChatIdAccByMono(monoResponse.account)
-        if (chatId == null) {
-            log.error { "Failed to map Monobank account to telegram chat id. Account: ${monoResponse.account}" }
-            return null
-        }
 
         return MessageWithReplyKeyboard(
             msg,

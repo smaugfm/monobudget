@@ -17,16 +17,16 @@ private const val MONO_TO_YNAB_ADJUST = 10
 
 private val log = KotlinLogging.logger {}
 
-class MonoStatementToYnabTransactionTransformer(
+class YnabNewTransactionFactory(
     periodicFetcherFactory: PeriodicFetcherFactory,
     private val monoAccountsService: MonoAccountsService,
     private val payeeSuggestingService: StringSimilarityPayeeSuggestingService,
     private val categorySuggestingService: CategorySuggestingService,
     private val ynabApi: YnabApi
-) {
+) : NewTransactionFactory<YnabSaveTransaction>() {
     private val payeesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) { ynabApi.getPayees() }
 
-    suspend fun transform(response: MonoWebhookResponseData): YnabSaveTransaction {
+    override suspend fun create(response: MonoWebhookResponseData): YnabSaveTransaction {
         log.debug { "Transforming Monobank statement to Ynab transaction." }
         val suggestedPayee =
             payeeSuggestingService.suggest(

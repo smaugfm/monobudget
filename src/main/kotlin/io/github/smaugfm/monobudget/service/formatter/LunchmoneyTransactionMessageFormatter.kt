@@ -8,7 +8,7 @@ object LunchmoneyTransactionMessageFormatter : TransactionMessageFormatter<Lunch
     override suspend fun format(
         monoResponse: MonoWebhookResponseData,
         transaction: LunchmoneyTransaction
-    ): MessageWithReplyKeyboard? {
+    ): MessageWithReplyKeyboard {
         TODO("Not yet implemented")
     }
 }

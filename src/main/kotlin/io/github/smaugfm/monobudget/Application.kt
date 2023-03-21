@@ -8,7 +8,7 @@ import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.service.transaction.TransactionCreator
+import io.github.smaugfm.monobudget.service.transaction.BudgetTransactionCreator
 import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -18,11 +18,11 @@ import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
 
-class Application<TTransaction> : KoinComponent {
+class Application<TTransaction, TNewTransaction> : KoinComponent {
     private val telegramApi by inject<TelegramApi>()
     private val webhooksListener by inject<MonoWebhookListenerServer>()
 
-    private val transactionCreator by inject<TransactionCreator<TTransaction>>()
+    private val transactionCreator by inject<BudgetTransactionCreator<TTransaction, TNewTransaction>>()
     private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
     private val monoTransferDetector by inject<MonoTransferBetweenAccountsDetector<TTransaction>>()
 
@@ -57,7 +57,7 @@ class Application<TTransaction> : KoinComponent {
                 val message = messageFormatter.format(
                     responseData,
                     transaction
-                ) ?: return@handler
+                )
 
                 telegramMessageSender.send(responseData.account, message)
             } catch (e: Throwable) {

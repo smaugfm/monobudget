@@ -3,10 +3,11 @@ package io.github.smaugfm.monobudget.service.transaction
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.ynab.YnabCleared
+import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransactionTransformer
+import io.github.smaugfm.monobudget.service.statement.NewTransactionFactory
 import io.github.smaugfm.monobudget.util.SimpleCache
 import mu.KotlinLogging
 
@@ -15,8 +16,8 @@ private val log = KotlinLogging.logger {}
 class YnabTransactionCreator(
     private val api: YnabApi,
     private val monoAccountsService: MonoAccountsService,
-    private val statementTransformer: MonoStatementToYnabTransactionTransformer
-) : TransactionCreator<YnabTransactionDetail>() {
+    newTransactionFactory: NewTransactionFactory<YnabSaveTransaction>
+) : BudgetTransactionCreator<YnabTransactionDetail, YnabSaveTransaction>(newTransactionFactory) {
     private val transferPayeeIdsCache = SimpleCache<String, String> {
         api.getAccount(it).transferPayeeId
     }
@@ -57,7 +58,7 @@ class YnabTransactionCreator(
     private suspend fun processSingle(webhookResponse: MonoWebhookResponseData): YnabTransactionDetail {
         log.debug { "Processing transaction: $webhookResponse" }
 
-        val transaction = statementTransformer.transform(webhookResponse)
+        val transaction = newTransactionFactory.create(webhookResponse)
 
         return api.createTransaction(transaction)
     }

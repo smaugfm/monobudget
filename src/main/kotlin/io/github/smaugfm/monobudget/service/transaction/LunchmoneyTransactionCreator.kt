@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.service.transaction
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
+import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertOrUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyCreateTransactionGroupRequest
 import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyGetSingleTransactionRequest
@@ -9,7 +10,7 @@ import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyCreateT
 import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyInsertTransactionRequestParams
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.service.statement.MonoStatementToLunchmoneyTransactionTransformer
+import io.github.smaugfm.monobudget.service.statement.NewTransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 
@@ -17,8 +18,8 @@ private val log = KotlinLogging.logger {}
 
 class LunchmoneyTransactionCreator(
     private val api: LunchmoneyApi,
-    private val statementTransformer: MonoStatementToLunchmoneyTransactionTransformer
-) : TransactionCreator<LunchmoneyTransaction>() {
+    newTransactionFactory: NewTransactionFactory<LunchmoneyInsertOrUpdateTransaction>
+) : BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertOrUpdateTransaction>(newTransactionFactory) {
 
     override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = when (maybeTransfer) {
         is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())
@@ -54,7 +55,7 @@ class LunchmoneyTransactionCreator(
     private suspend fun processSingle(webhookResponse: MonoWebhookResponseData): LunchmoneyTransaction {
         log.debug { "Processing transaction: $webhookResponse" }
 
-        val newTransaction = statementTransformer.transform(webhookResponse)
+        val newTransaction = newTransactionFactory.create(webhookResponse)
         return with(newTransaction) {
 
             val createdId = api.execute(
