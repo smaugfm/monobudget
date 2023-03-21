@@ -15,7 +15,7 @@ import mu.KotlinLogging
 import java.util.Currency
 import kotlin.reflect.KClass
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class YnabTransactionMessageFormatter(
     private val monoAccountsService: MonoAccountsService,
@@ -34,7 +34,7 @@ class YnabTransactionMessageFormatter(
 
         val chatId = monoAccountsService.getTelegramChatIdAccByMono(monoResponse.account)
         if (chatId == null) {
-            logger.error { "Failed to map Monobank account to telegram chat id. Account: ${monoResponse.account}" }
+            log.error { "Failed to map Monobank account to telegram chat id. Account: ${monoResponse.account}" }
             return null
         }
 
@@ -67,7 +67,7 @@ class YnabTransactionMessageFormatter(
             payee: String,
             id: String
         ): String {
-            logger.info {
+            log.info {
                 "Formatting message${if (accountAlias != null) " to $accountAlias" else ""}\n" +
                     "\t$description" +
                     "\t$mcc" +

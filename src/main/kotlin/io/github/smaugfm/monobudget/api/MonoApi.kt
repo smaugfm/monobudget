@@ -14,14 +14,13 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.JsonBuilder
 import mu.KotlinLogging
 import java.net.URI
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class MonoApi(token: String) {
     init {
@@ -40,20 +39,20 @@ class MonoApi(token: String) {
                 get(url.path) {
                     call.response.status(HttpStatusCode.OK)
                     call.respondText("OK\n", ContentType.Text.Plain)
-                    logger.info { "Webhook setup successful: $url" }
+                    log.info { "Webhook setup successful: $url" }
                     waitForWebhook.complete(Unit)
                 }
             }
         }
-        logger.info { "Starting temporary webhook setup server..." }
+        log.info { "Starting temporary webhook setup server..." }
         tempServer.start(wait = false)
 
         try {
             api.setClientWebhook(url.toString()).awaitSingleOrNull()
             waitForWebhook.await()
-            logger.info { "Webhook setup completed. Stopping temporary server..." }
+            log.info { "Webhook setup completed. Stopping temporary server..." }
         } catch (e: Throwable) {
-            logger.error(e)
+            log.error(e)
             return false
         } finally {
             tempServer.stop(serverStopGracePeriod, serverStopGracePeriod)

@@ -7,7 +7,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import mu.KotlinLogging
 import java.util.Currency
 
-private val logger = KotlinLogging.logger { }
+private val log = KotlinLogging.logger { }
 
 @OptIn(ExperimentalSerializationApi::class)
 class MonoAccountsService(
@@ -24,7 +24,7 @@ class MonoAccountsService(
 
     private fun <T : Any?> T.logMissing(name: String, monoAccountId: String): T {
         if (this == null)
-            logger.error { "Could not find alias for $name for Monobank accountId=$monoAccountId" }
+            log.error { "Could not find alias for $name for Monobank accountId=$monoAccountId" }
         return this
     }
 

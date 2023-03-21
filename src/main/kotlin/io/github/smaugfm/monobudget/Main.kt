@@ -35,7 +35,7 @@ import org.koin.dsl.module
 import java.net.URI
 import java.nio.file.Paths
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 private const val DEFAULT_HTTP_PORT = 80
 
@@ -46,10 +46,10 @@ fun main() {
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
     val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.json"))
     val budgetBackend = settings.budgetBackend
-    logger.debug { "Startup options: " }
-    logger.debug { "\tsetWebhook: $setWebhook" }
-    logger.debug { "\tmonoWebhookUrl: $monoWebhookUrl" }
-    logger.debug { "\twebhookPort: $webhookPort" }
+    log.debug { "Startup options: " }
+    log.debug { "\tsetWebhook: $setWebhook" }
+    log.debug { "\tmonoWebhookUrl: $monoWebhookUrl" }
+    log.debug { "\twebhookPort: $webhookPort" }
     runBlocking {
         startKoin {
             modules(

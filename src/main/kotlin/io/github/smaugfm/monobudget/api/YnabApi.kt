@@ -34,7 +34,7 @@ import io.ktor.server.util.url
 import mu.KotlinLogging
 import kotlin.reflect.KFunction
 
-private val logger = KotlinLogging.logger { }
+private val log = KotlinLogging.logger { }
 
 class YnabApi(backend: YNAB) {
     private val token = backend.token
@@ -55,7 +55,7 @@ class YnabApi(backend: YNAB) {
     }
 
     private inline fun <reified T : Any> catching(method: KFunction<Any>, block: () -> T): T =
-        logError("YNAB", logger, method.name, block) {
+        logError("YNAB", log, method.name, block) {
             if (it.response.status.value == HttpStatusCode.TooManyRequests.value) {
                 throw YnabRateLimitException()
             }

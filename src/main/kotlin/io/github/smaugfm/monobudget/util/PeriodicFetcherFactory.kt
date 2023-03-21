@@ -11,7 +11,7 @@ import mu.KotlinLogging
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class PeriodicFetcherFactory(
     private val scope: CoroutineScope,
@@ -33,15 +33,15 @@ class PeriodicFetcherFactory(
             private set
 
         init {
-            logger.info { "Launching periodic fetcher $name" }
+            log.info { "Launching periodic fetcher $name" }
             data = initial
             scope.launch(context = Dispatchers.IO) {
                 while (true) {
-                    logger.debug { "$name fetching..." }
+                    log.debug { "$name fetching..." }
                     val result = try {
                         fetch()
                     } catch (e: Throwable) {
-                        logger.error(e)
+                        log.error(e)
                         continue
                     }
                     if (data === initial) {

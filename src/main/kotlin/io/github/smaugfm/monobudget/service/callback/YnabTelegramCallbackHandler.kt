@@ -16,7 +16,7 @@ import io.github.smaugfm.monobudget.service.formatter.YnabTransactionMessageForm
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class YnabTelegramCallbackHandler(
     private val telegram: TelegramApi,
@@ -25,7 +25,7 @@ class YnabTelegramCallbackHandler(
 ) {
     suspend operator fun invoke(callbackQuery: CallbackQuery) {
         if (callbackQuery.from.id !in telegramChatIds) {
-            logger.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }
+            log.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }
             return
         }
 
@@ -112,10 +112,10 @@ class YnabTelegramCallbackHandler(
     private fun extractFromCallbackQuery(callbackQuery: CallbackQuery): Triple<String, String, Message>? {
         val callbackQueryId = callbackQuery.id
         val data = callbackQuery.data.takeUnless { it.isNullOrBlank() }
-            ?: logger.warn { "Received Telegram callbackQuery with empty data.\n$callbackQuery" }
+            ?: log.warn { "Received Telegram callbackQuery with empty data.\n$callbackQuery" }
                 .let { return null }
         val message =
-            callbackQuery.message ?: logger.warn { "Received Telegram callbackQuery with empty message" }
+            callbackQuery.message ?: log.warn { "Received Telegram callbackQuery with empty message" }
                 .let { return null }
 
         return Triple(callbackQueryId, data, message)

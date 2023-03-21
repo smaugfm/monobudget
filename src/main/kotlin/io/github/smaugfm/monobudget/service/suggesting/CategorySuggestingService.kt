@@ -4,7 +4,7 @@ import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.util.MCC
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger { }
+private val log = KotlinLogging.logger { }
 
 abstract class CategorySuggestingService(
     private val mccOverride: Settings.MccOverride,
@@ -14,7 +14,7 @@ abstract class CategorySuggestingService(
     suspend fun mapNameToCategoryId(mcc: Int): String? {
         val mccObj = MCC.map[mcc]
         if (mccObj == null)
-            logger.warn { "Unknown MCC code $mcc" }
+            log.warn { "Unknown MCC code $mcc" }
         else {
             val categoryName = mccOverride.mccGroupToCategoryName[mccObj.group.type]
             if (categoryName != null)

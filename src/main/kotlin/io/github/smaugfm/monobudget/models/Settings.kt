@@ -9,7 +9,7 @@ import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Path
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Serializable
 data class Settings(
@@ -22,7 +22,7 @@ data class Settings(
         fun load(path: Path): Settings = load(File(path.toString()).readText())
 
         internal fun load(content: String) = Json.decodeFromString<Settings>(content).also {
-            logger.debug { "Loaded settings: $it" }
+            log.debug { "Loaded settings: $it" }
         }
     }
 

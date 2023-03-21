@@ -3,13 +3,13 @@ package io.github.smaugfm.monobudget.service.suggesting
 import io.github.smaugfm.monobudget.util.jaroWinklerSimilarity
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class StringSimilarityPayeeSuggestingService {
     fun suggest(value: String, payees: List<String>): List<String> {
-        logger.debug { "Looking for best payee match for memo: $value" }
+        log.debug { "Looking for best payee match for memo: $value" }
         return twoPass(value, payees).map { it.first }.also {
-            logger.debug { "Found best match: $it" }
+            log.debug { "Found best match: $it" }
         }
     }
 

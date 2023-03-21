@@ -4,7 +4,7 @@ import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.util.SimpleCache
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class DuplicateWebhooksFilter(private val monoAccountsService: MonoAccountsService) {
 
@@ -12,12 +12,12 @@ class DuplicateWebhooksFilter(private val monoAccountsService: MonoAccountsServi
 
     fun checkIsDuplicate(webhookResponseData: MonoWebhookResponseData): Boolean {
         if (!webhookResponsesCache.alreadyHasKey(webhookResponseData, Unit)) {
-            logger.info { "Duplicate ${MonoWebhookResponseData::class.simpleName} $webhookResponseData" }
+            log.info { "Duplicate ${MonoWebhookResponseData::class.simpleName} $webhookResponseData" }
             return true
         }
 
         with(webhookResponseData) {
-            logger.info {
+            log.info {
                 "Incoming transaction from ${monoAccountsService.getMonoAccAlias(account)}'s account.\n" +
                     with(statementItem) {
                         "\tAmount: ${amount}${currencyCode}\n" +

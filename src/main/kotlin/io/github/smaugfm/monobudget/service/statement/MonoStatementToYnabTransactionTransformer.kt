@@ -15,7 +15,7 @@ import mu.KotlinLogging
 
 private const val MONO_TO_YNAB_ADJUST = 10
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class MonoStatementToYnabTransactionTransformer(
     periodicFetcherFactory: PeriodicFetcherFactory,
@@ -27,7 +27,7 @@ class MonoStatementToYnabTransactionTransformer(
     private val payeesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) { ynabApi.getPayees() }
 
     suspend fun transform(response: MonoWebhookResponseData): YnabSaveTransaction {
-        logger.debug { "Transforming Monobank statement to Ynab transaction." }
+        log.debug { "Transforming Monobank statement to Ynab transaction." }
         val suggestedPayee =
             payeeSuggestingService.suggest(
                 response.statementItem.description ?: "",

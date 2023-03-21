@@ -7,7 +7,7 @@ import mu.KotlinLogging
 import java.util.UUID
 import kotlin.reflect.KClass
 
-private val logger = KotlinLogging.logger { }
+private val log = KotlinLogging.logger { }
 
 sealed class YnabTransactionUpdateType {
     abstract val transactionId: String
@@ -21,7 +21,7 @@ sealed class YnabTransactionUpdateType {
             val cls =
                 YnabTransactionUpdateType::class.sealedSubclasses.find { it.simpleName == callbackData }
             if (cls == null) {
-                logger.error("Cannot find TransactionActionType. Data: $callbackData")
+                log.error("Cannot find TransactionActionType. Data: $callbackData")
                 return null
             }
 
@@ -69,7 +69,7 @@ sealed class YnabTransactionUpdateType {
             val id = try {
                 UUID.fromString(text.substring(text.length - UUIDwidth, text.length))
             } catch (e: IllegalArgumentException) {
-                logger.error(e)
+                log.error(e)
                 return null
             }.toString()
             val payee =

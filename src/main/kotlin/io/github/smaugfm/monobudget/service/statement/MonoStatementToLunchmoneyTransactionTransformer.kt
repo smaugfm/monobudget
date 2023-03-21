@@ -4,10 +4,9 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertOrUpdateTransaction
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
-import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class MonoStatementToLunchmoneyTransactionTransformer(
     private val monoAccountsService: MonoAccountsService,

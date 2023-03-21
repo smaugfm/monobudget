@@ -14,7 +14,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class TelegramApi(
     private val scope: CoroutineScope,
@@ -42,7 +42,7 @@ class TelegramApi(
             null,
             replyMarkup
         ).also {
-            logger.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup?.pp()}" }
+            log.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup?.pp()}" }
         }
     }
 
@@ -64,7 +64,7 @@ class TelegramApi(
             false,
             replyMarkup
         ).also {
-            logger.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup.pp()}" }
+            log.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup.pp()}" }
         }
     }
 
@@ -74,7 +74,7 @@ class TelegramApi(
 
     fun start(callbackHandler: suspend (CallbackQuery) -> Unit): Job {
         bot.onCallbackQuery {
-            logger.debug { "Received callbackQuery.\n\t$it" }
+            log.debug { "Received callbackQuery.\n\t$it" }
             callbackHandler(it)
         }
         return scope.launch(context = Dispatchers.IO) {

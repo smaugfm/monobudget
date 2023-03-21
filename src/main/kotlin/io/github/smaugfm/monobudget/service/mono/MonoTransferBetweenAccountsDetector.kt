@@ -9,7 +9,7 @@ import mu.KotlinLogging
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.minutes
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class MonoTransferBetweenAccountsDetector<TTransaction> {
 
@@ -52,13 +52,13 @@ class MonoTransferBetweenAccountsDetector<TTransaction> {
                 recentStatementItem
             ).also {
                 if (it) {
-                    logger.debug { "Found transfer. Waiting for deferred to finish." }
+                    log.debug { "Found transfer. Waiting for deferred to finish." }
                 }
             }
         }?.value?.await()
 
         return if (existingTransfer != null) {
-            logger.debug {
+            log.debug {
                 "Found matching transfer transaction.\n" +
                     "Current: $webhookResponseData\n" +
                     "Recent transfer: $existingTransfer"

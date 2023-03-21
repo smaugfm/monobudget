@@ -10,11 +10,10 @@ import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyInsertT
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.service.statement.MonoStatementToLunchmoneyTransactionTransformer
-import isNotZero
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class LunchmoneyTransactionCreator(
     private val api: LunchmoneyApi,
@@ -30,7 +29,7 @@ class LunchmoneyTransactionCreator(
         newWebhookResponse: MonoWebhookResponseData,
         existingTransaction: LunchmoneyTransaction
     ): LunchmoneyTransaction {
-        logger.debug {
+        log.debug {
             "Processed transfer transaction: $newWebhookResponse. " +
                 "Existing LunchmoneyTransaction: $existingTransaction"
         }
@@ -47,13 +46,13 @@ class LunchmoneyTransactionCreator(
             )
         ).awaitSingle()
 
-        logger.debug { "Created new Lunchmoney transaction group id=$groupId" }
+        log.debug { "Created new Lunchmoney transaction group id=$groupId" }
 
         return newTransaction
     }
 
     private suspend fun processSingle(webhookResponse: MonoWebhookResponseData): LunchmoneyTransaction {
-        logger.debug { "Processing transaction: $webhookResponse" }
+        log.debug { "Processing transaction: $webhookResponse" }
 
         val newTransaction = statementTransformer.transform(webhookResponse)
         return with(newTransaction) {

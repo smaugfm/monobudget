@@ -16,7 +16,7 @@ import org.koin.core.component.inject
 import java.net.URI
 import kotlin.system.exitProcess
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class Application<TTransaction> : KoinComponent {
     private val telegramApi by inject<TelegramApi>()
@@ -33,13 +33,13 @@ class Application<TTransaction> : KoinComponent {
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
         if (setWebhook) {
-            logger.info { "Setting up mono webhooks." }
+            log.info { "Setting up mono webhooks." }
             if (!webhooksListener.setupWebhook(monoWebhookUrl, webhookPort)) {
-                logger.error { "Error settings up webhooks. Exiting application..." }
+                log.error { "Error settings up webhooks. Exiting application..." }
                 exitProcess(1)
             }
         } else {
-            logger.info { "Skipping mono webhook setup." }
+            log.info { "Skipping mono webhook setup." }
         }
 
         val webhookJob = webhooksListener.start(
@@ -61,12 +61,12 @@ class Application<TTransaction> : KoinComponent {
 
                 telegramMessageSender.send(responseData.account, message)
             } catch (e: Throwable) {
-                logger.error(e)
+                log.error(e)
                 processError()
             }
         }
         val telegramJob = telegramApi.start(handleCallback::invoke)
-        logger.info { "Listening for Monobank webhooks and Telegram callbacks..." }
+        log.info { "Listening for Monobank webhooks and Telegram callbacks..." }
         webhookJob.join()
         telegramJob.join()
     }

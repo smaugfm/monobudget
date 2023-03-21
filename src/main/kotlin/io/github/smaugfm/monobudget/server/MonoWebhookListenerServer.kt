@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import java.net.URI
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 @Suppress("ExtractKtorModule")
 class MonoWebhookListenerServer(
@@ -46,7 +46,7 @@ class MonoWebhookListenerServer(
             }
             routing {
                 post(webhook.path) {
-                    logger.info(
+                    log.info(
                         "Webhook queried. " +
                             "Host: ${call.request.origin.remoteHost} " +
                             "Uri: ${call.request.uri}"

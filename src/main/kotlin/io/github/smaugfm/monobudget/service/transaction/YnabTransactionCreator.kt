@@ -10,7 +10,7 @@ import io.github.smaugfm.monobudget.service.statement.MonoStatementToYnabTransac
 import io.github.smaugfm.monobudget.util.SimpleCache
 import mu.KotlinLogging
 
-private val logger = KotlinLogging.logger {}
+private val log = KotlinLogging.logger {}
 
 class YnabTransactionCreator(
     private val api: YnabApi,
@@ -30,7 +30,7 @@ class YnabTransactionCreator(
         newWebhookResponse: MonoWebhookResponseData,
         existingTransaction: YnabTransactionDetail
     ): YnabTransactionDetail {
-        logger.debug {
+        log.debug {
             "Processing transfer transaction: $newWebhookResponse. " +
                 "Existing YnabTransactionDetail: $existingTransaction"
         }
@@ -55,7 +55,7 @@ class YnabTransactionCreator(
     }
 
     private suspend fun processSingle(webhookResponse: MonoWebhookResponseData): YnabTransactionDetail {
-        logger.debug { "Processing transaction: $webhookResponse" }
+        log.debug { "Processing transaction: $webhookResponse" }
 
         val transaction = statementTransformer.transform(webhookResponse)
 
