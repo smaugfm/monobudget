@@ -2,8 +2,9 @@ package io.github.smaugfm.monobudget.service.formatter
 
 import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
+import com.elbekd.bot.types.Message
+import com.elbekd.bot.types.MessageEntity
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.models.BudgetBackend
 import io.github.smaugfm.monobudget.models.TransactionUpdateType
 import io.github.smaugfm.monobudget.models.telegram.MessageWithReplyKeyboard
 import io.github.smaugfm.monobudget.util.formatAmount
@@ -21,7 +22,6 @@ sealed class TransactionMessageFormatter<T> {
         @Suppress("LongParameterList")
         internal fun formatHTMLStatementMessage(
             budgetBackend: String,
-            accountAlias: String?,
             description: String,
             mcc: String,
             amount: String,
@@ -30,7 +30,7 @@ sealed class TransactionMessageFormatter<T> {
             id: String
         ): String {
             log.info {
-                "Formatting message${if (accountAlias != null) " to $accountAlias" else ""}\n" +
+                "Formatting message:\n" +
                     "\t$description" +
                     "\t$mcc" +
                     "\t$amount" +
@@ -51,6 +51,31 @@ sealed class TransactionMessageFormatter<T> {
                 builder.toString()
             }
         }
+
+        internal fun extractFromOldMessage(oldMessage: Message): OldMessageEntities {
+            val oldText = oldMessage.text!!
+            val oldTextLines = oldText.split("\n").filter { it.isNotBlank() }
+            val description = oldMessage.entities.find { it.type == MessageEntity.Type.BOLD }
+                ?.run { oldMessage.text!!.substring(offset, offset + length) }!!
+
+            val mcc = oldTextLines[2].trim()
+            val currencyText = oldTextLines[3].trim()
+            val id = oldTextLines[6].trim()
+
+            return OldMessageEntities(
+                description,
+                mcc,
+                currencyText,
+                id
+            )
+        }
+
+        data class OldMessageEntities(
+            val description: String,
+            val mcc: String,
+            val currency: String,
+            val id: String
+        )
 
         @JvmStatic
         internal fun formatInlineKeyboard(pressed: Set<KClass<out TransactionUpdateType>>): InlineKeyboardMarkup {

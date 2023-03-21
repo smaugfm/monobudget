@@ -43,7 +43,6 @@ class LunchmoneyTransactionMessageFormatter(
             val operationAmount = formatAmountWithCurrency(this.operationAmount, currencyCode)
             return formatHTMLStatementMessage(
                 "Lunchmoney",
-                accountAlias,
                 (description ?: "").replaceNewLines(),
                 (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
                 accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),

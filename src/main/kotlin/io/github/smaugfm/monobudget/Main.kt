@@ -11,6 +11,8 @@ import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
+import io.github.smaugfm.monobudget.service.callback.LunchmoneyTelegramCallbackHandler
+import io.github.smaugfm.monobudget.service.callback.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.service.callback.YnabTelegramCallbackHandler
 import io.github.smaugfm.monobudget.service.formatter.LunchmoneyTransactionMessageFormatter
 import io.github.smaugfm.monobudget.service.formatter.TransactionMessageFormatter
@@ -77,6 +79,9 @@ fun main() {
                             single<CategorySuggestingService>(createdAtStart = true) {
                                 LunchmoneyCategorySuggestingServiceImpl(get(), settings.mcc, get())
                             }
+                            single<TelegramCallbackHandler<LunchmoneyTransaction>> {
+                                LunchmoneyTelegramCallbackHandler(get(), get(), get(), telegramChaIds)
+                            }
                         }
 
                         is YNAB -> {
@@ -94,7 +99,7 @@ fun main() {
                             single<TransactionMessageFormatter<YnabTransactionDetail>> {
                                 YnabTransactionMessageFormatter(get())
                             }
-                            single {
+                            single<TelegramCallbackHandler<YnabTransactionDetail>> {
                                 YnabTelegramCallbackHandler(get(), get(), telegramChaIds)
                             }
                             single(createdAtStart = true) {

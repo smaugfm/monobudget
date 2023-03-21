@@ -17,7 +17,6 @@ class YnabTransactionMessageFormatter(
         transaction: YnabTransactionDetail
     ): MessageWithReplyKeyboard {
         val msg = formatHTMLStatementMessage(
-            monoAccountsService.getMonoAccAlias(monoResponse.account)!!,
             monoAccountsService.getAccountCurrency(monoResponse.account)!!,
             monoResponse.statementItem,
             transaction
@@ -31,8 +30,7 @@ class YnabTransactionMessageFormatter(
     }
 
     companion object {
-        internal fun formatHTMLStatementMessage(
-            accountAlias: String,
+        private fun formatHTMLStatementMessage(
             accountCurrency: Currency,
             monoStatementItem: MonoStatementItem,
             transaction: YnabTransactionDetail
@@ -42,7 +40,6 @@ class YnabTransactionMessageFormatter(
                 val operationAmount = formatAmountWithCurrency(this.operationAmount, currencyCode)
                 return formatHTMLStatementMessage(
                     "YNAB",
-                    accountAlias,
                     (description ?: "").replaceNewLines(),
                     (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
                     accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),

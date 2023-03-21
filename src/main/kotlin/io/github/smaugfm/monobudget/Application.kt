@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget
 
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
-import io.github.smaugfm.monobudget.service.callback.YnabTelegramCallbackHandler
+import io.github.smaugfm.monobudget.service.callback.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.service.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
@@ -26,7 +26,7 @@ class Application<TTransaction, TNewTransaction> : KoinComponent {
     private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
     private val monoTransferDetector by inject<MonoTransferBetweenAccountsDetector<TTransaction>>()
 
-    private val handleCallback by inject<YnabTelegramCallbackHandler>()
+    private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val processError by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
     private val webhookResponseDuplicateFilter by inject<DuplicateWebhooksFilter>()
@@ -65,7 +65,7 @@ class Application<TTransaction, TNewTransaction> : KoinComponent {
                 processError()
             }
         }
-        val telegramJob = telegramApi.start(handleCallback::invoke)
+        val telegramJob = telegramApi.start(telegramCallbackHandler::handle)
         log.info { "Listening for Monobank webhooks and Telegram callbacks..." }
         webhookJob.join()
         telegramJob.join()
