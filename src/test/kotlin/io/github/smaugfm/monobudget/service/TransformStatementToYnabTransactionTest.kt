@@ -25,13 +25,9 @@ import kotlin.io.path.readText
 
 @OptIn(DelicateCoroutinesApi::class)
 internal class TransformStatementToYnabTransactionTest {
-    init {
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug")
-    }
-
     private val periodicFetcherFactory = PeriodicFetcherFactory(GlobalScope)
     private val settings = Settings.load(Paths.get("settings.json").readText())
-    private val monoAccountsService = MonoAccountsService(periodicFetcherFactory, settings.mono)
+    private val api = YnabApi(settings.budgetBackend as YNAB)
     private val testStatement = MonoWebhookResponseData(
         account = "vasa",
         statementItem = MonoStatementItem(
@@ -66,7 +62,7 @@ internal class TransformStatementToYnabTransactionTest {
                         periodicFetcherFactory,
                         MonoAccountsService(periodicFetcherFactory, settings.mono),
                         StringSimilarityPayeeSuggestingService(),
-                        YnabCategorySuggestingService(settings.mcc),
+                        YnabCategorySuggestingService(periodicFetcherFactory, settings.mcc, api),
                         YnabApi(settings.budgetBackend as YNAB)
                     )
                 val transaction = transform.transform(testStatement)

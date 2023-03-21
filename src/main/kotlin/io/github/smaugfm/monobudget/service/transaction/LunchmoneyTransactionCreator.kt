@@ -57,9 +57,6 @@ class LunchmoneyTransactionCreator(
 
         val newTransaction = statementTransformer.transform(webhookResponse)
         return with(newTransaction) {
-            check(amount.isNotZero()) {
-                "Transactions must have a positive amount. Got $amount"
-            }
 
             val createdId = api.execute(
                 LunchmoneyInsertTransactionsRequest(

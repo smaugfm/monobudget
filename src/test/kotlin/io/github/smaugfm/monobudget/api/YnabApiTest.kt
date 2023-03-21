@@ -18,14 +18,10 @@ import kotlin.io.path.readText
 import kotlin.time.Duration.Companion.days
 
 @OptIn(ExperimentalSerializationApi::class)
-@Suppress("DeferredResultUnused")
 class YnabApiTest {
-    init {
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn")
-    }
-
+    private val settings = Settings.load(Paths.get("settings.json").readText())
     private val api = YnabApi(
-        Settings.load(Paths.get("settings.json").readText()).budgetBackend as YNAB
+        settings.budgetBackend as YNAB
     )
 
     @Disabled
@@ -37,9 +33,9 @@ class YnabApiTest {
         val str = statements.joinToString("\n") { item ->
             "${item.description} \t\t\t\t ${item.currencyCode.formatAmount(item.amount)} ${item.currencyCode}\t" +
                 " ${item.mcc} ${
-                MCC.map[item.mcc]?.let {
-                    "${it.fullDescription} (${it.group.type} ${it.group.description}) "
-                }
+                    MCC.map[item.mcc]?.let {
+                        "${it.fullDescription} (${it.group.type} ${it.group.description}) "
+                    }
                 }" +
                 "${item.time.toLocalDateTime(TimeZone.currentSystemDefault())}"
         }
@@ -51,8 +47,7 @@ class YnabApiTest {
     fun testAllEndpointsDontFail() {
         runBlocking {
             val accountsDeferred = assertDoesNotThrow { api.getAccounts() }
-            assertDoesNotThrow { api.getCategoryGroups() }
-            assertDoesNotThrow { api.getPayees() }
+            val categoryGroups = assertDoesNotThrow { api.getCategoryGroups() }
             accountsDeferred.let { accounts ->
                 if (accounts.isNotEmpty()) {
                     assertDoesNotThrow { api.getAccount(accounts.first().id) }

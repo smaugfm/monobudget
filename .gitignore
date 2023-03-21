@@ -4,5 +4,6 @@ out/
 .idea/misc.xml
 .idea/**/*.iml
 
+settings-ynab.json
 settings.json
 docker-compose.yml
