@@ -6,7 +6,7 @@ import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.service.statement.YnabNewTransactionFactory
+import io.github.smaugfm.monobudget.service.transaction.factory.YnabNewTransactionFactory
 import io.github.smaugfm.monobudget.service.suggesting.YnabCategorySuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory

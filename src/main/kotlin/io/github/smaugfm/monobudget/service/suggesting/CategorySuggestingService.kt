@@ -11,7 +11,9 @@ abstract class CategorySuggestingService(
 ) {
     protected abstract suspend fun categoryIdByName(categoryName: String): String?
 
-    suspend fun mapNameToCategoryId(mcc: Int): String? {
+    abstract suspend fun categoryNameById(categoryId: String): String?
+
+    suspend fun byMcc(mcc: Int): String? {
         val mccObj = MCC.map[mcc]
         if (mccObj == null)
             log.warn { "Unknown MCC code $mcc" }

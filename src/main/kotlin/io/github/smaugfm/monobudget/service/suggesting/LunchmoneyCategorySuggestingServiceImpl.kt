@@ -16,10 +16,13 @@ class LunchmoneyCategorySuggestingServiceImpl(
             .awaitSingle()
             .categories
     }
+    override suspend fun categoryNameById(categoryId: String): String? {
+        val idLong = categoryId.toLong()
+        return categoriesFetcher.getData().find { it.id == idLong }?.name
+    }
 
     override suspend fun categoryIdByName(categoryName: String): String? =
-        categoriesFetcher.data
-            .await()
+        categoriesFetcher.getData()
             .firstOrNull { it.name == categoryName }
             ?.id
             ?.toString()

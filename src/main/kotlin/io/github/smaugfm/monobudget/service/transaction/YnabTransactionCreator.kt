@@ -7,7 +7,7 @@ import io.github.smaugfm.monobudget.models.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.service.statement.NewTransactionFactory
+import io.github.smaugfm.monobudget.service.transaction.factory.NewTransactionFactory
 import io.github.smaugfm.monobudget.util.SimpleCache
 import mu.KotlinLogging
 

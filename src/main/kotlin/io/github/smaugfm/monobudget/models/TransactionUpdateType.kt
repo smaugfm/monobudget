@@ -9,17 +9,17 @@ import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger { }
 
-sealed class YnabTransactionUpdateType {
+sealed class TransactionUpdateType {
     abstract val transactionId: String
 
-    data class Uncategorize(override val transactionId: String) : YnabTransactionUpdateType()
-    data class Unapprove(override val transactionId: String) : YnabTransactionUpdateType()
-    data class MakePayee(override val transactionId: String, val payee: String) : YnabTransactionUpdateType()
+    data class Uncategorize(override val transactionId: String) : TransactionUpdateType()
+    data class Unapprove(override val transactionId: String) : TransactionUpdateType()
+    data class MakePayee(override val transactionId: String, val payee: String) : TransactionUpdateType()
 
     companion object {
-        fun deserialize(callbackData: String, message: Message): YnabTransactionUpdateType? {
+        fun deserialize(callbackData: String, message: Message): TransactionUpdateType? {
             val cls =
-                YnabTransactionUpdateType::class.sealedSubclasses.find { it.simpleName == callbackData }
+                TransactionUpdateType::class.sealedSubclasses.find { it.simpleName == callbackData }
             if (cls == null) {
                 log.error("Cannot find TransactionActionType. Data: $callbackData")
                 return null
@@ -36,29 +36,29 @@ sealed class YnabTransactionUpdateType {
             }
         }
 
-        inline fun <reified T : YnabTransactionUpdateType> serialize(): String {
+        inline fun <reified T : TransactionUpdateType> serialize(): String {
             return T::class.simpleName!!
         }
 
-        fun KClass<out YnabTransactionUpdateType>.buttonWord(): String {
+        fun KClass<out TransactionUpdateType>.buttonWord(): String {
             return when (this) {
                 Uncategorize::class -> "категорию"
                 Unapprove::class -> "unapprove"
                 MakePayee::class -> "payee"
-                else -> throw IllegalArgumentException("Unknown ${YnabTransactionUpdateType::class.simpleName} $this")
+                else -> throw IllegalArgumentException("Unknown ${TransactionUpdateType::class.simpleName} $this")
             }
         }
 
-        fun KClass<out YnabTransactionUpdateType>.buttonSymbol(): String {
+        fun KClass<out TransactionUpdateType>.buttonSymbol(): String {
             return when (this) {
                 Uncategorize::class -> "❌"
                 Unapprove::class -> "🚫"
                 MakePayee::class -> "➕"
-                else -> throw IllegalArgumentException("Unknown ${YnabTransactionUpdateType::class.simpleName} $this")
+                else -> throw IllegalArgumentException("Unknown ${TransactionUpdateType::class.simpleName} $this")
             }
         }
 
-        inline fun <reified T : YnabTransactionUpdateType> buttonText(pressed: Boolean): String = if (pressed) {
+        inline fun <reified T : TransactionUpdateType> buttonText(pressed: Boolean): String = if (pressed) {
             "$pressedChar${T::class.buttonWord()}"
         } else {
             "${T::class.buttonSymbol()}${T::class.buttonWord()}"

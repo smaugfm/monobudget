@@ -18,18 +18,18 @@ import io.github.smaugfm.monobudget.service.formatter.YnabTransactionMessageForm
 import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.service.statement.LunchmoneyNewTransactionFactory
-import io.github.smaugfm.monobudget.service.statement.NewTransactionFactory
-import io.github.smaugfm.monobudget.service.statement.YnabNewTransactionFactory
 import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.LunchmoneyCategorySuggestingServiceImpl
 import io.github.smaugfm.monobudget.service.suggesting.StringSimilarityPayeeSuggestingService
 import io.github.smaugfm.monobudget.service.suggesting.YnabCategorySuggestingService
 import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.service.transaction.LunchmoneyTransactionCreator
 import io.github.smaugfm.monobudget.service.transaction.BudgetTransactionCreator
+import io.github.smaugfm.monobudget.service.transaction.LunchmoneyTransactionCreator
 import io.github.smaugfm.monobudget.service.transaction.YnabTransactionCreator
+import io.github.smaugfm.monobudget.service.transaction.factory.LunchmoneyNewTransactionFactory
+import io.github.smaugfm.monobudget.service.transaction.factory.NewTransactionFactory
+import io.github.smaugfm.monobudget.service.transaction.factory.YnabNewTransactionFactory
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -71,7 +71,9 @@ fun main() {
                             single<BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertOrUpdateTransaction>> {
                                 LunchmoneyTransactionCreator(get(), get())
                             }
-                            single<TransactionMessageFormatter<LunchmoneyTransaction>> { LunchmoneyTransactionMessageFormatter }
+                            single<TransactionMessageFormatter<LunchmoneyTransaction>> {
+                                LunchmoneyTransactionMessageFormatter(get(), get())
+                            }
                             single<CategorySuggestingService>(createdAtStart = true) {
                                 LunchmoneyCategorySuggestingServiceImpl(get(), settings.mcc, get())
                             }

@@ -10,7 +10,7 @@ import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyCreateT
 import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyInsertTransactionRequestParams
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.service.statement.NewTransactionFactory
+import io.github.smaugfm.monobudget.service.transaction.factory.NewTransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 

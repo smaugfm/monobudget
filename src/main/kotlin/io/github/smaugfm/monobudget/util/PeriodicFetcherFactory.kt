@@ -29,8 +29,9 @@ class PeriodicFetcherFactory(
         private val initial = CompletableDeferred<T>()
 
         @Volatile
-        var data: Deferred<T> = initial
-            private set
+        private var data: Deferred<T> = initial
+
+        suspend fun getData() = data.await()
 
         init {
             log.info { "Launching periodic fetcher $name" }

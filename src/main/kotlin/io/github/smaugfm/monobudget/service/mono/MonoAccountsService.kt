@@ -34,7 +34,7 @@ class MonoAccountsService(
             .logMissing("Monobank account", monoAccountId)
 
     suspend fun getAccountCurrency(monoAccountId: String): Currency? =
-        monoAccountsFetcher.data.await().firstOrNull { it.id == monoAccountId }?.currencyCode
+        monoAccountsFetcher.getData().firstOrNull { it.id == monoAccountId }?.currencyCode
 
     fun getTelegramChatIdAccByMono(monoAccountId: String) =
         settings.byId[monoAccountId]
