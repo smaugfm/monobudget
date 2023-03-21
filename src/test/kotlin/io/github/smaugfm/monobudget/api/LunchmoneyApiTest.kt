@@ -2,8 +2,11 @@ package io.github.smaugfm.monobudget.api
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.request.asset.LunchmoneyGetAllAssetsRequest
+import io.github.smaugfm.lunchmoney.request.category.LunchmoneyGetAllCategoriesRequest
 import io.github.smaugfm.monobudget.models.BudgetBackend
 import io.github.smaugfm.monobudget.models.Settings
+import io.github.smaugfm.monobudget.util.makeJson
+import kotlinx.serialization.encodeToString
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
@@ -15,12 +18,23 @@ class LunchmoneyApiTest {
     private val api = LunchmoneyApi(
         (settings.budgetBackend as BudgetBackend.Lunchmoney).token
     )
+    private val json = makeJson()
 
     @Test
     @Disabled
-    fun test() {
+    fun dumpAllAccounts() {
         val assets = api.execute(LunchmoneyGetAllAssetsRequest())
             .block()!!.assets
-        println(assets)
+
+        println(json.encodeToString(assets))
+    }
+
+    @Test
+    @Disabled
+    fun dumpAllCategories() {
+        val assets = api.execute(LunchmoneyGetAllCategoriesRequest())
+            .block()!!.categories
+
+        println(json.encodeToString(assets))
     }
 }

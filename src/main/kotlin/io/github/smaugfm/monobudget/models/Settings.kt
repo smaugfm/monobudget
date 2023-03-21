@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.models
 
 import io.github.smaugfm.monobudget.api.MonoApi
+import io.github.smaugfm.monobudget.models.mcc.MccGroupType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -55,6 +56,7 @@ data class Settings(
 
     @Serializable
     data class MccOverride(
+        val mccGroupToCategoryName: Map<MccGroupType, String>,
         val mccToCategoryName: Map<Int, String>
     )
 }
