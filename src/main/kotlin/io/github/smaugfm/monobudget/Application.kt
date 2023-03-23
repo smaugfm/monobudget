@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget
 
 import io.github.smaugfm.monobudget.api.TelegramApi
-import io.github.smaugfm.monobudget.models.BudgetBackend
+import io.github.smaugfm.monobudget.models.Settings
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.github.smaugfm.monobudget.service.callback.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.service.formatter.TransactionMessageFormatter
@@ -20,7 +20,8 @@ import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
 
-class Application<TTransaction, TNewTransaction>(private val budgetBackend: BudgetBackend) : KoinComponent {
+class Application<TTransaction, TNewTransaction>(private val monoSettings: Settings.MultipleMonoSettings) :
+    KoinComponent {
     private val telegramApi by inject<TelegramApi>()
     private val webhooksListener by inject<MonoWebhookListenerServer>()
 
@@ -33,11 +34,9 @@ class Application<TTransaction, TNewTransaction>(private val budgetBackend: Budg
     private val telegramMessageSender by inject<TelegramMessageSender>()
     private val webhookResponseDuplicateFilter by inject<DuplicateWebhooksFilter>()
 
-    init {
-        getKoin().getAll<ApplicationStartupVerifier>().forEach { it.verify() }
-    }
-
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
+        runStartupChecks()
+
         if (setWebhook) {
             log.info { "Setting up mono webhooks." }
             if (!webhooksListener.setupWebhook(monoWebhookUrl, webhookPort)) {
@@ -53,6 +52,14 @@ class Application<TTransaction, TNewTransaction>(private val budgetBackend: Budg
             webhookPort
         ) handler@{ responseData ->
             try {
+                if (!monoSettings.monoAccountsIds.contains(responseData.account)) {
+                    log.info {
+                        "Skipping transaction from Monobank " +
+                            "accountId=${responseData.account} because this account is not configured."
+                    }
+                    return@handler
+                }
+
                 if (webhookResponseDuplicateFilter.checkIsDuplicate(responseData)) {
                     return@handler
                 }
@@ -75,5 +82,14 @@ class Application<TTransaction, TNewTransaction>(private val budgetBackend: Budg
         log.info { "Listening for Monobank webhooks and Telegram callbacks..." }
         webhookJob.join()
         telegramJob.join()
+    }
+
+    private suspend fun runStartupChecks() {
+        try {
+            getKoin().getAll<ApplicationStartupVerifier>().forEach { it.verify() }
+        } catch (e: Throwable) {
+            log.error(e) { "Failed to start application. Exiting..." }
+            exitProcess(1)
+        }
     }
 }

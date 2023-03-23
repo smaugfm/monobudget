@@ -3,6 +3,7 @@ package io.github.smaugfm.monobudget.models
 import io.github.smaugfm.monobudget.api.MonoApi
 import io.github.smaugfm.monobudget.models.mcc.MccGroupType
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
@@ -30,12 +31,16 @@ data class Settings(
     data class MultipleMonoSettings(
         val settings: List<MonoSettings>,
     ) {
-        val apis: List<MonoApi> by lazy {
-            settings.map { it.token }.map(::MonoApi)
-        }
-        val byId: Map<String, MonoSettings> by lazy {
-            settings.associateBy { it.accountId }
-        }
+        @Transient
+        val apis = settings.map { it.token }.map(::MonoApi)
+
+        @Transient
+        val byId = settings.associateBy { it.accountId }
+
+        @Transient
+        val monoAccountsIds = settings.map { it.accountId }
+
+        @Transient
         val telegramChatIds = settings.map { it.telegramChatId }
     }
 
