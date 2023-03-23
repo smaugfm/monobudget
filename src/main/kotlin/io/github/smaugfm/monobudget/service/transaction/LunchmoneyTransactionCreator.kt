@@ -56,20 +56,17 @@ class LunchmoneyTransactionCreator(
         log.debug { "Processing transaction: $webhookResponse" }
 
         val newTransaction = newTransactionFactory.create(webhookResponse)
-        return with(newTransaction) {
-
-            val createdId = api.execute(
-                LunchmoneyInsertTransactionsRequest(
-                    LunchmoneyInsertTransactionRequestParams(
-                        listOf(this),
-                        applyRules = true,
-                        checkForRecurring = true,
-                        debitAsNegative = true
-                    )
+        val createdId = api.execute(
+            LunchmoneyInsertTransactionsRequest(
+                LunchmoneyInsertTransactionRequestParams(
+                    transactions = listOf(newTransaction),
+                    applyRules = true,
+                    checkForRecurring = true,
+                    debitAsNegative = true
                 )
-            ).awaitSingle().ids.first()
-            api.execute(LunchmoneyGetSingleTransactionRequest(createdId)).awaitSingle()
-        }
+            )
+        ).awaitSingle().ids.first()
+        return api.execute(LunchmoneyGetSingleTransactionRequest(createdId)).awaitSingle()
     }
 
     companion object {

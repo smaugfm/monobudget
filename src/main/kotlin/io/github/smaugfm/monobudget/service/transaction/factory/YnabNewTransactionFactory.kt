@@ -11,8 +11,6 @@ import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.util.toLocalDateTime
 import mu.KotlinLogging
 
-private const val MONO_TO_YNAB_ADJUST = 10
-
 private val log = KotlinLogging.logger {}
 
 class YnabNewTransactionFactory(
@@ -37,7 +35,7 @@ class YnabNewTransactionFactory(
             YnabSaveTransaction(
                 accountId = getBudgetAccountId(response),
                 date = time.toLocalDateTime().date,
-                amount = amount * MONO_TO_YNAB_ADJUST,
+                amount = convertMonobankAmountToYnabAmount(amount),
                 payeeId = null,
                 payeeName = suggestedPayee,
                 categoryId = getCategoryId(response),
@@ -50,4 +48,15 @@ class YnabNewTransactionFactory(
             )
         }
     }
+
+    private fun convertMonobankAmountToYnabAmount(amount: Long): Long {
+        // Monobank amount is in minimum currency units (e.g. cents for dollars)
+        // and YNAB amount is in milliunits (1/1000th of a dollar)
+
+        return amount * MONO_TO_YNAB_ADJUST
+    }
+    companion object {
+        private const val MONO_TO_YNAB_ADJUST = 10
+    }
 }
+

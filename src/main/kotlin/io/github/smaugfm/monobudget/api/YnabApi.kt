@@ -4,6 +4,8 @@ import io.github.smaugfm.monobudget.models.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.models.ynab.YnabAccount
 import io.github.smaugfm.monobudget.models.ynab.YnabAccountResponse
 import io.github.smaugfm.monobudget.models.ynab.YnabAccountsResponse
+import io.github.smaugfm.monobudget.models.ynab.YnabBudgetDetailResponseShort
+import io.github.smaugfm.monobudget.models.ynab.YnabBudgetDetailShort
 import io.github.smaugfm.monobudget.models.ynab.YnabCategoriesResponse
 import io.github.smaugfm.monobudget.models.ynab.YnabCategoryGroupWithCategories
 import io.github.smaugfm.monobudget.models.ynab.YnabPayee
@@ -67,6 +69,11 @@ class YnabApi(backend: YNAB) {
                 throw YnabRateLimitException()
             }
         }
+
+    suspend fun getBudget(budgetId: String): YnabBudgetDetailShort = catching(this::getBudget) {
+        httpClient.get(buildUrl("budgets", budgetId))
+            .body<YnabBudgetDetailResponseShort>()
+    }.data
 
     suspend fun getAccount(accountId: String): YnabAccount = catching(this::getAccount) {
         httpClient.get(buildUrl("budgets", budgetId, "accounts", accountId))

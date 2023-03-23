@@ -32,6 +32,10 @@ import io.github.smaugfm.monobudget.service.transaction.YnabTransactionCreator
 import io.github.smaugfm.monobudget.service.transaction.factory.LunchmoneyNewTransactionFactory
 import io.github.smaugfm.monobudget.service.transaction.factory.NewTransactionFactory
 import io.github.smaugfm.monobudget.service.transaction.factory.YnabNewTransactionFactory
+import io.github.smaugfm.monobudget.service.verification.ApplicationStartupVerifier
+import io.github.smaugfm.monobudget.service.verification.BudgetSettingsVerifier
+import io.github.smaugfm.monobudget.service.verification.MonoSettingsVerifier
+import io.github.smaugfm.monobudget.service.verification.YnabCurrencyVerifier
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -62,6 +66,18 @@ fun main() {
                 module {
                     printLogger(Level.ERROR)
                     val telegramChaIds = settings.mono.telegramChatIds
+
+                    single<ApplicationStartupVerifier> { MonoSettingsVerifier(settings.mono) }
+                    single<ApplicationStartupVerifier> { BudgetSettingsVerifier(budgetBackend, settings.mono) }
+                    single { PeriodicFetcherFactory(this@runBlocking) }
+                    single { MonoWebhookListenerServer(this@runBlocking, settings.mono.apis) }
+                    single { TelegramApi(this@runBlocking, settings.bot) }
+                    single { TelegramMessageSender(get(), get()) }
+                    single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
+                    single { DuplicateWebhooksFilter(get()) }
+                    single(createdAtStart = true) { MonoAccountsService(get(), settings.mono) }
+                    single { StringSimilarityPayeeSuggestingService() }
+                    single<ApplicationStartupVerifier> { YnabCurrencyVerifier(get(), settings.mono, get()) }
 
                     when (budgetBackend) {
                         is Lunchmoney -> {
@@ -107,21 +123,13 @@ fun main() {
                             }
                         }
                     }
-                    single { PeriodicFetcherFactory(this@runBlocking) }
-                    single { MonoWebhookListenerServer(this@runBlocking, settings.mono.apis) }
-                    single { TelegramApi(this@runBlocking, settings.bot) }
-                    single { TelegramMessageSender(get(), get()) }
-                    single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
-                    single { DuplicateWebhooksFilter(get()) }
-                    single(createdAtStart = true) { MonoAccountsService(get(), settings.mono) }
-                    single { StringSimilarityPayeeSuggestingService() }
                 }
             )
         }
 
         when (budgetBackend) {
-            is Lunchmoney -> Application<LunchmoneyTransaction, LunchmoneyInsertOrUpdateTransaction>()
-            is YNAB -> Application<YnabTransactionDetail, YnabSaveTransaction>()
+            is Lunchmoney -> Application<LunchmoneyTransaction, LunchmoneyInsertOrUpdateTransaction>(budgetBackend)
+            is YNAB -> Application<YnabTransactionDetail, YnabSaveTransaction>(budgetBackend)
         }.run(setWebhook, monoWebhookUrl, webhookPort)
     }
 }

@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget
 
 import io.github.smaugfm.monobudget.api.TelegramApi
+import io.github.smaugfm.monobudget.models.BudgetBackend
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.github.smaugfm.monobudget.service.callback.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.service.formatter.TransactionMessageFormatter
@@ -9,6 +10,7 @@ import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDete
 import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.service.transaction.BudgetTransactionCreator
+import io.github.smaugfm.monobudget.service.verification.ApplicationStartupVerifier
 import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -18,7 +20,7 @@ import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
 
-class Application<TTransaction, TNewTransaction> : KoinComponent {
+class Application<TTransaction, TNewTransaction>(private val budgetBackend: BudgetBackend) : KoinComponent {
     private val telegramApi by inject<TelegramApi>()
     private val webhooksListener by inject<MonoWebhookListenerServer>()
 
@@ -30,6 +32,10 @@ class Application<TTransaction, TNewTransaction> : KoinComponent {
     private val processError by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
     private val webhookResponseDuplicateFilter by inject<DuplicateWebhooksFilter>()
+
+    init {
+        getKoin().getAll<ApplicationStartupVerifier>().forEach { it.verify() }
+    }
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
         if (setWebhook) {

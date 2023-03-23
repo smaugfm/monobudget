@@ -2,6 +2,8 @@ package io.github.smaugfm.monobudget.service.mono
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.util.SimpleCache
+import io.github.smaugfm.monobudget.util.formatAmount
+import io.github.smaugfm.monobudget.util.pp
 import mu.KotlinLogging
 
 private val log = KotlinLogging.logger {}
@@ -20,7 +22,11 @@ class DuplicateWebhooksFilter(private val monoAccountsService: MonoAccountsServi
             log.info {
                 "Incoming transaction from ${monoAccountsService.getMonoAccAlias(account)}'s account.\n" +
                     with(statementItem) {
-                        "\tAmount: ${amount}${currencyCode}\n" +
+                        if (log.isDebugEnabled)
+                            this.pp()
+                        else
+                            "\tAmount: ${currencyCode.formatAmount(amount)}\n" +
+                            "\tDescription: $description"
                             "\tMemo: $comment"
                     }
             }
