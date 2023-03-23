@@ -4,9 +4,13 @@ import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
+import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
+import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.models.TransactionUpdateType
 import io.github.smaugfm.monobudget.models.telegram.MessageWithReplyKeyboard
+import io.github.smaugfm.monobudget.models.ynab.YnabTransactionDetail
+import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.util.formatAmount
 import mu.KotlinLogging
 import java.util.Currency
@@ -14,12 +18,36 @@ import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger {}
 
-sealed class TransactionMessageFormatter<T> {
-    abstract suspend fun format(monoResponse: MonoWebhookResponseData, transaction: T): MessageWithReplyKeyboard
+sealed class TransactionMessageFormatter<TTransaction>(
+    private val monoAccountsService: MonoAccountsService,
+) {
+    suspend fun format(
+        monoResponse: MonoWebhookResponseData,
+        transaction: TTransaction
+    ): MessageWithReplyKeyboard {
+        val msg = formatHTMLStatementMessage(
+            monoAccountsService.getAccountCurrency(monoResponse.account)!!,
+            monoResponse.statementItem,
+            transaction
+        )
+        val markup = formatInlineKeyboard()
+
+        return MessageWithReplyKeyboard(
+            msg,
+            markup
+        )
+    }
+
+    protected abstract suspend fun formatHTMLStatementMessage(
+        accountCurrency: Currency,
+        monoStatementItem: MonoStatementItem,
+        transaction: TTransaction
+    ): String
 
     companion object {
 
         @Suppress("LongParameterList")
+        @JvmStatic
         internal fun formatHTMLStatementMessage(
             budgetBackend: String,
             description: String,
@@ -52,6 +80,7 @@ sealed class TransactionMessageFormatter<T> {
             }
         }
 
+        @JvmStatic
         internal fun extractFromOldMessage(oldMessage: Message): OldMessageEntities {
             val oldText = oldMessage.text!!
             val oldTextLines = oldText.split("\n").filter { it.isNotBlank() }
@@ -78,7 +107,7 @@ sealed class TransactionMessageFormatter<T> {
         )
 
         @JvmStatic
-        internal fun formatInlineKeyboard(pressed: Set<KClass<out TransactionUpdateType>>): InlineKeyboardMarkup {
+        internal fun formatInlineKeyboard(pressed: Set<KClass<out TransactionUpdateType>> = emptySet()): InlineKeyboardMarkup {
             return InlineKeyboardMarkup(
                 listOf(
                     listOf(

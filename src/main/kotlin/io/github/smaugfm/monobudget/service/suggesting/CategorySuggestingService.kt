@@ -6,7 +6,7 @@ import mu.KotlinLogging
 
 private val log = KotlinLogging.logger { }
 
-abstract class CategorySuggestingService(
+sealed class CategorySuggestingService(
     private val mccOverride: Settings.MccOverride,
 ) {
     protected abstract suspend fun categoryIdByName(categoryName: String): String?

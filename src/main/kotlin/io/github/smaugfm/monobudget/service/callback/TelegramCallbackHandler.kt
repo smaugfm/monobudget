@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger {}
 
-abstract class TelegramCallbackHandler<TTransaction>(
+sealed class TelegramCallbackHandler<TTransaction>(
     protected val telegram: TelegramApi,
     private val telegramChatIds: List<Long>
 ) {

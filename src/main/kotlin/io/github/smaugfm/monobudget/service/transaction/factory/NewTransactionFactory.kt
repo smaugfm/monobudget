@@ -6,7 +6,7 @@ import io.github.smaugfm.monobudget.service.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.service.suggesting.CategorySuggestingService
 import io.github.smaugfm.monobudget.util.replaceNewLines
 
-abstract class NewTransactionFactory<TNewTransaction>(
+sealed class NewTransactionFactory<TNewTransaction>(
     private val monoAccountsService: MonoAccountsService,
     private val categorySuggestingService: CategorySuggestingService,
 ) {
