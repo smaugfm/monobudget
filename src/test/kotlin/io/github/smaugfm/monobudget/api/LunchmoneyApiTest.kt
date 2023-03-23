@@ -3,8 +3,8 @@ package io.github.smaugfm.monobudget.api
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.request.asset.LunchmoneyGetAllAssetsRequest
 import io.github.smaugfm.lunchmoney.request.category.LunchmoneyGetAllCategoriesRequest
-import io.github.smaugfm.monobudget.models.BudgetBackend
-import io.github.smaugfm.monobudget.models.Settings
+import io.github.smaugfm.monobudget.model.BudgetBackend
+import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.util.makeJson
 import kotlinx.serialization.encodeToString
 import org.junit.jupiter.api.Disabled

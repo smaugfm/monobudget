@@ -6,7 +6,7 @@ import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.ParseMode
 import com.elbekd.bot.types.ReplyKeyboard
-import io.github.smaugfm.monobudget.models.Settings
+import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.util.pp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers

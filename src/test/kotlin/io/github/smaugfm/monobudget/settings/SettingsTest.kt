@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.settings
 
 import assertk.assertThat
 import assertk.assertions.isSuccess
-import io.github.smaugfm.monobudget.models.Settings
+import io.github.smaugfm.monobudget.model.Settings
 import org.junit.jupiter.api.Test
 import java.nio.file.Paths
 import kotlin.io.path.readText

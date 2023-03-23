@@ -1,16 +1,16 @@
 package io.github.smaugfm.monobudget
 
 import io.github.smaugfm.monobudget.api.TelegramApi
-import io.github.smaugfm.monobudget.models.Settings
+import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
-import io.github.smaugfm.monobudget.service.callback.TelegramCallbackHandler
-import io.github.smaugfm.monobudget.service.formatter.TransactionMessageFormatter
-import io.github.smaugfm.monobudget.service.mono.DuplicateWebhooksFilter
-import io.github.smaugfm.monobudget.service.mono.MonoTransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.service.telegram.TelegramErrorUnknownErrorHandler
-import io.github.smaugfm.monobudget.service.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.service.transaction.BudgetTransactionCreator
-import io.github.smaugfm.monobudget.service.verification.ApplicationStartupVerifier
+import io.github.smaugfm.monobudget.components.callback.TelegramCallbackHandler
+import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.components.mono.DuplicateWebhooksFilter
+import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.components.telegram.TelegramErrorUnknownErrorHandler
+import io.github.smaugfm.monobudget.components.telegram.TelegramMessageSender
+import io.github.smaugfm.monobudget.components.transaction.BudgetTransactionCreator
+import io.github.smaugfm.monobudget.components.verification.ApplicationStartupVerifier
 import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
