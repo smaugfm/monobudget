@@ -33,15 +33,16 @@ class YnabApiTest {
         val str = statements.joinToString("\n") { item ->
             "${item.description} \t\t\t\t ${item.currencyCode.formatAmount(item.amount)} ${item.currencyCode}\t" +
                 " ${item.mcc} ${
-                    MCC.map[item.mcc]?.let {
-                        "${it.fullDescription} (${it.group.type} ${it.group.description}) "
-                    }
+                MCC.map[item.mcc]?.let {
+                    "${it.fullDescription} (${it.group.type} ${it.group.description}) "
+                }
                 }" +
                 "${item.time.toLocalDateTime(TimeZone.currentSystemDefault())}"
         }
         println(str)
     }
 
+    @Suppress("UNUSED_VARIABLE")
     @Test
     @Disabled
     fun testAllEndpointsDontFail() {

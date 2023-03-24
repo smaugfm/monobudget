@@ -14,17 +14,14 @@ import kotlin.time.Duration.Companion.hours
 private val log = KotlinLogging.logger {}
 
 class PeriodicFetcherFactory(
-    private val scope: CoroutineScope,
+    private val scope: CoroutineScope
 ) {
-    fun <T> create(
-        name: String,
-        fetch: suspend () -> T
-    ) = PeriodicFetcher(name, fetch, 1.hours)
+    fun <T> create(name: String, fetch: suspend () -> T) = PeriodicFetcher(name, fetch, 1.hours)
 
     inner class PeriodicFetcher<T>(
         name: String,
         fetch: suspend () -> T,
-        interval: Duration,
+        interval: Duration
     ) {
         private val initial = CompletableDeferred<T>()
 

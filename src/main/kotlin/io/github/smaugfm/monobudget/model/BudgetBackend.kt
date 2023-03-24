@@ -16,5 +16,8 @@ sealed class BudgetBackend {
 
     @Serializable
     @SerialName("lunchmoney")
-    data class Lunchmoney(override val token: String) : BudgetBackend()
+    data class Lunchmoney(
+        override val token: String,
+        val transferCategoryId: String
+    ) : BudgetBackend()
 }

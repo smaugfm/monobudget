@@ -14,7 +14,7 @@ private val log = KotlinLogging.logger {}
 
 class LunchmoneyNewTransactionFactory(
     monoAccountsService: MonoAccountsService,
-    categorySuggestingService: CategorySuggestionService,
+    categorySuggestingService: CategorySuggestionService
 ) : NewTransactionFactory<LunchmoneyInsertTransaction>(monoAccountsService, categorySuggestingService) {
     override suspend fun create(response: MonoWebhookResponseData): LunchmoneyInsertTransaction {
         log.debug { "Transforming Monobank statement to Lunchmoney transaction." }
@@ -31,7 +31,11 @@ class LunchmoneyNewTransactionFactory(
                 assetId = getBudgetAccountId(response).toLong(),
                 recurringId = null,
                 notes = "$mcc " + formatDescription(),
-                status = if (categoryId != null) LunchmoneyTransactionStatus.CLEARED else LunchmoneyTransactionStatus.UNCLEARED,
+                status = if (categoryId != null) {
+                    LunchmoneyTransactionStatus.CLEARED
+                } else {
+                    LunchmoneyTransactionStatus.UNCLEARED
+                },
                 externalId = null,
                 tags = null
             )

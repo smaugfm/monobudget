@@ -57,34 +57,42 @@ sealed class TelegramCallbackHandler<TTransaction>(
 
     private suspend fun extractFromCallbackQuery(callbackQuery: CallbackQuery): CallbackQueryData? {
         val callbackQueryId = callbackQuery.id
-        val data = callbackQuery.data.takeUnless { it.isNullOrBlank() }
+        val data = callbackQueryData(callbackQuery)
+        val message = callbackQueryMessage(callbackQuery)
+
+        if (data == null || message == null) {
+            return null
+        }
+
+        val transactionUpdateType = TransactionUpdateType.deserialize(data, message)
+        if (transactionUpdateType == null) {
+            telegram.answerCallbackQuery(
+                callbackQueryId,
+                TelegramApi.UNKNOWN_ERROR_MSG
+            )
+            return null
+        }
+
+        return CallbackQueryData(callbackQueryId, transactionUpdateType, message)
+    }
+
+    private fun callbackQueryMessage(callbackQuery: CallbackQuery): Message? =
+        callbackQuery.message ?: log.warn { "Received Telegram callbackQuery with empty message" }
+            .let { return null }
+
+    private fun callbackQueryData(callbackQuery: CallbackQuery): String? =
+        callbackQuery.data.takeUnless { it.isNullOrBlank() }
             ?: log.warn { "Received Telegram callbackQuery with empty data.\n$callbackQuery" }
                 .let { return null }
-        val message =
-            callbackQuery.message ?: log.warn { "Received Telegram callbackQuery with empty message" }
-                .let { return null }
-
-        val type = TransactionUpdateType.deserialize(data, message)
-            ?: return null.also {
-                telegram.answerCallbackQuery(
-                    callbackQueryId,
-                    TelegramApi.UNKNOWN_ERROR_MSG
-                )
-            }
-
-
-        return CallbackQueryData(callbackQueryId, type, message)
-    }
 
     private fun updateMarkupKeyboard(
         updatedTransaction: TTransaction,
         transactionUpdateType: TransactionUpdateType,
         oldKeyboard: InlineKeyboardMarkup
-    ): InlineKeyboardMarkup =
-        basedOnOldKeyboard(
-            oldKeyboard,
-            formatter.getReplyKeyboardPressedButtons(updatedTransaction, transactionUpdateType)
-        )
+    ): InlineKeyboardMarkup = basedOnOldKeyboard(
+        oldKeyboard,
+        formatter.getReplyKeyboardPressedButtons(updatedTransaction, transactionUpdateType)
+    )
 
     private fun basedOnOldKeyboard(
         oldKeyboard: InlineKeyboardMarkup,
@@ -97,7 +105,7 @@ sealed class TelegramCallbackHandler<TTransaction>(
                 InlineKeyboardButton(
                     TransactionUpdateType.buttonText(
                         cls,
-                        cls in pressed,
+                        cls in pressed
                     ),
                     callbackData = TransactionUpdateType.serialize(cls)
                 )

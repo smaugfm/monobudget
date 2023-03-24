@@ -18,7 +18,8 @@ class TransactionUpdateTypeTest {
                       Payee:    Інтернет-банк PUMBOnline
 
 
-                184370613 """.trimIndent()
+                184370613 
+                """.trimIndent()
             )
         ).isEqualTo("184370613")
     }

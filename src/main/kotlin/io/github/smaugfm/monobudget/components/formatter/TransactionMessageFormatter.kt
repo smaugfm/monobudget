@@ -17,12 +17,9 @@ import kotlin.reflect.KClass
 private val log = KotlinLogging.logger {}
 
 sealed class TransactionMessageFormatter<TTransaction>(
-    private val monoAccountsService: MonoAccountsService,
+    private val monoAccountsService: MonoAccountsService
 ) {
-    suspend fun format(
-        monoResponse: MonoWebhookResponseData,
-        transaction: TTransaction
-    ): MessageWithReplyKeyboard {
+    suspend fun format(monoResponse: MonoWebhookResponseData, transaction: TTransaction): MessageWithReplyKeyboard {
         val msg = formatHTMLStatementMessage(
             monoAccountsService.getAccountCurrency(monoResponse.account)!!,
             monoResponse.statementItem,
@@ -37,9 +34,15 @@ sealed class TransactionMessageFormatter<TTransaction>(
         )
     }
 
-    abstract fun getReplyKeyboardPressedButtons(transaction: TTransaction, updateType: TransactionUpdateType? = null): Set<KClass<out TransactionUpdateType>>
+    abstract fun getReplyKeyboardPressedButtons(
+        transaction: TTransaction,
+        updateType: TransactionUpdateType? = null
+    ): Set<KClass<out TransactionUpdateType>>
 
-    abstract fun getReplyKeyboard(transaction: TTransaction, pressed: Set<KClass<out TransactionUpdateType>>): InlineKeyboardMarkup
+    abstract fun getReplyKeyboard(
+        transaction: TTransaction,
+        pressed: Set<KClass<out TransactionUpdateType>>
+    ): InlineKeyboardMarkup
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
@@ -84,18 +87,22 @@ sealed class TransactionMessageFormatter<TTransaction>(
         }
 
         @JvmStatic
+        @Suppress("MagicNumber")
+        internal fun extractDescriptionFromOldMessage(oldMessage: Message) =
+            oldMessage.entities.find { it.type == MessageEntity.Type.BOLD }
+                ?.run { oldMessage.text!!.substring(offset, offset + length) }!!
+
+        @JvmStatic
+        @Suppress("MagicNumber")
         internal fun extractFromOldMessage(oldMessage: Message): OldMessageEntities {
             val oldText = oldMessage.text!!
             val oldTextLines = oldText.split("\n").filter { it.isNotBlank() }
-            val description = oldMessage.entities.find { it.type == MessageEntity.Type.BOLD }
-                ?.run { oldMessage.text!!.substring(offset, offset + length) }!!
 
             val mcc = oldTextLines[2].trim()
             val currencyText = oldTextLines[3].trim()
             val id = oldTextLines[6].trim()
 
             return OldMessageEntities(
-                description,
                 mcc,
                 currencyText,
                 id
@@ -103,7 +110,6 @@ sealed class TransactionMessageFormatter<TTransaction>(
         }
 
         data class OldMessageEntities(
-            val description: String,
             val mcc: String,
             val currency: String,
             val id: String

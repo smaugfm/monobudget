@@ -15,14 +15,13 @@ class YnabCategorySuggestionService(
         }
     }
 
-    override suspend fun categoryNameById(categoryId: String?): String? =
-        if (categoryId == null)
-            null
-        else
-            categoriesFetcher.getData().find { it.id == categoryId }?.name
+    override suspend fun categoryNameById(categoryId: String?): String? = if (categoryId == null) {
+        null
+    } else {
+        categoriesFetcher.getData().find { it.id == categoryId }?.name
+    }
 
-    override suspend fun categoryIdByName(categoryName: String): String? =
-        categoriesFetcher.getData()
-            .firstOrNull { it.name == categoryName }
-            ?.id
+    override suspend fun categoryIdByName(categoryName: String): String? = categoriesFetcher.getData()
+        .firstOrNull { it.name == categoryName }
+        ?.id
 }

@@ -13,4 +13,3 @@ data class YnabCurrencyFormat(
     val currencySymbol: String,
     val displaySymbol: String
 )
-

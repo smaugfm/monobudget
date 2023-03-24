@@ -11,6 +11,7 @@ import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyGetSing
 import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyUpdateTransactionParams
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
@@ -29,7 +30,10 @@ class LunchmoneyTelegramCallbackHandler(
 
         val updateTransaction = when (type) {
             is TransactionUpdateType.MakePayee -> error("Not supported for Lunchmoney")
-            is TransactionUpdateType.Unapprove -> LunchmoneyUpdateTransaction(status = LunchmoneyTransactionStatus.UNCLEARED)
+            is TransactionUpdateType.Unapprove -> LunchmoneyUpdateTransaction(
+                status = LunchmoneyTransactionStatus.UNCLEARED
+            )
+
             is TransactionUpdateType.Uncategorize -> LunchmoneyUpdateTransaction(categoryId = null)
         }
 
@@ -58,16 +62,17 @@ class LunchmoneyTelegramCallbackHandler(
         updatedTransaction: LunchmoneyTransaction,
         oldMessage: Message
     ): String {
-        val (description, mcc, currencyText, id) = extractFromOldMessage(oldMessage)
+        val description = extractDescriptionFromOldMessage(oldMessage)
+        val (mcc, currency, transactionId) = extractFromOldMessage(oldMessage)
 
         return formatHTMLStatementMessage(
             "Lunchmoney",
             description,
             mcc,
-            currencyText,
+            currency,
             categorySuggestingService.categoryNameById(updatedTransaction.categoryId?.toString()) ?: "",
             updatedTransaction.payee,
-            id
+            transactionId
         )
     }
 }

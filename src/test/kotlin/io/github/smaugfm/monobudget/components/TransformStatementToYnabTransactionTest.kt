@@ -3,12 +3,12 @@ package io.github.smaugfm.monobudget.components
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
+import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.components.suggestion.StringSimilarityPayeeSuggestionService
+import io.github.smaugfm.monobudget.components.suggestion.YnabCategorySuggestionService
+import io.github.smaugfm.monobudget.components.transaction.factory.YnabNewTransactionFactory
 import io.github.smaugfm.monobudget.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.model.Settings
-import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.components.transaction.factory.YnabNewTransactionFactory
-import io.github.smaugfm.monobudget.components.suggestion.YnabCategorySuggestionService
-import io.github.smaugfm.monobudget.components.suggestion.StringSimilarityPayeeSuggestionService
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope

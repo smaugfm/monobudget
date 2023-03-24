@@ -17,7 +17,7 @@ data class Settings(
     val budgetBackend: BudgetBackend,
     val mono: MultipleMonoSettings,
     val bot: TelegramBotSettings,
-    val mcc: MccOverride,
+    val mcc: MccOverride
 ) {
     companion object {
         fun load(path: Path): Settings = load(File(path.toString()).readText())
@@ -29,7 +29,7 @@ data class Settings(
 
     @Serializable
     data class MultipleMonoSettings(
-        val settings: List<MonoSettings>,
+        val settings: List<MonoSettings>
     ) {
         @Transient
         val apis = settings.map { it.token }.map(::MonoApi)

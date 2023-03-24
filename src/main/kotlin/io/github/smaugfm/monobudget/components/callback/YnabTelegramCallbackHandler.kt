@@ -4,11 +4,11 @@ import com.elbekd.bot.types.Message
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
-import io.github.smaugfm.monobudget.model.TransactionUpdateType
-import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
+import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
-import kotlin.reflect.KClass
+import io.github.smaugfm.monobudget.model.TransactionUpdateType
+import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
 
 class YnabTelegramCallbackHandler(
     telegram: TelegramApi,
@@ -34,17 +34,21 @@ class YnabTelegramCallbackHandler(
         return api.updateTransaction(transactionDetail.id, newTransaction)
     }
 
-    override suspend fun updateHTMLStatementMessage(updatedTransaction: YnabTransactionDetail, oldMessage: Message): String {
-        val (description, mcc, currencyText, id) = extractFromOldMessage(oldMessage)
+    override suspend fun updateHTMLStatementMessage(
+        updatedTransaction: YnabTransactionDetail,
+        oldMessage: Message
+    ): String {
+        val description = extractDescriptionFromOldMessage(oldMessage)
+        val (mcc, currency, transactionId) = extractFromOldMessage(oldMessage)
 
         return formatHTMLStatementMessage(
             "YNAB",
             description,
             mcc,
-            currencyText,
+            currency,
             updatedTransaction.categoryName ?: "",
             updatedTransaction.payeeName ?: "",
-            id
+            transactionId
         )
     }
 }

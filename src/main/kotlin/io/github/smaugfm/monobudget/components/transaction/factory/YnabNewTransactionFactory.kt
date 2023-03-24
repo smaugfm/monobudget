@@ -62,4 +62,3 @@ class YnabNewTransactionFactory(
         private const val MONO_TO_YNAB_ADJUST = 10
     }
 }
-

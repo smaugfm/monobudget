@@ -11,11 +11,12 @@ import java.util.Currency
 class YnabCurrencyVerifier(
     private val budgetBackend: BudgetBackend,
     private val monoSettings: Settings.MultipleMonoSettings,
-    private val ynabApi: YnabApi,
+    private val ynabApi: YnabApi
 ) : ApplicationStartupVerifier {
     override suspend fun verify() {
-        if (budgetBackend !is BudgetBackend.YNAB)
+        if (budgetBackend !is BudgetBackend.YNAB) {
             return
+        }
 
         val budgetCurrency = ynabApi
             .getBudget(budgetBackend.ynabBudgetId)

@@ -2,12 +2,12 @@ package io.github.smaugfm.monobudget.components.transaction
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
-import io.github.smaugfm.monobudget.model.ynab.YnabCleared
-import io.github.smaugfm.monobudget.model.ynab.YnabSaveTransaction
-import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.components.transaction.factory.NewTransactionFactory
+import io.github.smaugfm.monobudget.model.ynab.YnabCleared
+import io.github.smaugfm.monobudget.model.ynab.YnabSaveTransaction
+import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.util.SimpleCache
 import mu.KotlinLogging
 

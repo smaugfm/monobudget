@@ -34,10 +34,9 @@ class MonoWebhookListenerServer(
 ) {
     private val json = makeJson()
 
-    suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) =
-        monoApis.all {
-            it.setupWebhook(monoWebhookUrl, webhookPort)
-        }
+    suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) = monoApis.all {
+        it.setupWebhook(monoWebhookUrl, webhookPort)
+    }
 
     fun start(webhook: URI, port: Int, callback: suspend (MonoWebhookResponseData) -> Unit): Job {
         val server = scope.embeddedServer(Netty, port = port) {

@@ -17,15 +17,15 @@ class LunchmoneyCategorySuggestionServiceImpl(
             .categories
     }
     override suspend fun categoryNameById(categoryId: String?): String? {
-        if (categoryId == null)
+        if (categoryId == null) {
             return null
+        }
         val idLong = categoryId.toLong()
         return categoriesFetcher.getData().find { it.id == idLong }?.name
     }
 
-    override suspend fun categoryIdByName(categoryName: String): String? =
-        categoriesFetcher.getData()
-            .firstOrNull { it.name == categoryName }
-            ?.id
-            ?.toString()
+    override suspend fun categoryIdByName(categoryName: String): String? = categoriesFetcher.getData()
+        .firstOrNull { it.name == categoryName }
+        ?.id
+        ?.toString()
 }

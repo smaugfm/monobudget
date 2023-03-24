@@ -22,12 +22,13 @@ class DuplicateWebhooksFilter(private val monoAccountsService: MonoAccountsServi
             log.info {
                 "Incoming transaction from ${monoAccountsService.getMonoAccAlias(account)}'s account.\n" +
                     with(statementItem) {
-                        if (log.isDebugEnabled)
+                        if (log.isDebugEnabled) {
                             this.pp()
-                        else
+                        } else {
                             "\tAmount: ${currencyCode.formatAmount(amount)}\n" +
-                            "\tDescription: $description"
-                            "\tMemo: $comment"
+                                "\tDescription: $description" +
+                                "\tMemo: $comment"
+                        }
                     }
             }
         }

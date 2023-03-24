@@ -12,7 +12,7 @@ private val log = KotlinLogging.logger { }
 @OptIn(ExperimentalSerializationApi::class)
 class MonoAccountsService(
     fetcherFactory: PeriodicFetcherFactory,
-    private val settings: Settings.MultipleMonoSettings,
+    private val settings: Settings.MultipleMonoSettings
 ) {
     private val monoAccountsFetcher = fetcherFactory.create(this::class.simpleName!!) {
         settings.apis
@@ -23,26 +23,24 @@ class MonoAccountsService(
     }
 
     private fun <T : Any?> T.logMissing(name: String, monoAccountId: String): T {
-        if (this == null)
+        if (this == null) {
             log.error { "Could not find alias for $name for Monobank accountId=$monoAccountId" }
+        }
         return this
     }
 
-    fun getMonoAccAlias(monoAccountId: String): String? =
-        settings.byId[monoAccountId]
-            ?.alias
-            .logMissing("Monobank account", monoAccountId)
+    fun getMonoAccAlias(monoAccountId: String): String? = settings.byId[monoAccountId]
+        ?.alias
+        .logMissing("Monobank account", monoAccountId)
 
     suspend fun getAccountCurrency(monoAccountId: String): Currency? =
         monoAccountsFetcher.getData().firstOrNull { it.id == monoAccountId }?.currencyCode
 
-    fun getTelegramChatIdAccByMono(monoAccountId: String) =
-        settings.byId[monoAccountId]
-            ?.telegramChatId
-            .logMissing("Telegram chat ID", monoAccountId)
+    fun getTelegramChatIdAccByMono(monoAccountId: String) = settings.byId[monoAccountId]
+        ?.telegramChatId
+        .logMissing("Telegram chat ID", monoAccountId)
 
-    fun getBudgetAccountId(monoAccountId: String): String? =
-        settings.byId[monoAccountId]
-            ?.budgetAccountId
-            .logMissing("Budget account ID", monoAccountId)
+    fun getBudgetAccountId(monoAccountId: String): String? = settings.byId[monoAccountId]
+        ?.budgetAccountId
+        .logMissing("Budget account ID", monoAccountId)
 }

@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
 
 class LunchmoneyTransactionMessageFormatter(
     monoAccountsService: MonoAccountsService,
-    private val categorySuggestingService: CategorySuggestionService,
+    private val categorySuggestingService: CategorySuggestionService
 ) : TransactionMessageFormatter<LunchmoneyTransaction>(monoAccountsService) {
 
     override suspend fun formatHTMLStatementMessage(
@@ -44,10 +44,12 @@ class LunchmoneyTransactionMessageFormatter(
         val pressed: MutableSet<KClass<out TransactionUpdateType>> =
             updateType?.let { mutableSetOf(it::class) } ?: mutableSetOf()
 
-        if (transaction.categoryId == null)
+        if (transaction.categoryId == null) {
             pressed.add(TransactionUpdateType.Uncategorize::class)
-        if (transaction.status == LunchmoneyTransactionStatus.UNCLEARED)
+        }
+        if (transaction.status == LunchmoneyTransactionStatus.UNCLEARED) {
             pressed.add(TransactionUpdateType.Unapprove::class)
+        }
 
         return pressed
     }
@@ -60,7 +62,7 @@ class LunchmoneyTransactionMessageFormatter(
             listOf(
                 listOf(
                     button<TransactionUpdateType.Unapprove>(pressed),
-                    button<TransactionUpdateType.Uncategorize>(pressed),
+                    button<TransactionUpdateType.Uncategorize>(pressed)
                 )
             )
         )

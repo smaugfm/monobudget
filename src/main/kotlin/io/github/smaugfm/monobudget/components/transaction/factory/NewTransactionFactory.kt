@@ -8,7 +8,7 @@ import io.github.smaugfm.monobudget.util.replaceNewLines
 
 sealed class NewTransactionFactory<TNewTransaction>(
     private val monoAccountsService: MonoAccountsService,
-    private val categorySuggestingService: CategorySuggestionService,
+    private val categorySuggestingService: CategorySuggestionService
 ) {
     abstract suspend fun create(response: MonoWebhookResponseData): TNewTransaction
 

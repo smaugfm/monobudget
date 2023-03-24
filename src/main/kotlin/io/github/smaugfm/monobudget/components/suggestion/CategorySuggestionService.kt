@@ -7,7 +7,7 @@ import mu.KotlinLogging
 private val log = KotlinLogging.logger { }
 
 sealed class CategorySuggestionService(
-    private val mccOverride: Settings.MccOverride,
+    private val mccOverride: Settings.MccOverride
 ) {
     protected abstract suspend fun categoryIdByName(categoryName: String): String?
 
@@ -15,12 +15,13 @@ sealed class CategorySuggestionService(
 
     suspend fun byMcc(mcc: Int): String? {
         val mccObj = MCC.map[mcc]
-        if (mccObj == null)
+        if (mccObj == null) {
             log.warn { "Unknown MCC code $mcc" }
-        else {
+        } else {
             val categoryName = mccOverride.mccGroupToCategoryName[mccObj.group.type]
-            if (categoryName != null)
+            if (categoryName != null) {
                 return categoryName
+            }
         }
         return mccOverride.mccToCategoryName[mcc]?.let {
             categoryIdByName(it)

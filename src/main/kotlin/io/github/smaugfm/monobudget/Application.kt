@@ -1,8 +1,6 @@
 package io.github.smaugfm.monobudget
 
 import io.github.smaugfm.monobudget.api.TelegramApi
-import io.github.smaugfm.monobudget.model.Settings
-import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.github.smaugfm.monobudget.components.callback.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.components.mono.DuplicateWebhooksFilter
@@ -11,6 +9,8 @@ import io.github.smaugfm.monobudget.components.telegram.TelegramErrorUnknownErro
 import io.github.smaugfm.monobudget.components.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.components.transaction.BudgetTransactionCreator
 import io.github.smaugfm.monobudget.components.verification.ApplicationStartupVerifier
+import io.github.smaugfm.monobudget.model.Settings
+import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent

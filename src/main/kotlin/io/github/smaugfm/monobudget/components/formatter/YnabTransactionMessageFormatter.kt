@@ -42,10 +42,12 @@ class YnabTransactionMessageFormatter(
         val pressed: MutableSet<KClass<out TransactionUpdateType>> =
             updateType?.let { mutableSetOf(it::class) } ?: mutableSetOf()
 
-        if (transaction.categoryName.isNullOrEmpty())
+        if (transaction.categoryName.isNullOrEmpty()) {
             pressed.add(TransactionUpdateType.Uncategorize::class)
-        if (transaction.cleared == YnabCleared.Uncleared)
+        }
+        if (transaction.cleared == YnabCleared.Uncleared) {
             pressed.add(TransactionUpdateType.Unapprove::class)
+        }
 
         return pressed
     }
