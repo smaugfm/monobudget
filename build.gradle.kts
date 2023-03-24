@@ -1,6 +1,8 @@
 import com.github.breadmoirai.githubreleaseplugin.GithubReleaseTask
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
+import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
@@ -136,6 +138,19 @@ tasks {
         manifest {
             attributes(mapOf("Main-Class" to "io.github.smaugfm.monobudget.MainKt"))
         }
+    }
+
+    fun <T : KotlinCommonCompilerOptions> KotlinCompilationTask<T>.optIn() {
+        compilerOptions.freeCompilerArgs.add(
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+        )
+    }
+
+    named<KotlinCompilationTask<*>>("compileKotlin") {
+        optIn()
+    }
+    named<KotlinCompilationTask<*>>("compileTestKotlin") {
+        optIn()
     }
 
     build {

@@ -1,7 +1,6 @@
 package io.github.smaugfm.monobudget.components.suggestion
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.lunchmoney.request.category.LunchmoneyGetAllCategoriesRequest
 import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.reactor.awaitSingle
@@ -12,10 +11,9 @@ class LunchmoneyCategorySuggestionServiceImpl(
     private val api: LunchmoneyApi
 ) : CategorySuggestionService(mccOverride) {
     private val categoriesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) {
-        api.execute(LunchmoneyGetAllCategoriesRequest())
-            .awaitSingle()
-            .categories
+        api.getAllCategories().awaitSingle()
     }
+
     override suspend fun categoryNameById(categoryId: String?): String? {
         if (categoryId == null) {
             return null

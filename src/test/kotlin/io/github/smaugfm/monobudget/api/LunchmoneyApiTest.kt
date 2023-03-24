@@ -1,8 +1,6 @@
 package io.github.smaugfm.monobudget.api
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.lunchmoney.request.asset.LunchmoneyGetAllAssetsRequest
-import io.github.smaugfm.lunchmoney.request.category.LunchmoneyGetAllCategoriesRequest
 import io.github.smaugfm.monobudget.model.BudgetBackend
 import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.util.makeJson
@@ -23,8 +21,9 @@ class LunchmoneyApiTest {
     @Test
     @Disabled
     fun dumpAllAccounts() {
-        val assets = api.execute(LunchmoneyGetAllAssetsRequest())
-            .block()!!.assets
+        val assets = api
+            .getAllAssets()
+            .block()
 
         println(json.encodeToString(assets))
     }
@@ -32,8 +31,8 @@ class LunchmoneyApiTest {
     @Test
     @Disabled
     fun dumpAllCategories() {
-        val assets = api.execute(LunchmoneyGetAllCategoriesRequest())
-            .block()!!.categories
+        val assets = api.getAllCategories()
+            .block()
 
         println(json.encodeToString(assets))
     }

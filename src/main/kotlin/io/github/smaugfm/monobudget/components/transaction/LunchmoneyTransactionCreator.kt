@@ -5,13 +5,6 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyCreateTransactionGroupRequest
-import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyGetSingleTransactionRequest
-import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyInsertTransactionsRequest
-import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyUpdateTransactionRequest
-import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyCreateTransactionGroupParams
-import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyInsertTransactionRequestParams
-import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyUpdateTransactionParams
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.components.transaction.factory.NewTransactionFactory
@@ -40,28 +33,21 @@ class LunchmoneyTransactionCreator(
                 "Existing LunchmoneyTransaction: $existingTransaction"
         }
 
-        api.execute(
-            LunchmoneyUpdateTransactionRequest(
-                existingTransaction.id,
-                LunchmoneyUpdateTransactionParams(
-                    LunchmoneyUpdateTransaction(
-                        status = LunchmoneyTransactionStatus.CLEARED,
-                        categoryId = transferCategoryId
-                    )
-                )
+        api.updateTransaction(
+            transactionId = existingTransaction.id,
+            transaction = LunchmoneyUpdateTransaction(
+                status = LunchmoneyTransactionStatus.CLEARED,
+                categoryId = transferCategoryId
             )
         ).awaitSingle()
+
         val newTransaction = processSingle(newWebhookResponse, true)
 
-        val groupId = api.execute(
-            LunchmoneyCreateTransactionGroupRequest(
-                LunchmoneyCreateTransactionGroupParams(
-                    date = newTransaction.date,
-                    payee = TRANSFER_PAYEE,
-                    transactions = listOf(existingTransaction, newTransaction).map { it.id },
-                    categoryId = transferCategoryId
-                )
-            )
+        val groupId = api.createTransactionGroup(
+            date = newTransaction.date,
+            payee = TRANSFER_PAYEE,
+            transactions = listOf(existingTransaction, newTransaction).map { it.id },
+            categoryId = transferCategoryId
         ).awaitSingle()
 
         log.debug { "Created new Lunchmoney transaction group id=$groupId" }
@@ -86,17 +72,16 @@ class LunchmoneyTransactionCreator(
                     it
                 }
             }
-        val createdId = api.execute(
-            LunchmoneyInsertTransactionsRequest(
-                LunchmoneyInsertTransactionRequestParams(
-                    transactions = listOf(newTransaction),
-                    applyRules = true,
-                    checkForRecurring = true,
-                    debitAsNegative = true
-                )
-            )
-        ).awaitSingle().ids.first()
-        return api.execute(LunchmoneyGetSingleTransactionRequest(createdId)).awaitSingle()
+        val createdId =
+            api.insertTransactions(
+                transactions = listOf(newTransaction),
+                applyRules = true,
+                checkForRecurring = true,
+                debitAsNegative = true
+            ).awaitSingle().first()
+        return api
+            .getSingleTransaction(createdId)
+            .awaitSingle()
     }
 
     companion object {

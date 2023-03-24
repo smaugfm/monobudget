@@ -1,7 +1,6 @@
 package io.github.smaugfm.monobudget.components.verification
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.lunchmoney.request.asset.LunchmoneyGetAllAssetsRequest
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.model.BudgetBackend
 import io.github.smaugfm.monobudget.model.Settings
@@ -22,10 +21,8 @@ class BudgetSettingsVerifier(
                 val api = getKoin().get<LunchmoneyApi>()
                 monoSettings.settings.forEach { settings ->
                     check(
-                        api
-                            .execute(LunchmoneyGetAllAssetsRequest())
+                        api.getAllAssets()
                             .awaitSingle()
-                            .assets
                             .any {
                                 it.id.toString() == settings.budgetAccountId
                             }

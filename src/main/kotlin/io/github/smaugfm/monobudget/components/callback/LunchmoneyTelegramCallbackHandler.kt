@@ -5,10 +5,6 @@ import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyGetSingleTransactionRequest
-import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyUpdateTransactionRequest
-import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyGetSingleTransactionParams
-import io.github.smaugfm.lunchmoney.request.transaction.params.LunchmoneyUpdateTransactionParams
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
@@ -37,26 +33,19 @@ class LunchmoneyTelegramCallbackHandler(
             is TransactionUpdateType.Uncategorize -> LunchmoneyUpdateTransaction(categoryId = null)
         }
 
-        api.execute(
-            LunchmoneyUpdateTransactionRequest(
-                txId,
-                LunchmoneyUpdateTransactionParams(
-                    transaction = updateTransaction,
-                    debitAsNegative = true,
-                    skipBalanceUpdate = false
-                )
-            )
+        api.updateTransaction(
+            transactionId = txId,
+            transaction = updateTransaction,
+            debitAsNegative = true,
+            skipBalanceUpdate = false
         ).awaitSingle()
 
         return readTransaction(txId)
     }
 
-    private suspend fun readTransaction(txId: Long) = api.execute(
-        LunchmoneyGetSingleTransactionRequest(
-            txId,
-            LunchmoneyGetSingleTransactionParams(true)
-        )
-    ).awaitSingle()
+    private suspend fun readTransaction(txId: Long) = api
+        .getSingleTransaction(txId, debitAsNegative = true)
+        .awaitSingle()
 
     override suspend fun updateHTMLStatementMessage(
         updatedTransaction: LunchmoneyTransaction,
