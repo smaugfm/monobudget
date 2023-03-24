@@ -28,7 +28,8 @@ sealed class TransactionMessageFormatter<TTransaction>(
             monoResponse.statementItem,
             transaction
         )
-        val markup = getReplyKeyboard()
+        val pressed = getReplyKeyboardPressedButtons(transaction)
+        val markup = getReplyKeyboard(transaction, pressed)
 
         return MessageWithReplyKeyboard(
             msg,
@@ -36,7 +37,9 @@ sealed class TransactionMessageFormatter<TTransaction>(
         )
     }
 
-    abstract fun getReplyKeyboard(): InlineKeyboardMarkup
+    abstract fun getReplyKeyboardPressedButtons(transaction: TTransaction, updateType: TransactionUpdateType? = null): Set<KClass<out TransactionUpdateType>>
+
+    abstract fun getReplyKeyboard(transaction: TTransaction, pressed: Set<KClass<out TransactionUpdateType>>): InlineKeyboardMarkup
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,

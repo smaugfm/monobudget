@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget.components.transaction
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertOrUpdateTransaction
+import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyCreateTransactionGroupRequest
 import io.github.smaugfm.lunchmoney.request.transaction.LunchmoneyGetSingleTransactionRequest
@@ -18,8 +18,8 @@ private val log = KotlinLogging.logger {}
 
 class LunchmoneyTransactionCreator(
     private val api: LunchmoneyApi,
-    newTransactionFactory: NewTransactionFactory<LunchmoneyInsertOrUpdateTransaction>
-) : BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertOrUpdateTransaction>(newTransactionFactory) {
+    newTransactionFactory: NewTransactionFactory<LunchmoneyInsertTransaction>
+) : BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertTransaction>(newTransactionFactory) {
 
     override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = when (maybeTransfer) {
         is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())

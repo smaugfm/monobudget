@@ -46,7 +46,7 @@ sealed class TransactionUpdateType {
             }
         }
 
-        fun KClass<out TransactionUpdateType>.buttonSymbol(): String {
+        private fun KClass<out TransactionUpdateType>.buttonSymbol(): String {
             return when (this) {
                 Uncategorize::class -> "❌"
                 Unapprove::class -> "🚫"

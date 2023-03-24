@@ -1,16 +1,10 @@
 package io.github.smaugfm.monobudget
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertOrUpdateTransaction
+import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.api.YnabApi
-import io.github.smaugfm.monobudget.model.BudgetBackend.Lunchmoney
-import io.github.smaugfm.monobudget.model.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.model.Settings
-import io.github.smaugfm.monobudget.model.ynab.YnabSaveTransaction
-import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
-import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.github.smaugfm.monobudget.components.callback.LunchmoneyTelegramCallbackHandler
 import io.github.smaugfm.monobudget.components.callback.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.components.callback.YnabTelegramCallbackHandler
@@ -36,6 +30,12 @@ import io.github.smaugfm.monobudget.components.verification.ApplicationStartupVe
 import io.github.smaugfm.monobudget.components.verification.BudgetSettingsVerifier
 import io.github.smaugfm.monobudget.components.verification.MonoSettingsVerifier
 import io.github.smaugfm.monobudget.components.verification.YnabCurrencyVerifier
+import io.github.smaugfm.monobudget.model.BudgetBackend.Lunchmoney
+import io.github.smaugfm.monobudget.model.BudgetBackend.YNAB
+import io.github.smaugfm.monobudget.model.Settings
+import io.github.smaugfm.monobudget.model.ynab.YnabSaveTransaction
+import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
+import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -82,10 +82,10 @@ fun main() {
                         is Lunchmoney -> {
                             single { LunchmoneyApi(budgetBackend.token) }
                             single { MonoTransferBetweenAccountsDetector<LunchmoneyTransaction>() }
-                            single<NewTransactionFactory<LunchmoneyInsertOrUpdateTransaction>> {
+                            single<NewTransactionFactory<LunchmoneyInsertTransaction>> {
                                 LunchmoneyNewTransactionFactory(get(), get())
                             }
-                            single<BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertOrUpdateTransaction>> {
+                            single<BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertTransaction>> {
                                 LunchmoneyTransactionCreator(get(), get())
                             }
                             single<TransactionMessageFormatter<LunchmoneyTransaction>> {
@@ -95,7 +95,7 @@ fun main() {
                                 LunchmoneyCategorySuggestionServiceImpl(get(), settings.mcc, get())
                             }
                             single<TelegramCallbackHandler<LunchmoneyTransaction>> {
-                                LunchmoneyTelegramCallbackHandler(get(), get(), get(), telegramChaIds)
+                                LunchmoneyTelegramCallbackHandler(get(), get(), get(), get(), telegramChaIds)
                             }
                         }
 
@@ -115,12 +115,18 @@ fun main() {
                                 YnabTransactionMessageFormatter(get())
                             }
                             single<TelegramCallbackHandler<YnabTransactionDetail>> {
-                                YnabTelegramCallbackHandler(get(), get(), telegramChaIds)
+                                YnabTelegramCallbackHandler(get(), get(), get(), telegramChaIds)
                             }
                             single(createdAtStart = true) {
                                 YnabNewTransactionFactory(get(), get(), get(), get(), get())
                             }
-                            single<ApplicationStartupVerifier> { YnabCurrencyVerifier(budgetBackend, settings.mono, get()) }
+                            single<ApplicationStartupVerifier> {
+                                YnabCurrencyVerifier(
+                                    budgetBackend,
+                                    settings.mono,
+                                    get()
+                                )
+                            }
                         }
                     }
                 }
@@ -128,7 +134,7 @@ fun main() {
         }
 
         when (budgetBackend) {
-            is Lunchmoney -> Application<LunchmoneyTransaction, LunchmoneyInsertOrUpdateTransaction>(settings.mono)
+            is Lunchmoney -> Application<LunchmoneyTransaction, LunchmoneyInsertTransaction>(settings.mono)
             is YNAB -> Application<YnabTransactionDetail, YnabSaveTransaction>(settings.mono)
         }.run(setWebhook, monoWebhookUrl, webhookPort)
     }

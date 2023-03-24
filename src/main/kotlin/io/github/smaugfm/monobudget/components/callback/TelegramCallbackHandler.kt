@@ -7,8 +7,8 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.ParseMode
 import io.github.smaugfm.monobudget.api.TelegramApi
+import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.model.TransactionUpdateType
-import io.github.smaugfm.monobudget.model.TransactionUpdateType.Companion.buttonWord
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -16,6 +16,7 @@ private val log = KotlinLogging.logger {}
 
 sealed class TelegramCallbackHandler<TTransaction>(
     protected val telegram: TelegramApi,
+    private val formatter: TransactionMessageFormatter<TTransaction>,
     private val telegramChatIds: List<Long>
 ) {
     suspend fun handle(callbackQuery: CallbackQuery) {
@@ -24,14 +25,14 @@ sealed class TelegramCallbackHandler<TTransaction>(
             return
         }
 
-        val (callbackQueryId, newPressed, message) = extractFromCallbackQuery(callbackQuery) ?: return
+        val (callbackQueryId, transactionUpdateType, message) = extractFromCallbackQuery(callbackQuery) ?: return
 
-        val updatedTransaction = updateTransaction(newPressed).also {
+        val updatedTransaction = updateTransaction(transactionUpdateType).also {
             telegram.answerCallbackQuery(callbackQueryId)
         }
 
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
-        val updatedMarkup = updateMarkupKeyboard(newPressed, message.replyMarkup!!)
+        val updatedMarkup = updateMarkupKeyboard(updatedTransaction, transactionUpdateType, message.replyMarkup!!)
 
         if (stripHTMLTagsFromMessage(updatedText) != message.text ||
             updatedMarkup != message.replyMarkup
@@ -76,12 +77,13 @@ sealed class TelegramCallbackHandler<TTransaction>(
     }
 
     private fun updateMarkupKeyboard(
-        newPressed: TransactionUpdateType,
+        updatedTransaction: TTransaction,
+        transactionUpdateType: TransactionUpdateType,
         oldKeyboard: InlineKeyboardMarkup
     ): InlineKeyboardMarkup =
         basedOnOldKeyboard(
             oldKeyboard,
-            pressedButtons(oldKeyboard) + newPressed::class
+            formatter.getReplyKeyboardPressedButtons(updatedTransaction, transactionUpdateType)
         )
 
     private fun basedOnOldKeyboard(
@@ -102,17 +104,6 @@ sealed class TelegramCallbackHandler<TTransaction>(
             }
         }.let(::InlineKeyboardMarkup)
     }
-
-    private fun pressedButtons(oldKeyboard: InlineKeyboardMarkup): Set<KClass<out TransactionUpdateType>> =
-        oldKeyboard
-            .inlineKeyboard
-            .flatten()
-            .filter { it.text.contains(TransactionUpdateType.pressedChar) }
-            .mapNotNull { button ->
-                TransactionUpdateType::class.sealedSubclasses.find {
-                    button.text.contains(it.buttonWord())
-                }
-            }.toSet()
 
     private fun stripHTMLTagsFromMessage(messageText: String): String {
         val replaceHtml = Regex("<.*?>")

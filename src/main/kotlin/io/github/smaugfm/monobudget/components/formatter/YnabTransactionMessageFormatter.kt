@@ -2,9 +2,10 @@ package io.github.smaugfm.monobudget.components.formatter
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.monobank.model.MonoStatementItem
-import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.model.TransactionUpdateType
+import io.github.smaugfm.monobudget.model.ynab.YnabCleared
+import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.util.MCC
 import io.github.smaugfm.monobudget.util.replaceNewLines
 import java.util.Currency
@@ -34,8 +35,25 @@ class YnabTransactionMessageFormatter(
         }
     }
 
-    override fun getReplyKeyboard(): InlineKeyboardMarkup {
-        val pressed: Set<KClass<out TransactionUpdateType>> = emptySet()
+    override fun getReplyKeyboardPressedButtons(
+        transaction: YnabTransactionDetail,
+        updateType: TransactionUpdateType?
+    ): Set<KClass<out TransactionUpdateType>> {
+        val pressed: MutableSet<KClass<out TransactionUpdateType>> =
+            updateType?.let { mutableSetOf(it::class) } ?: mutableSetOf()
+
+        if (transaction.categoryName.isNullOrEmpty())
+            pressed.add(TransactionUpdateType.Uncategorize::class)
+        if (transaction.cleared == YnabCleared.Uncleared)
+            pressed.add(TransactionUpdateType.Unapprove::class)
+
+        return pressed
+    }
+
+    override fun getReplyKeyboard(
+        transaction: YnabTransactionDetail,
+        pressed: Set<KClass<out TransactionUpdateType>>
+    ): InlineKeyboardMarkup {
         return InlineKeyboardMarkup(
             listOf(
                 listOf(

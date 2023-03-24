@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.components.formatter
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
+import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
@@ -36,8 +37,25 @@ class LunchmoneyTransactionMessageFormatter(
         }
     }
 
-    override fun getReplyKeyboard(): InlineKeyboardMarkup {
-        val pressed: Set<KClass<out TransactionUpdateType>> = emptySet()
+    override fun getReplyKeyboardPressedButtons(
+        transaction: LunchmoneyTransaction,
+        updateType: TransactionUpdateType?
+    ): Set<KClass<out TransactionUpdateType>> {
+        val pressed: MutableSet<KClass<out TransactionUpdateType>> =
+            updateType?.let { mutableSetOf(it::class) } ?: mutableSetOf()
+
+        if (transaction.categoryId == null)
+            pressed.add(TransactionUpdateType.Uncategorize::class)
+        if (transaction.status == LunchmoneyTransactionStatus.UNCLEARED)
+            pressed.add(TransactionUpdateType.Unapprove::class)
+
+        return pressed
+    }
+
+    override fun getReplyKeyboard(
+        transaction: LunchmoneyTransaction,
+        pressed: Set<KClass<out TransactionUpdateType>>
+    ): InlineKeyboardMarkup {
         return InlineKeyboardMarkup(
             listOf(
                 listOf(
