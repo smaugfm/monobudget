@@ -2,9 +2,7 @@ package io.github.smaugfm.monobudget.model
 
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
-import io.ktor.util.logging.error
 import mu.KotlinLogging
-import java.util.UUID
 import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger { }
@@ -25,8 +23,8 @@ sealed class TransactionUpdateType {
                 return null
             }
 
-            val (payee, transactionId) =
-                extractDescriptionAndTransactionId(message) ?: return null
+            val payee = extractPayee(message) ?: return null
+            val transactionId = extractTransactionId(message.text!!)
 
             return when (cls) {
                 Uncategorize::class -> Uncategorize(transactionId)
@@ -35,14 +33,13 @@ sealed class TransactionUpdateType {
                 else -> throw IllegalArgumentException("cls: ${cls.simpleName}")
             }
         }
+        fun <T : TransactionUpdateType> serialize(cls: KClass<out T>) = cls.simpleName!!
 
-        inline fun <reified T : TransactionUpdateType> serialize(): String {
-            return T::class.simpleName!!
-        }
+        inline fun <reified T : TransactionUpdateType> serialize() = serialize(T::class)
 
         fun KClass<out TransactionUpdateType>.buttonWord(): String {
             return when (this) {
-                Uncategorize::class -> "категорию"
+                Uncategorize::class -> "категорію"
                 Unapprove::class -> "unapprove"
                 MakePayee::class -> "payee"
                 else -> throw IllegalArgumentException("Unknown ${TransactionUpdateType::class.simpleName} $this")
@@ -58,29 +55,29 @@ sealed class TransactionUpdateType {
             }
         }
 
-        inline fun <reified T : TransactionUpdateType> buttonText(pressed: Boolean): String = if (pressed) {
-            "$pressedChar${T::class.buttonWord()}"
+        fun <T : TransactionUpdateType> buttonText(cls: KClass<out T>, pressed: Boolean): String = if (pressed) {
+            "$pressedChar${cls.buttonWord()}"
         } else {
-            "${T::class.buttonSymbol()}${T::class.buttonWord()}"
+            "${cls.buttonSymbol()}${cls.buttonWord()}"
         }
 
-        private fun extractDescriptionAndTransactionId(message: Message): Pair<String, String>? {
+        inline fun <reified T : TransactionUpdateType> buttonText(pressed: Boolean): String =
+            buttonText(T::class, pressed)
+
+        internal fun extractPayee(message: Message): String? {
             val text = message.text!!
-            val id = try {
-                UUID.fromString(text.substring(text.length - UUIDwidth, text.length))
-            } catch (e: IllegalArgumentException) {
-                log.error(e)
-                return null
-            }.toString()
             val payee =
                 message.entities.find { it.type == MessageEntity.Type.BOLD }?.run {
                     text.substring(offset, offset + length)
                 } ?: return null
 
-            return Pair(payee, id)
+            return payee
+        }
+
+        internal fun extractTransactionId(text: String): String {
+            return text.substring(text.lastIndexOf('\n')).trim()
         }
 
         const val pressedChar: Char = '✅'
-        private const val UUIDwidth = 36
     }
 }

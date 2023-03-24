@@ -66,7 +66,7 @@ class LunchmoneyTelegramCallbackHandler(
             description,
             mcc,
             currencyText,
-            categorySuggestingService.categoryNameById(updatedTransaction.categoryId.toString()) ?: "",
+            categorySuggestingService.categoryNameById(updatedTransaction.categoryId?.toString()) ?: "",
             updatedTransaction.payee,
             id
         )

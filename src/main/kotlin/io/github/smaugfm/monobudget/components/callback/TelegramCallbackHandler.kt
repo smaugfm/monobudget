@@ -2,13 +2,13 @@ package io.github.smaugfm.monobudget.components.callback
 
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.CallbackQuery
+import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.ParseMode
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.model.TransactionUpdateType
 import io.github.smaugfm.monobudget.model.TransactionUpdateType.Companion.buttonWord
-import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.formatInlineKeyboard
 import mu.KotlinLogging
 import kotlin.reflect.KClass
 
@@ -24,14 +24,14 @@ sealed class TelegramCallbackHandler<TTransaction>(
             return
         }
 
-        val (callbackQueryId, type, message) = extractFromCallbackQuery(callbackQuery) ?: return
+        val (callbackQueryId, newPressed, message) = extractFromCallbackQuery(callbackQuery) ?: return
 
-        val updatedTransaction = updateTransaction(type).also {
+        val updatedTransaction = updateTransaction(newPressed).also {
             telegram.answerCallbackQuery(callbackQueryId)
         }
 
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
-        val updatedMarkup = updateMarkupKeyboard(type, message.replyMarkup!!)
+        val updatedMarkup = updateMarkupKeyboard(newPressed, message.replyMarkup!!)
 
         if (stripHTMLTagsFromMessage(updatedText) != message.text ||
             updatedMarkup != message.replyMarkup
@@ -49,7 +49,10 @@ sealed class TelegramCallbackHandler<TTransaction>(
     }
 
     protected abstract suspend fun updateTransaction(type: TransactionUpdateType): TTransaction
-    protected abstract suspend fun updateHTMLStatementMessage(updatedTransaction: TTransaction, oldMessage: Message): String
+    protected abstract suspend fun updateHTMLStatementMessage(
+        updatedTransaction: TTransaction,
+        oldMessage: Message
+    ): String
 
     private suspend fun extractFromCallbackQuery(callbackQuery: CallbackQuery): CallbackQueryData? {
         val callbackQueryId = callbackQuery.id
@@ -73,10 +76,32 @@ sealed class TelegramCallbackHandler<TTransaction>(
     }
 
     private fun updateMarkupKeyboard(
-        type: TransactionUpdateType,
+        newPressed: TransactionUpdateType,
         oldKeyboard: InlineKeyboardMarkup
     ): InlineKeyboardMarkup =
-        formatInlineKeyboard(pressedButtons(oldKeyboard) + type::class)
+        basedOnOldKeyboard(
+            oldKeyboard,
+            pressedButtons(oldKeyboard) + newPressed::class
+        )
+
+    private fun basedOnOldKeyboard(
+        oldKeyboard: InlineKeyboardMarkup,
+        pressed: Set<KClass<out TransactionUpdateType>>
+    ): InlineKeyboardMarkup {
+        return oldKeyboard.inlineKeyboard.map { outer ->
+            outer.map { oldButton ->
+                val cls =
+                    TransactionUpdateType::class.sealedSubclasses.find { it.simpleName == oldButton.callbackData }!!
+                InlineKeyboardButton(
+                    TransactionUpdateType.buttonText(
+                        cls,
+                        cls in pressed,
+                    ),
+                    callbackData = TransactionUpdateType.serialize(cls)
+                )
+            }
+        }.let(::InlineKeyboardMarkup)
+    }
 
     private fun pressedButtons(oldKeyboard: InlineKeyboardMarkup): Set<KClass<out TransactionUpdateType>> =
         oldKeyboard

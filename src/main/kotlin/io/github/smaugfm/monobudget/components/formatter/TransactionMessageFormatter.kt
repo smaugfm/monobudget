@@ -6,9 +6,9 @@ import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
+import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.model.TransactionUpdateType
 import io.github.smaugfm.monobudget.model.telegram.MessageWithReplyKeyboard
-import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.util.formatAmount
 import mu.KotlinLogging
 import java.util.Currency
@@ -28,13 +28,15 @@ sealed class TransactionMessageFormatter<TTransaction>(
             monoResponse.statementItem,
             transaction
         )
-        val markup = formatInlineKeyboard()
+        val markup = getReplyKeyboard()
 
         return MessageWithReplyKeyboard(
             msg,
             markup
         )
     }
+
+    abstract fun getReplyKeyboard(): InlineKeyboardMarkup
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
@@ -105,30 +107,15 @@ sealed class TransactionMessageFormatter<TTransaction>(
         )
 
         @JvmStatic
-        internal fun formatInlineKeyboard(pressed: Set<KClass<out TransactionUpdateType>> = emptySet()): InlineKeyboardMarkup {
-            return InlineKeyboardMarkup(
-                listOf(
-                    listOf(
-                        button<TransactionUpdateType.Unapprove>(pressed),
-                        button<TransactionUpdateType.Uncategorize>(pressed),
-                        button<TransactionUpdateType.MakePayee>(pressed)
-                    )
-                )
-            )
-        }
-
-        @JvmStatic
         protected fun formatAmountWithCurrency(amount: Long, currency: Currency) =
             currency.formatAmount(amount) + currency.currencyCode
 
         @JvmStatic
-        protected inline fun <reified T : TransactionUpdateType> button(
+        internal inline fun <reified T : TransactionUpdateType> button(
             pressed: Set<KClass<out TransactionUpdateType>>
-        ) = with(T::class) {
-            InlineKeyboardButton(
-                TransactionUpdateType.buttonText<T>(this in pressed),
-                callbackData = TransactionUpdateType.serialize<T>()
-            )
-        }
+        ) = InlineKeyboardButton(
+            TransactionUpdateType.buttonText<T>(T::class in pressed),
+            callbackData = TransactionUpdateType.serialize<T>()
+        )
     }
 }

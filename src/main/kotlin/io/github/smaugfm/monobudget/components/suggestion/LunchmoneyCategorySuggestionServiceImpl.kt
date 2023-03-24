@@ -16,7 +16,9 @@ class LunchmoneyCategorySuggestionServiceImpl(
             .awaitSingle()
             .categories
     }
-    override suspend fun categoryNameById(categoryId: String): String? {
+    override suspend fun categoryNameById(categoryId: String?): String? {
+        if (categoryId == null)
+            return null
         val idLong = categoryId.toLong()
         return categoriesFetcher.getData().find { it.id == idLong }?.name
     }

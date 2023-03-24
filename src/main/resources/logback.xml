@@ -5,7 +5,7 @@
         </encoder>
     </appender>
 <!--    <logger name="reactor.netty.http" level="debug"/>-->
-    <logger name="io.github.smaugfm.lunchmoney" level="debug"/>
+    <logger name="io.github.smaugfm.monobudget" level="debug"/>
 
     <root level="info">
         <appender-ref ref="STDOUT"/>

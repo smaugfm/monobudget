@@ -11,7 +11,7 @@ sealed class CategorySuggestionService(
 ) {
     protected abstract suspend fun categoryIdByName(categoryName: String): String?
 
-    abstract suspend fun categoryNameById(categoryId: String): String?
+    abstract suspend fun categoryNameById(categoryId: String?): String?
 
     suspend fun byMcc(mcc: Int): String? {
         val mccObj = MCC.map[mcc]
