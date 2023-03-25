@@ -1,1 +1,1 @@
-rootProject.name = "ynab-mono"
+rootProject.name = "monobudget"
