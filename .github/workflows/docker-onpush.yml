@@ -29,3 +29,10 @@ jobs:
         run: docker tag $DOCKER_USER/${{ github.event.repository.name }}:${{ steps.date.outputs.date }} $DOCKER_USER/${{ github.event.repository.name }}:latest
       - name: Docker push
         run: docker push --all-tags $DOCKER_USER/${{ github.event.repository.name }}
+      - name: Call Portainer
+        uses: fjogeleit/http-request-action@v1
+        if: ${{ contains(github.event.head_commit.message, '#latest') }}
+        with:
+          url: ${{ secrets.WEBHOOK_URL }}
+          method: 'POST'
+          timeout: 30000
