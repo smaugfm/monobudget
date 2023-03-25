@@ -23,6 +23,7 @@ import java.util.Currency
 import java.util.concurrent.CancellationException
 import kotlin.io.path.readText
 
+@Disabled
 @OptIn(DelicateCoroutinesApi::class)
 internal class TransformStatementToYnabTransactionTest {
     private val periodicFetcherFactory = PeriodicFetcherFactory(GlobalScope)

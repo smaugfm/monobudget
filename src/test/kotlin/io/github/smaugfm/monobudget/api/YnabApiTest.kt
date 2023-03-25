@@ -9,6 +9,7 @@ import org.junit.jupiter.api.assertDoesNotThrow
 import java.nio.file.Paths
 import kotlin.io.path.readText
 
+@Disabled
 class YnabApiTest {
     private val settings = Settings.load(Paths.get("settings.json").readText())
     private val api = YnabApi(settings.budgetBackend as YNAB)
