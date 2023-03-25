@@ -12,7 +12,7 @@ import kotlin.io.path.readText
 
 class LunchmoneyApiTest {
 
-    private val settings = Settings.load(Paths.get("settings.json").readText())
+    private val settings = Settings.load(Paths.get("settings.yml").readText())
     private val api = LunchmoneyApi(
         (settings.budgetBackend as BudgetBackend.Lunchmoney).token
     )

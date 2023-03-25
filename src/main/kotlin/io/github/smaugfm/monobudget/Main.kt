@@ -57,7 +57,7 @@ fun main() {
     val setWebhook = env["SET_WEBHOOK"]?.toBoolean() ?: false
     val monoWebhookUrl = URI(env["MONO_WEBHOOK_URL"]!!)
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
-    val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.json"))
+    val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.yml"))
     val budgetBackend = settings.budgetBackend
     log.debug { "Startup options: " }
     log.debug { "\tsetWebhook: $setWebhook" }

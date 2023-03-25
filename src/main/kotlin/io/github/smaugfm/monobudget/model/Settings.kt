@@ -1,11 +1,11 @@
 package io.github.smaugfm.monobudget.model
 
+import com.charleskorn.kaml.Yaml
 import io.github.smaugfm.monobudget.api.MonoApi
 import io.github.smaugfm.monobudget.model.mcc.MccGroupType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Path
@@ -22,9 +22,10 @@ data class Settings(
     companion object {
         fun load(path: Path): Settings = load(File(path.toString()).readText())
 
-        internal fun load(content: String) = Json.decodeFromString<Settings>(content).also {
-            log.debug { "Loaded settings: $it" }
-        }
+        internal fun load(content: String) = Yaml.default.decodeFromString<Settings>(content)
+            .also {
+                log.debug { "Loaded settings: $it" }
+            }
     }
 
     @Serializable
@@ -61,7 +62,7 @@ data class Settings(
 
     @Serializable
     data class MccOverride(
-        val mccGroupToCategoryName: Map<MccGroupType, String>,
-        val mccToCategoryName: Map<Int, String>
+        val mccGroupToCategoryName: Map<MccGroupType, String> = emptyMap(),
+        val mccToCategoryName: Map<Int, String> = emptyMap()
     )
 }

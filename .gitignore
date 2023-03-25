@@ -3,7 +3,8 @@ out/
 .gradle/
 .idea/misc.xml
 .idea/**/*.iml
+.env
 
-settings-ynab.json
-settings.json
+settings*.json
+settings*.yml
 docker-compose.yml

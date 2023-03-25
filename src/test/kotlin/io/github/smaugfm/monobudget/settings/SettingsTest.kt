@@ -10,6 +10,6 @@ import kotlin.io.path.readText
 class SettingsTest {
     @Test
     fun defaultLoad() {
-        assertThat { Settings.load(Paths.get("settings.json").readText()) }.isSuccess()
+        assertThat { Settings.load(Paths.get("settings.yml").readText()) }.isSuccess()
     }
 }

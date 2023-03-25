@@ -1,4 +1,3 @@
-import com.github.breadmoirai.githubreleaseplugin.GithubReleaseTask
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
@@ -13,7 +12,6 @@ plugins {
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "11.3.1"
     id("io.gitlab.arturbosch.detekt") version "1.22.0"
-    id("com.github.breadmoirai.github-release") version "2.2.12"
 }
 
 group = "io.github.smaugfm.monobudget"
@@ -49,6 +47,7 @@ dependencies {
     implementation("com.github.elbekD:kt-telegram-bot:2.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0")
     implementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:2.0.0")
+    implementation("com.charleskorn.kaml:kaml:0.53.0")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
     implementation("io.ktor:ktor-server-core:$ktor")
     implementation("io.ktor:ktor-server-netty:$ktor")
@@ -94,24 +93,6 @@ githook {
             task = "test"
         }
     }
-}
-
-if (githubToken != null) {
-    githubRelease {
-        token(githubToken)
-        prerelease.set(true)
-        overwrite.set(true)
-        dryRun.set(false)
-        releaseAssets.setFrom(
-            files(
-                "$buildDir/libs/${project.name}-${project.version}-fat.jar"
-            )
-        )
-    }
-}
-
-tasks.withType<GithubReleaseTask>().configureEach {
-    dependsOn(":shadowJar")
 }
 
 tasks {

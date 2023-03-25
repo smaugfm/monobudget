@@ -11,7 +11,7 @@ import kotlin.io.path.readText
 
 @Disabled
 class YnabApiTest {
-    private val settings = Settings.load(Paths.get("settings.json").readText())
+    private val settings = Settings.load(Paths.get("settings.yml").readText())
     private val api = YnabApi(settings.budgetBackend as YNAB)
 
     @Suppress("UNUSED_VARIABLE")

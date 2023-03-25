@@ -27,7 +27,7 @@ import kotlin.io.path.readText
 @OptIn(DelicateCoroutinesApi::class)
 internal class TransformStatementToYnabTransactionTest {
     private val periodicFetcherFactory = PeriodicFetcherFactory(GlobalScope)
-    private val settings = Settings.load(Paths.get("settings.json").readText())
+    private val settings = Settings.load(Paths.get("settings.yml").readText())
     private val api = YnabApi(settings.budgetBackend as YNAB)
     private val testStatement = MonoWebhookResponseData(
         account = "vasa",
