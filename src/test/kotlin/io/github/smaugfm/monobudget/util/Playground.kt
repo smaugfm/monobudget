@@ -17,6 +17,7 @@ import java.nio.file.Paths
 import java.time.format.DateTimeFormatter
 import kotlin.io.path.readText
 
+@Disabled
 @OptIn(DelicateCoroutinesApi::class)
 class Playground {
     val timeParse =
@@ -41,7 +42,7 @@ class Playground {
             println()
 
             val output = csv.decodeFromString<List<CsvMonoItem>>(
-                Paths.get("/Users/smaugfm/Downloads/report_26-03-2023_09-22-58.csv").toFile().readText()
+                Paths.get("/Users/smaugfm/Downloads/report_26-03-2023_11-30-38.csv").toFile().readText()
             ).map {
                 CsvOutputItem(
                     it.time,
