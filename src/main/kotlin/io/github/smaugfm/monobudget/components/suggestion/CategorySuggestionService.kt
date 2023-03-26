@@ -30,6 +30,5 @@ sealed class CategorySuggestionService(
         return null
     }
 
-    suspend fun categoryIdByMcc(mcc: Int): String? =
-        categoryNameByMcc(mcc)?.let { categoryIdByName(it) }
+    suspend fun categoryIdByMcc(mcc: Int): String? = categoryNameByMcc(mcc)?.let { categoryIdByName(it) }
 }

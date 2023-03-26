@@ -24,16 +24,18 @@ class TelegramMessageSender(
         this.send(
             ChatId.IntegerId(chatId),
             newMessage.message,
+            newMessage.notifyTelegramApp,
             newMessage.markup
         )
     }
 
-    private suspend fun send(chatId: ChatId, msg: String, markup: ReplyKeyboard? = null) {
+    private suspend fun send(chatId: ChatId, msg: String, notify: Boolean, markup: ReplyKeyboard? = null) {
         telegramApi.sendMessage(
-            chatId,
-            msg,
-            ParseMode.Html,
-            markup
+            chatId = chatId,
+            text = msg,
+            parseMode = ParseMode.Html,
+            disableNotification = !notify,
+            replyMarkup = markup
         )
     }
 }

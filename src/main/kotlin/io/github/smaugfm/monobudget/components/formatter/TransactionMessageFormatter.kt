@@ -27,12 +27,16 @@ sealed class TransactionMessageFormatter<TTransaction>(
         )
         val pressed = getReplyKeyboardPressedButtons(transaction)
         val markup = getReplyKeyboard(transaction, pressed)
+        val notify = shouldNotify(transaction)
 
         return MessageWithReplyKeyboard(
             msg,
-            markup
+            markup,
+            notify
         )
     }
+
+    abstract fun shouldNotify(transaction: TTransaction): Boolean
 
     abstract fun getReplyKeyboardPressedButtons(
         transaction: TTransaction,

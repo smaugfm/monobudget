@@ -27,20 +27,21 @@ class TelegramApi(
         chatId: ChatId,
         text: String,
         parseMode: ParseMode? = null,
+        disableNotification: Boolean? = null,
         replyMarkup: ReplyKeyboard? = null
     ) {
         bot.sendMessage(
-            chatId,
-            text,
-            null,
-            parseMode,
-            null,
-            null,
-            true,
-            null,
-            null,
-            null,
-            replyMarkup
+            chatId = chatId,
+            text = text,
+            messageThreadId = null,
+            parseMode = parseMode,
+            entities = null,
+            disableWebPagePreview = null,
+            disableNotification = disableNotification,
+            protectContent = null,
+            replyToMessageId = null,
+            allowSendingWithoutReply = null,
+            replyMarkup = replyMarkup
         ).also {
             log.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup?.pp()}" }
         }

@@ -35,6 +35,9 @@ class YnabTransactionMessageFormatter(
         }
     }
 
+    override fun shouldNotify(transaction: YnabTransactionDetail): Boolean =
+        transaction.categoryId == null || transaction.cleared == YnabCleared.Uncleared
+
     override fun getReplyKeyboardPressedButtons(
         transaction: YnabTransactionDetail,
         updateType: TransactionUpdateType?

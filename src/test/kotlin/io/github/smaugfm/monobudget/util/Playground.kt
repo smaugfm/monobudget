@@ -31,7 +31,7 @@ class Playground {
 
     @Test
     @Disabled
-    fun playground() {
+    fun test() {
         runBlocking {
             val csv = Csv {
                 hasHeaderRecord = true
@@ -74,7 +74,7 @@ class Playground {
         val amount: String,
 
         @SerialName("MCC деталі")
-        val mcc: String,
+        val mcc: String
     )
 
     @Serializable
@@ -107,6 +107,6 @@ class Playground {
         val cashbackAmount: String,
 
         @SerialName("Залишок після операції")
-        val balance: String,
+        val balance: String
     )
 }

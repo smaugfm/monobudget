@@ -17,6 +17,13 @@ class LunchmoneyTransactionMessageFormatter(
     private val categorySuggestingService: CategorySuggestionService
 ) : TransactionMessageFormatter<LunchmoneyTransaction>(monoAccountsService) {
 
+    private val shouldNotifyStatuses = setOf(
+        LunchmoneyTransactionStatus.UNCLEARED,
+        LunchmoneyTransactionStatus.RECURRING_SUGGESTED,
+        LunchmoneyTransactionStatus.PENDING
+
+    )
+
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
         monoStatementItem: MonoStatementItem,
@@ -36,6 +43,9 @@ class LunchmoneyTransactionMessageFormatter(
             )
         }
     }
+
+    override fun shouldNotify(transaction: LunchmoneyTransaction): Boolean =
+        transaction.categoryId == null || transaction.status in shouldNotifyStatuses
 
     override fun getReplyKeyboardPressedButtons(
         transaction: LunchmoneyTransaction,

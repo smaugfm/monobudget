@@ -10,7 +10,10 @@ class TelegramErrorUnknownErrorHandler(
     suspend operator fun invoke() {
         telegramChatIds
             .forEach { chatId ->
-                telegramApi.sendMessage(ChatId.IntegerId(chatId), TelegramApi.UNKNOWN_ERROR_MSG)
+                telegramApi.sendMessage(
+                    chatId = ChatId.IntegerId(chatId),
+                    text = TelegramApi.UNKNOWN_ERROR_MSG
+                )
             }
     }
 }
