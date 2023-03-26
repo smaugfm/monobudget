@@ -63,6 +63,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.4")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
+    testImplementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:2.0.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit")
 }
 

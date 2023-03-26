@@ -17,7 +17,7 @@ sealed class NewTransactionFactory<TNewTransaction>(
             ?: error("Could not find Budgeting app account for mono account ${response.account}")
 
     protected suspend fun getCategoryId(response: MonoWebhookResponseData) =
-        categorySuggestingService.byMcc(response.statementItem.mcc)
+        categorySuggestingService.categoryIdByMcc(response.statementItem.mcc)
 
     companion object {
         @JvmStatic

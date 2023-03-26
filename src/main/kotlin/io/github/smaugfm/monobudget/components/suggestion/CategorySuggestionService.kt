@@ -13,7 +13,7 @@ sealed class CategorySuggestionService(
 
     abstract suspend fun categoryNameById(categoryId: String?): String?
 
-    suspend fun byMcc(mcc: Int): String? {
+    fun categoryNameByMcc(mcc: Int): String? {
         val mccObj = MCC.map[mcc]
         if (mccObj == null) {
             log.warn { "Unknown MCC code $mcc" }
@@ -23,8 +23,9 @@ sealed class CategorySuggestionService(
                 return categoryName
             }
         }
-        return mccOverride.mccToCategoryName[mcc]?.let {
-            categoryIdByName(it)
-        }
+        return mccOverride.mccToCategoryName[mcc]
     }
+
+    suspend fun categoryIdByMcc(mcc: Int): String? =
+        categoryNameByMcc(mcc)?.let { categoryIdByName(it) }
 }
