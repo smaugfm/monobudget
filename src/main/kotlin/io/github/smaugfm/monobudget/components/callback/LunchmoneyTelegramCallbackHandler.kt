@@ -6,6 +6,7 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.api.TelegramApi
+import io.github.smaugfm.monobudget.components.formatter.LunchmoneyTransactionMessageFormatter.Companion.constructTransactionsQuickUrl
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractFromOldMessage
@@ -13,6 +14,7 @@ import io.github.smaugfm.monobudget.components.formatter.TransactionMessageForma
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.model.TransactionUpdateType
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.datetime.toKotlinLocalDate
 
 class LunchmoneyTelegramCallbackHandler(
     telegram: TelegramApi,
@@ -61,7 +63,8 @@ class LunchmoneyTelegramCallbackHandler(
             currency,
             categorySuggestingService.categoryNameById(updatedTransaction.categoryId?.toString()) ?: "",
             updatedTransaction.payee,
-            transactionId
+            transactionId,
+            constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate())
         )
     }
 }

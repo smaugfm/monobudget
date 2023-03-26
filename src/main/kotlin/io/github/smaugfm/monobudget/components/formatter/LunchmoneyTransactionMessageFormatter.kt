@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.components.formatter
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
+import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobank.model.MonoStatementItem
@@ -8,7 +9,11 @@ import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.model.TransactionUpdateType
 import io.github.smaugfm.monobudget.util.MCC
+import io.github.smaugfm.monobudget.util.formatW
 import io.github.smaugfm.monobudget.util.replaceNewLines
+import io.github.smaugfm.monobudget.util.toLocalDateTime
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
 import java.util.Currency
 import kotlin.reflect.KClass
 
@@ -39,7 +44,8 @@ class LunchmoneyTransactionMessageFormatter(
                 accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),
                 categorySuggestingService.categoryNameById(transaction.categoryId?.toString()) ?: "",
                 transaction.payee,
-                transaction.id.toString()
+                transaction.id.toString(),
+                constructTransactionsQuickUrl()
             )
         }
     }
@@ -76,5 +82,12 @@ class LunchmoneyTransactionMessageFormatter(
                 )
             )
         )
+    }
+
+    companion object {
+        fun constructTransactionsQuickUrl(date: LocalDate = Clock.System.now().toLocalDateTime().date): String {
+            val monthNumber = date.month.value.formatW()
+            return "${LunchmoneyApi.LUNCHMONEY_APP_BASE_URL}/transactions/${date.year}/$monthNumber"
+        }
     }
 }

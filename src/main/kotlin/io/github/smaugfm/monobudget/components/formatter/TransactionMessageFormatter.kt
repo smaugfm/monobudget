@@ -65,7 +65,8 @@ sealed class TransactionMessageFormatter<TTransaction>(
             amount: String,
             category: String,
             payee: String,
-            id: String
+            id: String,
+            idLink: String? = null
         ): String {
             log.info {
                 "Formatting message:\n" +
@@ -84,7 +85,7 @@ sealed class TransactionMessageFormatter<TTransaction>(
                 builder.append("      <code>Category: $category</code>\n")
                 builder.append("      <code>Payee:    $payee</code>\n")
                 builder.append("\n\n")
-                builder.append("<pre>$id</pre>")
+                builder.append(if (idLink != null) "<a href=\"$idLink\">$id</a>" else "<pre>$id</pre>")
 
                 builder.toString()
             }
