@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.server
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.api.MonoApi
+import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.util.makeJson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -23,20 +23,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.net.URI
 
 private val log = KotlinLogging.logger {}
 
 @Suppress("ExtractKtorModule")
-class MonoWebhookListenerServer(
-    private val scope: CoroutineScope,
-    private val monoApis: List<MonoApi>
-) {
+class MonoWebhookListenerServer : KoinComponent {
+    private val scope: CoroutineScope by inject()
+    private val monoSettings: Settings.MultipleMonoSettings by inject()
+
     private val json = makeJson()
 
-    suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) = monoApis.all {
-        it.setupWebhook(monoWebhookUrl, webhookPort)
-    }
+    suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) =
+        monoSettings.apis.all { it.setupWebhook(monoWebhookUrl, webhookPort) }
 
     fun start(webhook: URI, port: Int, callback: suspend (MonoWebhookResponseData) -> Unit): Job {
         val server = scope.embeddedServer(Netty, port = port) {

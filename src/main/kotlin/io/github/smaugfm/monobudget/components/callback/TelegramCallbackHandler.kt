@@ -9,6 +9,7 @@ import com.elbekd.bot.types.ParseMode
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
+import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.model.callback.ActionCallbackType.ChooseCategory
 import io.github.smaugfm.monobudget.model.callback.CallbackType
@@ -19,15 +20,18 @@ import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType.Uncateg
 import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType.UpdateCategory
 import io.ktor.util.logging.error
 import mu.KotlinLogging
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-abstract class TelegramCallbackHandler<TTransaction>(
-    protected val telegram: TelegramApi,
-    private val formatter: TransactionMessageFormatter<TTransaction>,
-    protected val categorySuggestionService: CategorySuggestionService,
-    private val telegramChatIds: List<Long>
-) {
+abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
+    protected val categorySuggestionService: CategorySuggestionService by inject()
+    private val telegram: TelegramApi by inject()
+    private val formatter: TransactionMessageFormatter<TTransaction> by inject()
+    private val monoSettings: Settings.MultipleMonoSettings by inject()
+    private val telegramChatIds = monoSettings.telegramChatIds
+
     suspend fun handle(callbackQuery: CallbackQuery) {
         if (callbackQuery.from.id !in telegramChatIds) {
             log.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }

@@ -31,6 +31,7 @@ dependencies {
     val ktor = "2.2.4"
     val junit = "5.9.2"
     val logback = "1.4.5"
+    val koin = "3.3.3"
 
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
@@ -41,7 +42,7 @@ dependencies {
         isChanging = true
     }
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
-    implementation("io.insert-koin:koin-core:3.3.3")
+    implementation("io.insert-koin:koin-core:$koin")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("com.github.elbekD:kt-telegram-bot:2.2.0")
@@ -60,6 +61,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("ch.qos.logback:logback-core:$logback")
     implementation("ch.qos.logback:logback-classic:$logback")
+    testImplementation("io.insert-koin:koin-test:$koin")
     testImplementation("io.mockk:mockk:1.13.4")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")

@@ -1,15 +1,14 @@
 package io.github.smaugfm.monobudget.components.suggestion
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.reactor.awaitSingle
+import org.koin.core.component.inject
 
-class LunchmoneyCategorySuggestionServiceImpl(
-    periodicFetcherFactory: PeriodicFetcherFactory,
-    mccOverride: Settings.MccOverride,
-    private val api: LunchmoneyApi
-) : CategorySuggestionService(mccOverride) {
+class LunchmoneyCategorySuggestionService : CategorySuggestionService() {
+    private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
+    private val api: LunchmoneyApi by inject()
+
     private val categoriesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) {
         api.getAllCategories().awaitSingle()
     }

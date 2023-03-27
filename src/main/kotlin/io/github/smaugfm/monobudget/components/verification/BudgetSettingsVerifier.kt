@@ -8,13 +8,14 @@ import io.ktor.util.logging.error
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger { }
 
-class BudgetSettingsVerifier(
-    private val budgetBackend: BudgetBackend,
-    private val monoSettings: Settings.MultipleMonoSettings
-) : ApplicationStartupVerifier, KoinComponent {
+class BudgetSettingsVerifier : ApplicationStartupVerifier, KoinComponent {
+    private val budgetBackend: BudgetBackend by inject()
+    private val monoSettings: Settings.MultipleMonoSettings by inject()
+
     override suspend fun verify() {
         when (budgetBackend) {
             is BudgetBackend.Lunchmoney -> {

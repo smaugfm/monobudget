@@ -4,18 +4,14 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.util.toLocalDateTime
 import kotlinx.datetime.toJavaLocalDate
 import mu.KotlinLogging
 
 private val log = KotlinLogging.logger {}
 
-class LunchmoneyNewTransactionFactory(
-    monoAccountsService: MonoAccountsService,
-    categorySuggestingService: CategorySuggestionService
-) : NewTransactionFactory<LunchmoneyInsertTransaction>(monoAccountsService, categorySuggestingService) {
+class LunchmoneyNewTransactionFactory :
+    NewTransactionFactory<LunchmoneyInsertTransaction>() {
     override suspend fun create(response: MonoWebhookResponseData): LunchmoneyInsertTransaction {
         log.debug { "Transforming Monobank statement to Lunchmoney transaction." }
 

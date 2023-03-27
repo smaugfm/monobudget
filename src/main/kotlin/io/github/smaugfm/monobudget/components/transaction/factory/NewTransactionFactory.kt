@@ -5,11 +5,14 @@ import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.util.replaceNewLines
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-abstract class NewTransactionFactory<TNewTransaction>(
-    private val monoAccountsService: MonoAccountsService,
-    private val categorySuggestingService: CategorySuggestionService
-) {
+abstract class NewTransactionFactory<TNewTransaction> : KoinComponent {
+
+    private val monoAccountsService: MonoAccountsService by inject()
+    private val categorySuggestingService: CategorySuggestionService by inject()
+
     abstract suspend fun create(response: MonoWebhookResponseData): TNewTransaction
 
     protected fun getBudgetAccountId(response: MonoWebhookResponseData) =

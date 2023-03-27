@@ -2,12 +2,12 @@ package io.github.smaugfm.monobudget.components.verification
 
 import io.github.smaugfm.monobudget.model.Settings
 import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.serialization.ExperimentalSerializationApi
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-@OptIn(ExperimentalSerializationApi::class)
-class MonoSettingsVerifier(
-    private val monoSettings: Settings.MultipleMonoSettings
-) : ApplicationStartupVerifier {
+class MonoSettingsVerifier : ApplicationStartupVerifier, KoinComponent {
+    private val monoSettings: Settings.MultipleMonoSettings by inject()
+
     override suspend fun verify() {
         monoSettings
             .apis

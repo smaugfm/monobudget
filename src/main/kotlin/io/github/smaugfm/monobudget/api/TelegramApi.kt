@@ -13,13 +13,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-class TelegramApi(
-    private val scope: CoroutineScope,
-    botSettings: Settings.TelegramBotSettings
-) {
+class TelegramApi : KoinComponent {
+    private val scope: CoroutineScope by inject()
+    private val botSettings: Settings.TelegramBotSettings by inject()
+
     private val bot: Bot =
         Bot.createPolling(botSettings.token, botSettings.username)
 

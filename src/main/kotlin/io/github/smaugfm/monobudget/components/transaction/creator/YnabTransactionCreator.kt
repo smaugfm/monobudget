@@ -4,20 +4,19 @@ import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.components.transaction.factory.NewTransactionFactory
 import io.github.smaugfm.monobudget.model.ynab.YnabCleared
 import io.github.smaugfm.monobudget.model.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.util.SimpleCache
 import mu.KotlinLogging
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-class YnabTransactionCreator(
-    private val api: YnabApi,
-    private val monoAccountsService: MonoAccountsService,
-    newTransactionFactory: NewTransactionFactory<YnabSaveTransaction>
-) : BudgetTransactionCreator<YnabTransactionDetail, YnabSaveTransaction>(newTransactionFactory) {
+class YnabTransactionCreator : BudgetTransactionCreator<YnabTransactionDetail, YnabSaveTransaction>() {
+    private val api: YnabApi by inject()
+    private val monoAccountsService: MonoAccountsService by inject()
+
     private val transferPayeeIdsCache = SimpleCache<String, String> {
         api.getAccount(it).transferPayeeId
     }

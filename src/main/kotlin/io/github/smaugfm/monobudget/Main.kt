@@ -15,7 +15,7 @@ import io.github.smaugfm.monobudget.components.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
-import io.github.smaugfm.monobudget.components.suggestion.LunchmoneyCategorySuggestionServiceImpl
+import io.github.smaugfm.monobudget.components.suggestion.LunchmoneyCategorySuggestionService
 import io.github.smaugfm.monobudget.components.suggestion.StringSimilarityPayeeSuggestionService
 import io.github.smaugfm.monobudget.components.suggestion.YnabCategorySuggestionService
 import io.github.smaugfm.monobudget.components.telegram.TelegramErrorUnknownErrorHandler
@@ -44,6 +44,7 @@ import mu.KotlinLogging
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.module.Module
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import java.net.URI
 import java.nio.file.Paths
@@ -59,12 +60,14 @@ fun main() {
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
     val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.yml"))
     val budgetBackend = settings.budgetBackend
+
     log.debug { "Startup options: " }
     log.debug { "\tsetWebhook: $setWebhook" }
     log.debug { "\tmonoWebhookUrl: $monoWebhookUrl" }
     log.debug { "\twebhookPort: $webhookPort" }
+
     runBlocking {
-        setupKoin(settings, budgetBackend)
+        setupKoin(settings)
 
         when (budgetBackend) {
             is Lunchmoney -> Application<LunchmoneyTransaction, LunchmoneyInsertTransaction>(settings.mono)
@@ -73,84 +76,83 @@ fun main() {
     }
 }
 
-private fun CoroutineScope.setupKoin(settings: Settings, budgetBackend: BudgetBackend) {
+private fun CoroutineScope.setupKoin(settings: Settings) {
     startKoin {
         modules(
             module {
                 printLogger(Level.ERROR)
-                val telegramChaIds = settings.mono.telegramChatIds
+                single { settings.mcc }
+                single { settings.bot }
+                single { settings.mono }
+                single { this@setupKoin }
 
-                single<ApplicationStartupVerifier> { MonoSettingsVerifier(settings.mono) }
-                single<ApplicationStartupVerifier> { BudgetSettingsVerifier(budgetBackend, settings.mono) }
-                single { PeriodicFetcherFactory(this@setupKoin) }
-                single { MonoWebhookListenerServer(this@setupKoin, settings.mono.apis) }
-                single { TelegramApi(this@setupKoin, settings.bot) }
-                single { TelegramMessageSender(get(), get()) }
-                single { TelegramErrorUnknownErrorHandler(telegramChaIds, get()) }
-                single { DuplicateWebhooksFilter(get()) }
-                single(createdAtStart = true) { MonoAccountsService(get(), settings.mono) }
+                single<ApplicationStartupVerifier> { MonoSettingsVerifier() }
+                single<ApplicationStartupVerifier> { BudgetSettingsVerifier() }
+                single { PeriodicFetcherFactory() }
+                single { MonoWebhookListenerServer() }
+                single { TelegramApi() }
+                single { TelegramMessageSender() }
+                single { TelegramErrorUnknownErrorHandler() }
+                single { DuplicateWebhooksFilter() }
+                single { MonoAccountsService() }
                 single { StringSimilarityPayeeSuggestionService() }
 
-                when (budgetBackend) {
-                    is Lunchmoney -> {
-                        setupForLunchmoney(budgetBackend, settings, telegramChaIds)
-                    }
+                when (settings.budgetBackend) {
+                    is Lunchmoney -> setupForLunchmoney(settings.budgetBackend)
 
-                    is YNAB -> {
-                        setupForYnab(budgetBackend, settings, telegramChaIds)
-                    }
+                    is YNAB -> setupForYnab(settings.budgetBackend)
                 }
             }
         )
     }
 }
 
-private fun Module.setupForLunchmoney(budgetBackend: Lunchmoney, settings: Settings, telegramChaIds: List<Long>) {
+private fun Module.setupForLunchmoney(budgetBackend: Lunchmoney) {
+    single { budgetBackend } bind BudgetBackend::class
+
     single { LunchmoneyApi(budgetBackend.token) }
     single { MonoTransferBetweenAccountsDetector<LunchmoneyTransaction>() }
     single<NewTransactionFactory<LunchmoneyInsertTransaction>> {
-        LunchmoneyNewTransactionFactory(get(), get())
+        LunchmoneyNewTransactionFactory()
     }
     single<BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertTransaction>> {
-        LunchmoneyTransactionCreator(get(), budgetBackend.transferCategoryId.toLong(), get())
+        LunchmoneyTransactionCreator()
     }
     single<TransactionMessageFormatter<LunchmoneyTransaction>> {
-        LunchmoneyTransactionMessageFormatter(get(), get())
+        LunchmoneyTransactionMessageFormatter()
     }
     single<CategorySuggestionService>(createdAtStart = true) {
-        LunchmoneyCategorySuggestionServiceImpl(get(), settings.mcc, get())
+        LunchmoneyCategorySuggestionService()
     }
     single<TelegramCallbackHandler<LunchmoneyTransaction>> {
-        LunchmoneyTelegramCallbackHandler(get(), get(), get(), get(), telegramChaIds)
+        LunchmoneyTelegramCallbackHandler()
     }
 }
 
-private fun Module.setupForYnab(budgetBackend: YNAB, settings: Settings, telegramChaIds: List<Long>) {
+private fun Module.setupForYnab(budgetBackend: YNAB) {
+    single { budgetBackend } bind BudgetBackend::class
+
     single<NewTransactionFactory<YnabSaveTransaction>> {
-        YnabNewTransactionFactory(get(), get(), get(), get(), get())
+        YnabNewTransactionFactory()
     }
     single<CategorySuggestionService>(createdAtStart = true) {
-        YnabCategorySuggestionService(get(), settings.mcc, get())
+        YnabCategorySuggestionService()
     }
     single { MonoTransferBetweenAccountsDetector<YnabTransactionDetail>() }
-    single { YnabApi(budgetBackend) }
+    single { YnabApi() }
     single<BudgetTransactionCreator<YnabTransactionDetail, YnabSaveTransaction>> {
-        YnabTransactionCreator(get(), get(), get())
+        YnabTransactionCreator()
     }
     single<TransactionMessageFormatter<YnabTransactionDetail>> {
-        YnabTransactionMessageFormatter(get())
+        YnabTransactionMessageFormatter()
     }
     single<TelegramCallbackHandler<YnabTransactionDetail>> {
-        YnabTelegramCallbackHandler(get(), get(), get(), get(), telegramChaIds)
+        YnabTelegramCallbackHandler()
     }
     single(createdAtStart = true) {
-        YnabNewTransactionFactory(get(), get(), get(), get(), get())
+        YnabNewTransactionFactory()
     }
     single<ApplicationStartupVerifier> {
-        YnabCurrencyVerifier(
-            budgetBackend,
-            settings.mono,
-            get()
-        )
+        YnabCurrencyVerifier()
     }
 }

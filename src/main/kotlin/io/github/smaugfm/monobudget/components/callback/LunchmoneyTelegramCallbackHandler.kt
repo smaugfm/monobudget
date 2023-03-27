@@ -5,24 +5,18 @@ import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.components.formatter.LunchmoneyTransactionMessageFormatter.Companion.constructTransactionsQuickUrl
-import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
-import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.datetime.toKotlinLocalDate
+import org.koin.core.component.inject
 
-class LunchmoneyTelegramCallbackHandler(
-    telegram: TelegramApi,
-    private val api: LunchmoneyApi,
-    formatter: TransactionMessageFormatter<LunchmoneyTransaction>,
-    categorySuggestingService: CategorySuggestionService,
-    telegramChatIds: List<Long>
-) : TelegramCallbackHandler<LunchmoneyTransaction>(telegram, formatter, categorySuggestingService, telegramChatIds) {
+class LunchmoneyTelegramCallbackHandler : TelegramCallbackHandler<LunchmoneyTransaction>() {
+    private val api: LunchmoneyApi by inject()
+
     override suspend fun updateTransaction(callbackType: TransactionUpdateType): LunchmoneyTransaction {
         val txId = callbackType.transactionId.toLong()
 

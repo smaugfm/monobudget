@@ -3,24 +3,21 @@ package io.github.smaugfm.monobudget.components.transaction.factory
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi
-import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.components.suggestion.StringSimilarityPayeeSuggestionService
 import io.github.smaugfm.monobudget.model.ynab.YnabCleared
 import io.github.smaugfm.monobudget.model.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.util.toLocalDateTime
 import mu.KotlinLogging
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-class YnabNewTransactionFactory(
-    periodicFetcherFactory: PeriodicFetcherFactory,
-    monoAccountsService: MonoAccountsService,
-    private val payeeSuggestingService: StringSimilarityPayeeSuggestionService,
-    categorySuggestingService: CategorySuggestionService,
-    private val ynabApi: YnabApi
-) : NewTransactionFactory<YnabSaveTransaction>(monoAccountsService, categorySuggestingService) {
+class YnabNewTransactionFactory : NewTransactionFactory<YnabSaveTransaction>() {
+    private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
+    private val payeeSuggestingService: StringSimilarityPayeeSuggestionService by inject()
+    private val ynabApi: YnabApi by inject()
+
     private val payeesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) { ynabApi.getPayees() }
 
     override suspend fun create(response: MonoWebhookResponseData): YnabSaveTransaction {

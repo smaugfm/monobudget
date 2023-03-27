@@ -7,17 +7,25 @@ import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.suggestion.StringSimilarityPayeeSuggestionService
 import io.github.smaugfm.monobudget.components.suggestion.YnabCategorySuggestionService
 import io.github.smaugfm.monobudget.components.transaction.factory.YnabNewTransactionFactory
+import io.github.smaugfm.monobudget.model.BudgetBackend
 import io.github.smaugfm.monobudget.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.koin.core.component.inject
+import org.koin.core.context.startKoin
+import org.koin.dsl.bind
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 import java.nio.file.Paths
 import java.util.Currency
 import java.util.concurrent.CancellationException
@@ -25,10 +33,31 @@ import kotlin.io.path.readText
 
 @Disabled
 @OptIn(DelicateCoroutinesApi::class)
-internal class TransformStatementToYnabTransactionTest {
-    private val periodicFetcherFactory = PeriodicFetcherFactory(GlobalScope)
-    private val settings = Settings.load(Paths.get("settings.yml").readText())
-    private val api = YnabApi(settings.budgetBackend as YNAB)
+internal class TransformStatementToYnabTransactionTest : KoinTest {
+    val transform: YnabNewTransactionFactory by inject()
+
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun beforeAll() {
+            val settings = Settings.load(Paths.get("settings.yml").readText())
+            startKoin {
+                modules(
+                    module {
+                        single<CoroutineScope> { GlobalScope }
+                        single { PeriodicFetcherFactory() }
+                        single { settings.mono }
+                        single { settings.budgetBackend as YNAB } bind BudgetBackend::class
+                        single { MonoAccountsService() }
+                        single { YnabApi() }
+                        single { StringSimilarityPayeeSuggestionService() }
+                        single { YnabCategorySuggestionService() }
+                    }
+                )
+            }
+        }
+    }
+
     private val testStatement = MonoWebhookResponseData(
         account = "vasa",
         statementItem = MonoStatementItem(
@@ -58,14 +87,6 @@ internal class TransformStatementToYnabTransactionTest {
     fun testTransform() {
         assertThrows<CancellationException> {
             runBlocking {
-                val transform =
-                    YnabNewTransactionFactory(
-                        periodicFetcherFactory,
-                        MonoAccountsService(periodicFetcherFactory, settings.mono),
-                        StringSimilarityPayeeSuggestionService(),
-                        YnabCategorySuggestionService(periodicFetcherFactory, settings.mcc, api),
-                        YnabApi(settings.budgetBackend as YNAB)
-                    )
                 val transaction = transform.create(testStatement)
                 println("Result: $transaction")
                 this.cancel("Finished.")

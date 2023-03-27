@@ -2,7 +2,6 @@ package io.github.smaugfm.monobudget.components.formatter
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.monobank.model.MonoStatementItem
-import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.model.ynab.YnabCleared
@@ -11,9 +10,7 @@ import io.github.smaugfm.monobudget.util.MCC
 import io.github.smaugfm.monobudget.util.replaceNewLines
 import java.util.Currency
 
-class YnabTransactionMessageFormatter(
-    monoAccountsService: MonoAccountsService
-) : TransactionMessageFormatter<YnabTransactionDetail>(monoAccountsService) {
+class YnabTransactionMessageFormatter : TransactionMessageFormatter<YnabTransactionDetail>() {
 
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,

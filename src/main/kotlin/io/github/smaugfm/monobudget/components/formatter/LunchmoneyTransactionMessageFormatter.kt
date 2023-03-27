@@ -5,7 +5,6 @@ import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobank.model.MonoStatementItem
-import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.model.callback.PressedButtons
@@ -16,12 +15,11 @@ import io.github.smaugfm.monobudget.util.replaceNewLines
 import io.github.smaugfm.monobudget.util.toLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
+import org.koin.core.component.inject
 import java.util.Currency
 
-class LunchmoneyTransactionMessageFormatter(
-    monoAccountsService: MonoAccountsService,
-    private val categorySuggestingService: CategorySuggestionService
-) : TransactionMessageFormatter<LunchmoneyTransaction>(monoAccountsService) {
+class LunchmoneyTransactionMessageFormatter : TransactionMessageFormatter<LunchmoneyTransaction>() {
+    private val categorySuggestingService: CategorySuggestionService by inject()
 
     private val shouldNotifyStatuses = setOf(
         LunchmoneyTransactionStatus.UNCLEARED,

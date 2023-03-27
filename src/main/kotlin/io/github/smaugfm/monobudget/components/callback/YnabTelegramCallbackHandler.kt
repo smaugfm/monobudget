@@ -1,28 +1,17 @@
 package io.github.smaugfm.monobudget.components.callback
 
 import com.elbekd.bot.types.Message
-import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.api.YnabApi
-import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
-import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
+import org.koin.core.component.inject
 
-class YnabTelegramCallbackHandler(
-    telegram: TelegramApi,
-    private val api: YnabApi,
-    formatter: TransactionMessageFormatter<YnabTransactionDetail>,
-    categorySuggestionService: CategorySuggestionService,
-    telegramChatIds: List<Long>
-) : TelegramCallbackHandler<YnabTransactionDetail>(
-    telegram,
-    formatter,
-    categorySuggestionService,
-    telegramChatIds
-) {
+class YnabTelegramCallbackHandler : TelegramCallbackHandler<YnabTransactionDetail>() {
+    private val api: YnabApi by inject()
+
     override suspend fun updateTransaction(callbackType: TransactionUpdateType): YnabTransactionDetail {
         val transactionDetail = api.getTransaction(callbackType.transactionId)
         val saveTransaction = transactionDetail.toSaveTransaction()

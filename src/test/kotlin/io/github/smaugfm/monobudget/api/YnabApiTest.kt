@@ -1,18 +1,24 @@
 package io.github.smaugfm.monobudget.api
 
+import io.github.smaugfm.monobudget.model.BudgetBackend
 import io.github.smaugfm.monobudget.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.model.Settings
 import kotlinx.coroutines.runBlocking
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
+import org.koin.core.component.inject
+import org.koin.core.context.startKoin
+import org.koin.dsl.bind
+import org.koin.dsl.module
+import org.koin.test.KoinTest
 import java.nio.file.Paths
 import kotlin.io.path.readText
 
 @Disabled
-class YnabApiTest {
-    private val settings = Settings.load(Paths.get("settings.yml").readText())
-    private val api = YnabApi(settings.budgetBackend as YNAB)
+class YnabApiTest : KoinTest {
+    private val api: YnabApi by inject()
 
     @Suppress("UNUSED_VARIABLE")
     @Test
@@ -26,6 +32,22 @@ class YnabApiTest {
                     assertDoesNotThrow { api.getAccount(accounts.first().id) }
                     assertDoesNotThrow { api.getAccountTransactions(accounts.first().id) }
                 }
+            }
+        }
+    }
+
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun beforeAll() {
+            val settings = Settings.load(Paths.get("settings.yml").readText())
+            startKoin {
+                modules(
+                    module {
+                        single { settings.budgetBackend as YNAB } bind BudgetBackend::class
+                        single { YnabApi() }
+                    }
+                )
             }
         }
     }

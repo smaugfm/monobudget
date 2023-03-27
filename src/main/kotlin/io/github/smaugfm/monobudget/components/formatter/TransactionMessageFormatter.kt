@@ -11,14 +11,16 @@ import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.model.telegram.MessageWithReplyKeyboard
 import io.github.smaugfm.monobudget.util.formatAmount
 import mu.KotlinLogging
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.Currency
 import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger {}
 
-abstract class TransactionMessageFormatter<TTransaction>(
-    private val monoAccountsService: MonoAccountsService
-) {
+abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
+    private val monoAccountsService: MonoAccountsService by inject()
+
     suspend fun format(monoResponse: MonoWebhookResponseData, transaction: TTransaction): MessageWithReplyKeyboard {
         val msg = formatHTMLStatementMessage(
             monoAccountsService.getAccountCurrency(monoResponse.account)!!,

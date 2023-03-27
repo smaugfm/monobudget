@@ -7,17 +7,18 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.components.transaction.factory.NewTransactionFactory
+import io.github.smaugfm.monobudget.model.BudgetBackend
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-class LunchmoneyTransactionCreator(
-    private val api: LunchmoneyApi,
-    private val transferCategoryId: Long,
-    newTransactionFactory: NewTransactionFactory<LunchmoneyInsertTransaction>
-) : BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertTransaction>(newTransactionFactory) {
+class LunchmoneyTransactionCreator :
+    BudgetTransactionCreator<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
+    private val api: LunchmoneyApi by inject()
+    private val budgetBackend: BudgetBackend.Lunchmoney by inject()
+    private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
     override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = when (maybeTransfer) {
         is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())

@@ -1,8 +1,10 @@
 package io.github.smaugfm.monobudget.util
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.monobudget.components.suggestion.LunchmoneyCategorySuggestionServiceImpl
+import io.github.smaugfm.monobudget.components.suggestion.LunchmoneyCategorySuggestionService
+import io.github.smaugfm.monobudget.model.BudgetBackend
 import io.github.smaugfm.monobudget.model.Settings
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
@@ -11,23 +13,38 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.csv.Csv
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.koin.core.context.startKoin
+import org.koin.dsl.bind
+import org.koin.dsl.module
 import java.nio.file.Paths
-import java.time.format.DateTimeFormatter
 import kotlin.io.path.readText
 
 @Disabled
 @OptIn(DelicateCoroutinesApi::class)
 class Playground {
-    val timeParse =
-        DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
-    val settings = Settings.load(Paths.get("settings.yml").readText())
-    val categorySuggestion = LunchmoneyCategorySuggestionServiceImpl(
-        PeriodicFetcherFactory(GlobalScope),
-        settings.mcc,
-        LunchmoneyApi(settings.budgetBackend.token)
-    )
+    val categorySuggestion = LunchmoneyCategorySuggestionService()
+
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun beforeAll() {
+            val settings = Settings.load(Paths.get("settings.yml").readText())
+            startKoin {
+                modules(
+                    module {
+                        single { settings.budgetBackend as BudgetBackend.YNAB } bind BudgetBackend::class
+                        single { PeriodicFetcherFactory() }
+                        single<CoroutineScope> { GlobalScope }
+                        single { settings.mcc }
+                        single { LunchmoneyApi(settings.budgetBackend.token) }
+                    }
+                )
+            }
+        }
+    }
 
     @Test
     @Disabled

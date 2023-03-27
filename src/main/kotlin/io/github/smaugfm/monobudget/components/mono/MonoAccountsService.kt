@@ -5,15 +5,17 @@ import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.ExperimentalSerializationApi
 import mu.KotlinLogging
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import java.util.Currency
 
 private val log = KotlinLogging.logger { }
 
 @OptIn(ExperimentalSerializationApi::class)
-class MonoAccountsService(
-    fetcherFactory: PeriodicFetcherFactory,
-    private val settings: Settings.MultipleMonoSettings
-) {
+class MonoAccountsService : KoinComponent {
+    private val fetcherFactory: PeriodicFetcherFactory by inject()
+    private val settings: Settings.MultipleMonoSettings by inject()
+
     private val monoAccountsFetcher = fetcherFactory.create(this::class.simpleName!!) {
         settings.apis
             .mapIndexed { index, api ->

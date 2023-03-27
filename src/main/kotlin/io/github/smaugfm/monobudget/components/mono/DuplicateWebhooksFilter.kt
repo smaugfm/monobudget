@@ -5,11 +5,13 @@ import io.github.smaugfm.monobudget.util.SimpleCache
 import io.github.smaugfm.monobudget.util.formatAmount
 import io.github.smaugfm.monobudget.util.pp
 import mu.KotlinLogging
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-class DuplicateWebhooksFilter(private val monoAccountsService: MonoAccountsService) {
-
+class DuplicateWebhooksFilter : KoinComponent {
+    private val monoAccountsService: MonoAccountsService by inject()
     private val webhookResponsesCache = SimpleCache<MonoWebhookResponseData, Unit> {}
 
     fun checkIsDuplicate(webhookResponseData: MonoWebhookResponseData): Boolean {

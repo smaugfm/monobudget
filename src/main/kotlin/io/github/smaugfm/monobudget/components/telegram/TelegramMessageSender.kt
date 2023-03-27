@@ -7,13 +7,15 @@ import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.model.telegram.MessageWithReplyKeyboard
 import mu.KotlinLogging
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-class TelegramMessageSender(
-    private val monoAccountsService: MonoAccountsService,
-    private val telegramApi: TelegramApi
-) {
+class TelegramMessageSender : KoinComponent {
+    private val monoAccountsService: MonoAccountsService by inject()
+    private val telegramApi: TelegramApi by inject()
+
     suspend fun send(monoAccountId: String, newMessage: MessageWithReplyKeyboard) {
         val chatId = monoAccountsService.getTelegramChatIdAccByMono(monoAccountId)
         if (chatId == null) {
