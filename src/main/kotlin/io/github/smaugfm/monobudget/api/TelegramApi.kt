@@ -36,7 +36,7 @@ class TelegramApi(
             messageThreadId = null,
             parseMode = parseMode,
             entities = null,
-            disableWebPagePreview = null,
+            disableWebPagePreview = true,
             disableNotification = disableNotification,
             protectContent = null,
             replyToMessageId = null,
