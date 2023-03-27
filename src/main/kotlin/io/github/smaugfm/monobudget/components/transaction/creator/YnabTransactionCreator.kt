@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.components.transaction
+package io.github.smaugfm.monobudget.components.transaction.creator
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.api.YnabApi

@@ -7,7 +7,9 @@ import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatu
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
-import io.github.smaugfm.monobudget.model.TransactionUpdateType
+import io.github.smaugfm.monobudget.model.callback.ActionCallbackType
+import io.github.smaugfm.monobudget.model.callback.PressedButtons
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.util.MCC
 import io.github.smaugfm.monobudget.util.formatW
 import io.github.smaugfm.monobudget.util.replaceNewLines
@@ -15,7 +17,6 @@ import io.github.smaugfm.monobudget.util.toLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import java.util.Currency
-import kotlin.reflect.KClass
 
 class LunchmoneyTransactionMessageFormatter(
     monoAccountsService: MonoAccountsService,
@@ -55,34 +56,28 @@ class LunchmoneyTransactionMessageFormatter(
 
     override fun getReplyKeyboardPressedButtons(
         transaction: LunchmoneyTransaction,
-        updateType: TransactionUpdateType?
-    ): Set<KClass<out TransactionUpdateType>> {
-        val pressed: MutableSet<KClass<out TransactionUpdateType>> =
-            updateType?.let { mutableSetOf(it::class) } ?: mutableSetOf()
+        callbackType: TransactionUpdateType?
+    ): PressedButtons {
+        val pressed = PressedButtons(callbackType)
 
         if (transaction.categoryId == null) {
-            pressed.add(TransactionUpdateType.Uncategorize::class)
+            pressed(TransactionUpdateType.Uncategorize::class)
         }
         if (transaction.status == LunchmoneyTransactionStatus.UNCLEARED) {
-            pressed.add(TransactionUpdateType.Unapprove::class)
+            pressed(TransactionUpdateType.Unapprove::class)
         }
 
         return pressed
     }
 
-    override fun getReplyKeyboard(
-        transaction: LunchmoneyTransaction,
-        pressed: Set<KClass<out TransactionUpdateType>>
-    ): InlineKeyboardMarkup {
-        return InlineKeyboardMarkup(
+    override fun getReplyKeyboard(transaction: LunchmoneyTransaction, pressed: PressedButtons) = InlineKeyboardMarkup(
+        listOf(
             listOf(
-                listOf(
-                    button<TransactionUpdateType.Unapprove>(pressed),
-                    button<TransactionUpdateType.Uncategorize>(pressed)
-                )
+                TransactionUpdateType.Unapprove.button(pressed),
+                ActionCallbackType.ChooseCategory.button(pressed)
             )
         )
-    }
+    )
 
     companion object {
         fun constructTransactionsQuickUrl(date: LocalDate = Clock.System.now().toLocalDateTime().date): String {

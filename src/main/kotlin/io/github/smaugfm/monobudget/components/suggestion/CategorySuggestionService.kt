@@ -6,16 +6,16 @@ import mu.KotlinLogging
 
 private val log = KotlinLogging.logger { }
 
-sealed class CategorySuggestionService(
+abstract class CategorySuggestionService(
     private val mccOverride: Settings.MccOverride
 ) {
-    protected abstract suspend fun categoryIdByName(categoryName: String): String?
-
+    abstract suspend fun categoryIdByName(categoryName: String): String?
     abstract suspend fun categoryNameById(categoryId: String?): String?
+    abstract suspend fun categoryIdToNameList(): List<Pair<String, String>>
 
-    fun categoryNameByMcc(mcc: Int): String? {
-        return mccOverride.mccToCategoryName[mcc] ?: categoryNameByMccGroup(mcc)
-    }
+    fun categoryNameByMcc(mcc: Int): String? = mccOverride.mccToCategoryName[mcc] ?: categoryNameByMccGroup(mcc)
+
+    suspend fun categoryIdByMcc(mcc: Int): String? = categoryNameByMcc(mcc)?.let { categoryIdByName(it) }
 
     private fun categoryNameByMccGroup(mcc: Int): String? {
         val mccObj = MCC.map[mcc]
@@ -29,6 +29,4 @@ sealed class CategorySuggestionService(
         }
         return null
     }
-
-    suspend fun categoryIdByMcc(mcc: Int): String? = categoryNameByMcc(mcc)?.let { categoryIdByName(it) }
 }

@@ -1,9 +1,9 @@
-package io.github.smaugfm.monobudget.components.transaction
+package io.github.smaugfm.monobudget.components.transaction.creator
 
 import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.components.transaction.factory.NewTransactionFactory
 
-sealed class BudgetTransactionCreator<TTransaction, TNewTransaction>(
+abstract class BudgetTransactionCreator<TTransaction, TNewTransaction>(
     protected val newTransactionFactory: NewTransactionFactory<TNewTransaction>
 ) {
     abstract suspend fun create(maybeTransfer: MaybeTransfer<TTransaction>): TTransaction

@@ -1,13 +1,13 @@
 package io.github.smaugfm.monobudget.components.formatter
 
-import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.model.TransactionUpdateType
+import io.github.smaugfm.monobudget.model.callback.PressedButtons
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.model.telegram.MessageWithReplyKeyboard
 import io.github.smaugfm.monobudget.util.formatAmount
 import mu.KotlinLogging
@@ -16,7 +16,7 @@ import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger {}
 
-sealed class TransactionMessageFormatter<TTransaction>(
+abstract class TransactionMessageFormatter<TTransaction>(
     private val monoAccountsService: MonoAccountsService
 ) {
     suspend fun format(monoResponse: MonoWebhookResponseData, transaction: TTransaction): MessageWithReplyKeyboard {
@@ -25,8 +25,7 @@ sealed class TransactionMessageFormatter<TTransaction>(
             monoResponse.statementItem,
             transaction
         )
-        val pressed = getReplyKeyboardPressedButtons(transaction)
-        val markup = getReplyKeyboard(transaction, pressed)
+        val markup = getReplyKeyboard(transaction)
         val notify = shouldNotify(transaction)
 
         return MessageWithReplyKeyboard(
@@ -36,17 +35,19 @@ sealed class TransactionMessageFormatter<TTransaction>(
         )
     }
 
+    fun getReplyKeyboard(transaction: TTransaction): InlineKeyboardMarkup {
+        val pressed = getReplyKeyboardPressedButtons(transaction)
+        return getReplyKeyboard(transaction, pressed)
+    }
+
     abstract fun shouldNotify(transaction: TTransaction): Boolean
 
     abstract fun getReplyKeyboardPressedButtons(
         transaction: TTransaction,
-        updateType: TransactionUpdateType? = null
-    ): Set<KClass<out TransactionUpdateType>>
+        callbackType: TransactionUpdateType? = null
+    ): PressedButtons
 
-    abstract fun getReplyKeyboard(
-        transaction: TTransaction,
-        pressed: Set<KClass<out TransactionUpdateType>>
-    ): InlineKeyboardMarkup
+    protected abstract fun getReplyKeyboard(transaction: TTransaction, pressed: PressedButtons): InlineKeyboardMarkup
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
@@ -55,7 +56,6 @@ sealed class TransactionMessageFormatter<TTransaction>(
     ): String
 
     companion object {
-
         @Suppress("LongParameterList")
         @JvmStatic
         internal fun formatHTMLStatementMessage(
@@ -124,12 +124,6 @@ sealed class TransactionMessageFormatter<TTransaction>(
         protected fun formatAmountWithCurrency(amount: Long, currency: Currency) =
             currency.formatAmount(amount) + currency.currencyCode
 
-        @JvmStatic
-        internal inline fun <reified T : TransactionUpdateType> button(
-            pressed: Set<KClass<out TransactionUpdateType>>
-        ) = InlineKeyboardButton(
-            TransactionUpdateType.buttonText<T>(T::class in pressed),
-            callbackData = TransactionUpdateType.serialize<T>()
-        )
+        internal fun <T : TransactionUpdateType> callbackData(cls: KClass<out T>) = cls.simpleName!!
     }
 }

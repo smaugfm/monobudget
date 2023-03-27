@@ -47,12 +47,20 @@ class TelegramApi(
         }
     }
 
-    @Suppress("LongParameterList")
+    suspend fun editKeyboard(chatId: ChatId, messageId: Long, replyMarkup: InlineKeyboardMarkup) {
+        bot.editMessageReplyMarkup(
+            chatId,
+            messageId,
+            null,
+            replyMarkup
+        )
+    }
+
     suspend fun editMessage(
         chatId: ChatId,
         messageId: Long,
         text: String,
-        parseMode: ParseMode,
+        parseMode: ParseMode?,
         replyMarkup: InlineKeyboardMarkup
     ) {
         bot.editMessageText(
@@ -62,7 +70,7 @@ class TelegramApi(
             text,
             parseMode,
             null,
-            false,
+            true,
             replyMarkup
         ).also {
             log.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup.pp()}" }

@@ -7,7 +7,7 @@ import io.github.smaugfm.monobudget.components.mono.DuplicateWebhooksFilter
 import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.components.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.components.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.components.transaction.BudgetTransactionCreator
+import io.github.smaugfm.monobudget.components.transaction.creator.BudgetTransactionCreator
 import io.github.smaugfm.monobudget.components.verification.ApplicationStartupVerifier
 import io.github.smaugfm.monobudget.model.Settings
 import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer

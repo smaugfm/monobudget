@@ -15,6 +15,10 @@ class YnabCategorySuggestionService(
         }
     }
 
+    override suspend fun categoryIdToNameList(): List<Pair<String, String>> = categoriesFetcher.getData().map {
+        it.id to it.name
+    }
+
     override suspend fun categoryNameById(categoryId: String?): String? = if (categoryId == null) {
         null
     } else {

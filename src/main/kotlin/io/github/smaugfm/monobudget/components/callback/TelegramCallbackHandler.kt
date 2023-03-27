@@ -2,21 +2,30 @@ package io.github.smaugfm.monobudget.components.callback
 
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.CallbackQuery
-import com.elbekd.bot.types.InlineKeyboardButton
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
+import com.elbekd.bot.types.MessageEntity
 import com.elbekd.bot.types.ParseMode
 import io.github.smaugfm.monobudget.api.TelegramApi
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
-import io.github.smaugfm.monobudget.model.TransactionUpdateType
+import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
+import io.github.smaugfm.monobudget.model.callback.ActionCallbackType
+import io.github.smaugfm.monobudget.model.callback.ActionCallbackType.ChooseCategory
+import io.github.smaugfm.monobudget.model.callback.CallbackType
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType.MakePayee
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType.Unapprove
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType.Uncategorize
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType.UpdateCategory
+import io.ktor.util.logging.error
 import mu.KotlinLogging
-import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger {}
 
-sealed class TelegramCallbackHandler<TTransaction>(
+abstract class TelegramCallbackHandler<TTransaction>(
     protected val telegram: TelegramApi,
     private val formatter: TransactionMessageFormatter<TTransaction>,
+    protected val categorySuggestionService: CategorySuggestionService,
     private val telegramChatIds: List<Long>
 ) {
     suspend fun handle(callbackQuery: CallbackQuery) {
@@ -25,14 +34,55 @@ sealed class TelegramCallbackHandler<TTransaction>(
             return
         }
 
-        val (callbackQueryId, transactionUpdateType, message) = extractFromCallbackQuery(callbackQuery) ?: return
+        val (callbackQueryId, callbackType, message) =
+            parseCallbackQuery(callbackQuery) ?: return
 
-        val updatedTransaction = updateTransaction(transactionUpdateType).also {
-            telegram.answerCallbackQuery(callbackQueryId)
+        when (callbackType) {
+            is ActionCallbackType ->
+                handleAction(callbackType, message)
+
+            is TransactionUpdateType ->
+                handleUpdate(callbackType, callbackQueryId, message)
+        }
+    }
+
+    private suspend fun handleAction(callbackType: ActionCallbackType, message: Message) {
+        when (callbackType) {
+            is ChooseCategory ->
+                telegram.editKeyboard(
+                    ChatId.IntegerId(message.chat.id),
+                    message.messageId,
+                    categoriesInlineKeyboard(
+                        categorySuggestionService.categoryIdToNameList()
+                    )
+                )
+        }
+    }
+
+    private fun categoriesInlineKeyboard(categoryIdToNameList: List<Pair<String, String>>) = InlineKeyboardMarkup(
+        categoryIdToNameList
+            .zip(categoryIdToNameList.subList(1, categoryIdToNameList.size))
+            .filterIndexed { i, _ -> i % 2 == 0 }
+            .map { pair ->
+                pair.toList().map { (id, name) ->
+                    UpdateCategory.button(id, name)
+                }
+            }
+    )
+
+    private suspend fun handleUpdate(callbackType: TransactionUpdateType, callbackQueryId: String, message: Message) {
+        val updatedTransaction = updateTransaction(callbackType).also {
+            try {
+                telegram.answerCallbackQuery(callbackQueryId)
+            } catch (e: Throwable) {
+                log.error(e)
+            }
         }
 
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
-        val updatedMarkup = updateMarkupKeyboard(updatedTransaction, transactionUpdateType, message.replyMarkup!!)
+
+        val updatedMarkup =
+            formatter.getReplyKeyboard(updatedTransaction)
 
         if (stripHTMLTagsFromMessage(updatedText) != message.text ||
             updatedMarkup != message.replyMarkup
@@ -49,13 +99,13 @@ sealed class TelegramCallbackHandler<TTransaction>(
         }
     }
 
-    protected abstract suspend fun updateTransaction(type: TransactionUpdateType): TTransaction
+    protected abstract suspend fun updateTransaction(callbackType: TransactionUpdateType): TTransaction
     protected abstract suspend fun updateHTMLStatementMessage(
         updatedTransaction: TTransaction,
         oldMessage: Message
     ): String
 
-    private suspend fun extractFromCallbackQuery(callbackQuery: CallbackQuery): CallbackQueryData? {
+    private suspend fun parseCallbackQuery(callbackQuery: CallbackQuery): TransactionUpdateCallbackQueryWrapper? {
         val callbackQueryId = callbackQuery.id
         val data = callbackQueryData(callbackQuery)
         val message = callbackQueryMessage(callbackQuery)
@@ -64,8 +114,8 @@ sealed class TelegramCallbackHandler<TTransaction>(
             return null
         }
 
-        val transactionUpdateType = TransactionUpdateType.deserialize(data, message)
-        if (transactionUpdateType == null) {
+        val callbackType = deserializeCallbackType(data, message)
+        if (callbackType == null) {
             telegram.answerCallbackQuery(
                 callbackQueryId,
                 TelegramApi.UNKNOWN_ERROR_MSG
@@ -73,7 +123,7 @@ sealed class TelegramCallbackHandler<TTransaction>(
             return null
         }
 
-        return CallbackQueryData(callbackQueryId, transactionUpdateType, message)
+        return TransactionUpdateCallbackQueryWrapper(callbackQueryId, callbackType, message)
     }
 
     private fun callbackQueryMessage(callbackQuery: CallbackQuery): Message? =
@@ -85,42 +135,63 @@ sealed class TelegramCallbackHandler<TTransaction>(
             ?: log.warn { "Received Telegram callbackQuery with empty data.\n$callbackQuery" }
                 .let { return null }
 
-    private fun updateMarkupKeyboard(
-        updatedTransaction: TTransaction,
-        transactionUpdateType: TransactionUpdateType,
-        oldKeyboard: InlineKeyboardMarkup
-    ): InlineKeyboardMarkup = basedOnOldKeyboard(
-        oldKeyboard,
-        formatter.getReplyKeyboardPressedButtons(updatedTransaction, transactionUpdateType)
-    )
-
-    private fun basedOnOldKeyboard(
-        oldKeyboard: InlineKeyboardMarkup,
-        pressed: Set<KClass<out TransactionUpdateType>>
-    ): InlineKeyboardMarkup {
-        return oldKeyboard.inlineKeyboard.map { outer ->
-            outer.map { oldButton ->
-                val cls =
-                    TransactionUpdateType::class.sealedSubclasses.find { it.simpleName == oldButton.callbackData }!!
-                InlineKeyboardButton(
-                    TransactionUpdateType.buttonText(
-                        cls,
-                        cls in pressed
-                    ),
-                    callbackData = TransactionUpdateType.serialize(cls)
-                )
-            }
-        }.let(::InlineKeyboardMarkup)
-    }
-
     private fun stripHTMLTagsFromMessage(messageText: String): String {
         val replaceHtml = Regex("<.*?>")
         return replaceHtml.replace(messageText, "")
     }
 
-    private data class CallbackQueryData(
+    private data class TransactionUpdateCallbackQueryWrapper(
         val callbackQueryId: String,
-        val type: TransactionUpdateType,
+        val updateType: CallbackType,
         val message: Message
     )
+
+    companion object {
+        private fun deserializeCallbackType(callbackData: String, message: Message): CallbackType? {
+            val cls =
+                CallbackType.classFromCallbackData(callbackData)
+
+            val payee = extractPayee(message) ?: return null
+            val transactionId = extractTransactionId(message.text!!)
+
+            return when (cls) {
+                Uncategorize::class ->
+                    Uncategorize(transactionId)
+
+                Unapprove::class ->
+                    Unapprove(transactionId)
+
+                MakePayee::class ->
+                    MakePayee(transactionId, payee)
+
+                ChooseCategory::class ->
+                    ChooseCategory(transactionId)
+
+                UpdateCategory::class ->
+                    UpdateCategory(
+                        transactionId,
+                        UpdateCategory
+                            .extractCategoryIdFromCallbackData(callbackData)
+                    )
+
+                else -> throw IllegalArgumentException(
+                    "Unknown class CallbackType: ${cls?.simpleName}"
+                )
+            }
+        }
+
+        private fun extractPayee(message: Message): String? {
+            val text = message.text!!
+            val payee =
+                message.entities.find { it.type == MessageEntity.Type.BOLD }?.run {
+                    text.substring(offset, offset + length)
+                } ?: return null
+
+            return payee
+        }
+
+        internal fun extractTransactionId(text: String): String {
+            return text.substring(text.lastIndexOf('\n')).trim()
+        }
+    }
 }

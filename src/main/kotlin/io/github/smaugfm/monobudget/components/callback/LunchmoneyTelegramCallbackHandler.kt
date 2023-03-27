@@ -12,7 +12,7 @@ import io.github.smaugfm.monobudget.components.formatter.TransactionMessageForma
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
 import io.github.smaugfm.monobudget.components.suggestion.CategorySuggestionService
-import io.github.smaugfm.monobudget.model.TransactionUpdateType
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.datetime.toKotlinLocalDate
 
@@ -20,19 +20,25 @@ class LunchmoneyTelegramCallbackHandler(
     telegram: TelegramApi,
     private val api: LunchmoneyApi,
     formatter: TransactionMessageFormatter<LunchmoneyTransaction>,
-    private val categorySuggestingService: CategorySuggestionService,
+    categorySuggestingService: CategorySuggestionService,
     telegramChatIds: List<Long>
-) : TelegramCallbackHandler<LunchmoneyTransaction>(telegram, formatter, telegramChatIds) {
-    override suspend fun updateTransaction(type: TransactionUpdateType): LunchmoneyTransaction {
-        val txId = type.transactionId.toLong()
+) : TelegramCallbackHandler<LunchmoneyTransaction>(telegram, formatter, categorySuggestingService, telegramChatIds) {
+    override suspend fun updateTransaction(callbackType: TransactionUpdateType): LunchmoneyTransaction {
+        val txId = callbackType.transactionId.toLong()
 
-        val updateTransaction = when (type) {
+        val updateTransaction = when (callbackType) {
             is TransactionUpdateType.MakePayee -> error("Not supported for Lunchmoney")
             is TransactionUpdateType.Unapprove -> LunchmoneyUpdateTransaction(
                 status = LunchmoneyTransactionStatus.UNCLEARED
             )
 
-            is TransactionUpdateType.Uncategorize -> LunchmoneyUpdateTransaction(categoryId = null)
+            is TransactionUpdateType.Uncategorize ->
+                LunchmoneyUpdateTransaction(categoryId = null)
+
+            is TransactionUpdateType.UpdateCategory -> LunchmoneyUpdateTransaction(
+                categoryId = callbackType.categoryId.toLong(),
+                status = LunchmoneyTransactionStatus.CLEARED
+            )
         }
 
         api.updateTransaction(
@@ -61,7 +67,8 @@ class LunchmoneyTelegramCallbackHandler(
             description,
             mcc,
             currency,
-            categorySuggestingService.categoryNameById(updatedTransaction.categoryId?.toString()) ?: "",
+            categorySuggestionService
+                .categoryNameById(updatedTransaction.categoryId?.toString()) ?: "",
             updatedTransaction.payee,
             transactionId,
             constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate())

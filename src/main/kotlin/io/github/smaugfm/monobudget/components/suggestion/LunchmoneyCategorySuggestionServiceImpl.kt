@@ -14,6 +14,10 @@ class LunchmoneyCategorySuggestionServiceImpl(
         api.getAllCategories().awaitSingle()
     }
 
+    override suspend fun categoryIdToNameList(): List<Pair<String, String>> = categoriesFetcher.getData().map {
+        it.id.toString() to it.name
+    }
+
     override suspend fun categoryNameById(categoryId: String?): String? {
         if (categoryId == null) {
             return null

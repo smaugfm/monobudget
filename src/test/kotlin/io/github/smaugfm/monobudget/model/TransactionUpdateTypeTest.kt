@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.model
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import io.github.smaugfm.monobudget.components.callback.TelegramCallbackHandler.Companion.extractTransactionId
 import org.junit.jupiter.api.Test
 
 class TransactionUpdateTypeTest {
@@ -9,7 +10,7 @@ class TransactionUpdateTypeTest {
     @Test
     fun extractIdFromMessageText() {
         assertThat(
-            TransactionUpdateType.extractTransactionId(
+            extractTransactionId(
                 """ Нова транзакція Monobank додана в Lunchmoney
                 💳 Інтернет-банк PUMBOnline
                       Банківський переказ грошових доручень / Грошові перекази (4829)

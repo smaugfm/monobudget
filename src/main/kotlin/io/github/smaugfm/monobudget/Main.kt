@@ -20,9 +20,9 @@ import io.github.smaugfm.monobudget.components.suggestion.StringSimilarityPayeeS
 import io.github.smaugfm.monobudget.components.suggestion.YnabCategorySuggestionService
 import io.github.smaugfm.monobudget.components.telegram.TelegramErrorUnknownErrorHandler
 import io.github.smaugfm.monobudget.components.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.components.transaction.BudgetTransactionCreator
-import io.github.smaugfm.monobudget.components.transaction.LunchmoneyTransactionCreator
-import io.github.smaugfm.monobudget.components.transaction.YnabTransactionCreator
+import io.github.smaugfm.monobudget.components.transaction.creator.BudgetTransactionCreator
+import io.github.smaugfm.monobudget.components.transaction.creator.LunchmoneyTransactionCreator
+import io.github.smaugfm.monobudget.components.transaction.creator.YnabTransactionCreator
 import io.github.smaugfm.monobudget.components.transaction.factory.LunchmoneyNewTransactionFactory
 import io.github.smaugfm.monobudget.components.transaction.factory.NewTransactionFactory
 import io.github.smaugfm.monobudget.components.transaction.factory.YnabNewTransactionFactory
@@ -141,7 +141,7 @@ private fun Module.setupForYnab(budgetBackend: YNAB, settings: Settings, telegra
         YnabTransactionMessageFormatter(get())
     }
     single<TelegramCallbackHandler<YnabTransactionDetail>> {
-        YnabTelegramCallbackHandler(get(), get(), get(), telegramChaIds)
+        YnabTelegramCallbackHandler(get(), get(), get(), get(), telegramChaIds)
     }
     single(createdAtStart = true) {
         YnabNewTransactionFactory(get(), get(), get(), get(), get())

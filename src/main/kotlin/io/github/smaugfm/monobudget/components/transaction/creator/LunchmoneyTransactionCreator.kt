@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.components.transaction
+package io.github.smaugfm.monobudget.components.transaction.creator
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction

@@ -3,13 +3,13 @@ package io.github.smaugfm.monobudget.components.formatter
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.model.TransactionUpdateType
+import io.github.smaugfm.monobudget.model.callback.PressedButtons
+import io.github.smaugfm.monobudget.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.model.ynab.YnabCleared
 import io.github.smaugfm.monobudget.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.util.MCC
 import io.github.smaugfm.monobudget.util.replaceNewLines
 import java.util.Currency
-import kotlin.reflect.KClass
 
 class YnabTransactionMessageFormatter(
     monoAccountsService: MonoAccountsService
@@ -40,33 +40,27 @@ class YnabTransactionMessageFormatter(
 
     override fun getReplyKeyboardPressedButtons(
         transaction: YnabTransactionDetail,
-        updateType: TransactionUpdateType?
-    ): Set<KClass<out TransactionUpdateType>> {
-        val pressed: MutableSet<KClass<out TransactionUpdateType>> =
-            updateType?.let { mutableSetOf(it::class) } ?: mutableSetOf()
+        callbackType: TransactionUpdateType?
+    ): PressedButtons {
+        val pressed = PressedButtons(callbackType)
 
         if (transaction.categoryName.isNullOrEmpty()) {
-            pressed.add(TransactionUpdateType.Uncategorize::class)
+            pressed(TransactionUpdateType.Uncategorize::class)
         }
         if (transaction.cleared == YnabCleared.Uncleared) {
-            pressed.add(TransactionUpdateType.Unapprove::class)
+            pressed(TransactionUpdateType.Unapprove::class)
         }
 
         return pressed
     }
 
-    override fun getReplyKeyboard(
-        transaction: YnabTransactionDetail,
-        pressed: Set<KClass<out TransactionUpdateType>>
-    ): InlineKeyboardMarkup {
-        return InlineKeyboardMarkup(
+    override fun getReplyKeyboard(transaction: YnabTransactionDetail, pressed: PressedButtons) = InlineKeyboardMarkup(
+        listOf(
             listOf(
-                listOf(
-                    button<TransactionUpdateType.Unapprove>(pressed),
-                    button<TransactionUpdateType.Uncategorize>(pressed),
-                    button<TransactionUpdateType.MakePayee>(pressed)
-                )
+                TransactionUpdateType.Unapprove.button(pressed),
+                TransactionUpdateType.Uncategorize.button(pressed),
+                TransactionUpdateType.MakePayee.button(pressed)
             )
         )
-    }
+    )
 }
