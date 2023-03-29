@@ -35,12 +35,8 @@ dependencies {
 
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("io.github.smaugfm:monobank:0.0.1-SNAPSHOT") {
-        isChanging = true
-    }
-    implementation("io.github.smaugfm:lunchmoney:0.0.1-SNAPSHOT") {
-        isChanging = true
-    }
+    implementation("io.github.smaugfm:monobank:0.0.1")
+    implementation("io.github.smaugfm:lunchmoney:0.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("io.insert-koin:koin-core:$koin")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
