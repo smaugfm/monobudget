@@ -14,7 +14,7 @@ import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-@Single
+@Single(createdAtStart = true)
 class YnabNewTransactionFactory : NewTransactionFactory<YnabSaveTransaction>() {
     private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
     private val payeeSuggestingService: StringSimilarityPayeeSuggestionService by inject()

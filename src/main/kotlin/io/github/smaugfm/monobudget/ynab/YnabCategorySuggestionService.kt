@@ -5,7 +5,7 @@ import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import org.koin.core.annotation.Single
 import org.koin.core.component.inject
 
-@Single
+@Single(createdAtStart = true)
 class YnabCategorySuggestionService : CategorySuggestionService() {
     private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
     private val api: YnabApi by inject()

@@ -7,7 +7,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import org.koin.core.annotation.Single
 import org.koin.core.component.inject
 
-@Single
+@Single(createdAtStart = true)
 class LunchmoneyCategorySuggestionService : CategorySuggestionService() {
     private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
     private val api: LunchmoneyApi by inject()

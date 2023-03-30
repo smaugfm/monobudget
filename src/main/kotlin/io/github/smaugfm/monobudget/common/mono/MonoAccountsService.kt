@@ -11,7 +11,7 @@ import java.util.Currency
 
 private val log = KotlinLogging.logger { }
 
-@Single
+@Single(createdAtStart = true)
 @OptIn(ExperimentalSerializationApi::class)
 class MonoAccountsService : KoinComponent {
     private val fetcherFactory: PeriodicFetcherFactory by inject()
