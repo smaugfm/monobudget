@@ -1,16 +1,15 @@
 package io.github.smaugfm.monobudget
 
-import io.github.smaugfm.monobudget.api.TelegramApi
-import io.github.smaugfm.monobudget.components.callback.TelegramCallbackHandler
-import io.github.smaugfm.monobudget.components.formatter.TransactionMessageFormatter
-import io.github.smaugfm.monobudget.components.mono.DuplicateWebhooksFilter
-import io.github.smaugfm.monobudget.components.mono.MonoTransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.components.telegram.TelegramErrorUnknownErrorHandler
-import io.github.smaugfm.monobudget.components.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.components.transaction.creator.BudgetTransactionCreator
-import io.github.smaugfm.monobudget.components.verification.ApplicationStartupVerifier
-import io.github.smaugfm.monobudget.model.Settings
-import io.github.smaugfm.monobudget.server.MonoWebhookListenerServer
+import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.mono.MonoWebhookListenerServer
+import io.github.smaugfm.monobudget.common.telegram.TelegramApi
+import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
+import io.github.smaugfm.monobudget.common.telegram.TelegramErrorUnknownErrorHandler
+import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
+import io.github.smaugfm.monobudget.common.telegram.TelegramWebhookResponseChecker
+import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
+import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
 import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -20,19 +19,19 @@ import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
 
-class Application<TTransaction, TNewTransaction>(private val monoSettings: Settings.MultipleMonoSettings) :
+class Application<TTransaction, TNewTransaction> :
     KoinComponent {
     private val telegramApi by inject<TelegramApi>()
     private val webhooksListener by inject<MonoWebhookListenerServer>()
 
-    private val transactionCreator by inject<BudgetTransactionCreator<TTransaction, TNewTransaction>>()
+    private val transactionCreator by inject<TransactionFactory<TTransaction, TNewTransaction>>()
     private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
     private val monoTransferDetector by inject<MonoTransferBetweenAccountsDetector<TTransaction>>()
 
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val processError by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
-    private val webhookResponseDuplicateFilter by inject<DuplicateWebhooksFilter>()
+    private val webhookResponseChecker by inject<TelegramWebhookResponseChecker>()
 
     suspend fun run(setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
         runStartupChecks()
@@ -52,15 +51,7 @@ class Application<TTransaction, TNewTransaction>(private val monoSettings: Setti
             webhookPort
         ) handler@{ responseData ->
             try {
-                if (!monoSettings.monoAccountsIds.contains(responseData.account)) {
-                    log.info {
-                        "Skipping transaction from Monobank " +
-                            "accountId=${responseData.account} because this account is not configured."
-                    }
-                    return@handler
-                }
-
-                if (webhookResponseDuplicateFilter.checkIsDuplicate(responseData)) {
+                if (!webhookResponseChecker.check(responseData)) {
                     return@handler
                 }
 

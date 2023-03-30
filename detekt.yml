@@ -19,7 +19,7 @@ naming:
     active: true
     excludes: [ '**/models.kt', '**/models/ynab/Ynab*.kt' ]
   EnumNaming:
-    excludes: [ '**/models/ynab/Ynab*.kt']
+    excludes: [ '**/models/ynab/Ynab*.kt' ]
 
 complexity:
   LargeClass:

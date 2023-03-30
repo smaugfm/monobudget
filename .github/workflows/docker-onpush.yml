@@ -15,7 +15,7 @@ jobs:
           java-version: 11
           cache: gradle
       - name: docker login
-        run: | 
+        run: |
           docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
       - name: Get current date
         id: date

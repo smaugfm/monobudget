@@ -1,8 +1,8 @@
 package io.github.smaugfm.monobudget.api
 
-import io.github.smaugfm.monobudget.model.BudgetBackend
-import io.github.smaugfm.monobudget.model.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.model.Settings
+import io.github.smaugfm.monobudget.common.model.BudgetBackend
+import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
+import io.github.smaugfm.monobudget.ynab.YnabApi
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
@@ -40,7 +40,7 @@ class YnabApiTest : KoinTest {
         @BeforeAll
         @JvmStatic
         fun beforeAll() {
-            val settings = Settings.load(Paths.get("settings.yml").readText())
+            val settings = io.github.smaugfm.monobudget.common.model.Settings.load(Paths.get("settings.yml").readText())
             startKoin {
                 modules(
                     module {

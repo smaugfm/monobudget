@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.model
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import io.github.smaugfm.monobudget.components.callback.TelegramCallbackHandler.Companion.extractTransactionId
+import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler.Companion.extractTransactionId
 import org.junit.jupiter.api.Test
 
 class TransactionUpdateTypeTest {

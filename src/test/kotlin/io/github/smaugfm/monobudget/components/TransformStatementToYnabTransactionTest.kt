@@ -2,15 +2,14 @@ package io.github.smaugfm.monobudget.components
 
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.api.YnabApi
-import io.github.smaugfm.monobudget.components.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.components.suggestion.StringSimilarityPayeeSuggestionService
-import io.github.smaugfm.monobudget.components.suggestion.YnabCategorySuggestionService
-import io.github.smaugfm.monobudget.components.transaction.factory.YnabNewTransactionFactory
-import io.github.smaugfm.monobudget.model.BudgetBackend
-import io.github.smaugfm.monobudget.model.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.model.Settings
-import io.github.smaugfm.monobudget.util.PeriodicFetcherFactory
+import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
+import io.github.smaugfm.monobudget.common.misc.StringSimilarityPayeeSuggestionService
+import io.github.smaugfm.monobudget.common.model.BudgetBackend
+import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
+import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.ynab.YnabApi
+import io.github.smaugfm.monobudget.ynab.YnabCategorySuggestionService
+import io.github.smaugfm.monobudget.ynab.YnabNewTransactionFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -40,7 +39,7 @@ internal class TransformStatementToYnabTransactionTest : KoinTest {
         @BeforeAll
         @JvmStatic
         fun beforeAll() {
-            val settings = Settings.load(Paths.get("settings.yml").readText())
+            val settings = io.github.smaugfm.monobudget.common.model.Settings.load(Paths.get("settings.yml").readText())
             startKoin {
                 modules(
                     module {
