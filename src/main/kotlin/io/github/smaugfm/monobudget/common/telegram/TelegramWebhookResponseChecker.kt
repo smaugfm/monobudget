@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.common.telegram
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.common.misc.SimpleCache
+import io.github.smaugfm.monobudget.common.model.Settings
 import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.common.util.formatAmount
 import io.github.smaugfm.monobudget.common.util.pp
@@ -16,7 +17,7 @@ private val log = KotlinLogging.logger {}
 class TelegramWebhookResponseChecker : KoinComponent {
     private val monoAccountsService: MonoAccountsService by inject()
     private val webhookResponsesCache = SimpleCache<MonoWebhookResponseData, Unit> {}
-    private val monoSettings: io.github.smaugfm.monobudget.common.model.Settings.MultipleMonoSettings by inject()
+    private val monoSettings: Settings.MultipleMonoSettings by inject()
 
     fun check(responseData: MonoWebhookResponseData): Boolean =
         checkValid(responseData) && checkNotDuplicate(responseData)
@@ -36,7 +37,7 @@ class TelegramWebhookResponseChecker : KoinComponent {
     private fun checkNotDuplicate(webhookResponseData: MonoWebhookResponseData): Boolean {
         if (!webhookResponsesCache.alreadyHasKey(webhookResponseData, Unit)) {
             log.info { "Duplicate ${MonoWebhookResponseData::class.simpleName} $webhookResponseData" }
-            return true
+            return false
         }
 
         with(webhookResponseData) {
@@ -54,6 +55,6 @@ class TelegramWebhookResponseChecker : KoinComponent {
             }
         }
 
-        return false
+        return true
     }
 }

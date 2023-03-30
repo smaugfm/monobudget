@@ -12,12 +12,12 @@ sealed class BudgetBackend {
     data class YNAB(
         override val token: String,
         val ynabBudgetId: String
-    ) : io.github.smaugfm.monobudget.common.model.BudgetBackend()
+    ) : BudgetBackend()
 
     @Serializable
     @SerialName("lunchmoney")
     data class Lunchmoney(
         override val token: String,
         val transferCategoryId: String
-    ) : io.github.smaugfm.monobudget.common.model.BudgetBackend()
+    ) : BudgetBackend()
 }

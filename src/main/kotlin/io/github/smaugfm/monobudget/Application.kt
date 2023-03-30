@@ -77,7 +77,9 @@ class Application<TTransaction, TNewTransaction> :
 
     private suspend fun runStartupChecks() {
         try {
-            getKoin().getAll<ApplicationStartupVerifier>().forEach { it.verify() }
+            getKoin().getAll<ApplicationStartupVerifier>().forEach {
+                it.verify()
+            }
         } catch (e: Throwable) {
             log.error(e) { "Failed to start application. Exiting..." }
             exitProcess(1)

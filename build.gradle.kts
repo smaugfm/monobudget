@@ -1,5 +1,6 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
+import org.codehaus.plexus.util.Os
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
@@ -66,6 +67,10 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
     testImplementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:2.0.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit")
+
+    if (Os.isArch("aarch64")) {
+        runtimeOnly("io.netty:netty-resolver-dns-native-macos:4.1.90.Final:osx-aarch_64")
+    }
 }
 
 configurations.all {

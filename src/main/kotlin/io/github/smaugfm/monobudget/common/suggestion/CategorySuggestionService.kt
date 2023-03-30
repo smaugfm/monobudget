@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.common.suggestion
 
 import io.github.smaugfm.monobudget.common.misc.MCC
+import io.github.smaugfm.monobudget.common.model.Settings
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -8,7 +9,7 @@ import org.koin.core.component.inject
 private val log = KotlinLogging.logger { }
 
 abstract class CategorySuggestionService : KoinComponent {
-    private val mccOverride: io.github.smaugfm.monobudget.common.model.Settings.MccOverride by inject()
+    private val mccOverride: Settings.MccOverride by inject()
 
     abstract suspend fun categoryIdByName(categoryName: String): String?
     abstract suspend fun categoryNameById(categoryId: String?): String?

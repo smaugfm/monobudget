@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.common.mono
 
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
+import io.github.smaugfm.monobudget.common.model.Settings
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.ExperimentalSerializationApi
 import mu.KotlinLogging
@@ -15,7 +16,7 @@ private val log = KotlinLogging.logger { }
 @OptIn(ExperimentalSerializationApi::class)
 class MonoAccountsService : KoinComponent {
     private val fetcherFactory: PeriodicFetcherFactory by inject()
-    private val settings: io.github.smaugfm.monobudget.common.model.Settings.MultipleMonoSettings by inject()
+    private val settings: Settings.MultipleMonoSettings by inject()
 
     private val monoAccountsFetcher = fetcherFactory.create(this::class.simpleName!!) {
         settings.apis
@@ -35,6 +36,8 @@ class MonoAccountsService : KoinComponent {
     fun getMonoAccAlias(monoAccountId: String): String? = settings.byId[monoAccountId]
         ?.alias
         .logMissing("Monobank account", monoAccountId)
+
+    suspend fun getAccounts() = monoAccountsFetcher.getData()
 
     suspend fun getAccountCurrency(monoAccountId: String): Currency? =
         monoAccountsFetcher.getData().firstOrNull { it.id == monoAccountId }?.currencyCode

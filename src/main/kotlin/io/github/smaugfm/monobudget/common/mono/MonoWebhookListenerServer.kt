@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.common.mono
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
+import io.github.smaugfm.monobudget.common.model.Settings
 import io.github.smaugfm.monobudget.common.util.makeJson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -33,7 +34,7 @@ private val log = KotlinLogging.logger {}
 @Suppress("ExtractKtorModule")
 class MonoWebhookListenerServer : KoinComponent {
     private val scope: CoroutineScope by inject()
-    private val monoSettings: io.github.smaugfm.monobudget.common.model.Settings.MultipleMonoSettings by inject()
+    private val monoSettings: Settings.MultipleMonoSettings by inject()
 
     private val json = makeJson()
 

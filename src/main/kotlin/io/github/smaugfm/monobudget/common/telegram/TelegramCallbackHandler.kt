@@ -6,6 +6,7 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
 import com.elbekd.bot.types.ParseMode
+import io.github.smaugfm.monobudget.common.model.Settings
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
@@ -27,7 +28,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     protected val categorySuggestionService: CategorySuggestionService by inject()
     private val telegram: TelegramApi by inject()
     private val formatter: TransactionMessageFormatter<TTransaction> by inject()
-    private val monoSettings: io.github.smaugfm.monobudget.common.model.Settings.MultipleMonoSettings by inject()
+    private val monoSettings: Settings.MultipleMonoSettings by inject()
     private val telegramChatIds = monoSettings.telegramChatIds
 
     suspend fun handle(callbackQuery: CallbackQuery) {

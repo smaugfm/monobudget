@@ -1,9 +1,6 @@
-@file:OptIn(ExperimentalSerializationApi::class)
-
 package io.github.smaugfm.monobudget.common.mono
 
 import io.github.smaugfm.monobank.MonobankPersonalApi
-import io.github.smaugfm.monobudget.common.util.buildJson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
@@ -15,8 +12,6 @@ import io.ktor.server.routing.routing
 import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.json.JsonBuilder
 import mu.KotlinLogging
 import java.net.URI
 
@@ -27,7 +22,7 @@ class MonoApi(token: String) {
         require(token.isNotBlank())
     }
 
-    val api = MonobankPersonalApi(token, JsonBuilder::buildJson)
+    val api = MonobankPersonalApi(token)
 
     @Suppress("ExtractKtorModule")
     suspend fun setupWebhook(url: URI, port: Int): Boolean {

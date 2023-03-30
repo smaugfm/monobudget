@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.common.misc
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
+import io.github.smaugfm.monobudget.common.model.Settings
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyCategorySuggestionService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -30,7 +31,7 @@ class Playground {
         @BeforeAll
         @JvmStatic
         fun beforeAll() {
-            val settings = io.github.smaugfm.monobudget.common.model.Settings.load(Paths.get("settings.yml").readText())
+            val settings = Settings.load(Paths.get("settings.yml").readText())
             startKoin {
                 modules(
                     module {

@@ -20,7 +20,7 @@ data class Settings(
     val mcc: MccOverride
 ) {
     companion object {
-        fun load(path: Path): Settings = Settings.load(File(path.toString()).readText())
+        fun load(path: Path): Settings = load(File(path.toString()).readText())
 
         internal fun load(content: String) = Yaml.default.decodeFromString<Settings>(content)
             .also {
@@ -30,7 +30,7 @@ data class Settings(
 
     @Serializable
     data class MultipleMonoSettings(
-        val settings: List<Settings.MonoSettings>
+        val settings: List<MonoSettings>
     ) {
         @Transient
         val apis = settings.map { it.token }.map(::MonoApi)
