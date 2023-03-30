@@ -9,8 +9,10 @@ import io.github.smaugfm.monobudget.common.model.ynab.YnabCleared
 import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
+import org.koin.core.annotation.Single
 import java.util.Currency
 
+@Single
 class YnabTransactionMessageFormatter : TransactionMessageFormatter<YnabTransactionDetail>() {
 
     override suspend fun formatHTMLStatementMessage(

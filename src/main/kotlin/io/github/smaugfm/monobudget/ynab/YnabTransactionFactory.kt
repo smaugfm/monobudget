@@ -9,10 +9,12 @@ import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
+@Single
 class YnabTransactionFactory : TransactionFactory<YnabTransactionDetail, YnabSaveTransaction>() {
     private val api: YnabApi by inject()
     private val monoAccountsService: MonoAccountsService by inject()

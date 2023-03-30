@@ -8,6 +8,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     kotlin("jvm") version "1.8.10"
     kotlin("plugin.serialization") version "1.8.10"
+    id("com.google.devtools.ksp") version "1.8.10-1.0.9"
     id("com.star-zero.gradle.githook") version "1.2.1"
     id("com.github.johnrengelman.shadow") version "6.1.0"
     id("org.jlleitschuh.gradle.ktlint") version "11.3.1"
@@ -18,6 +19,11 @@ group = "io.github.smaugfm.monobudget"
 val version: String by project
 
 val jdkVersion = "11"
+val ktor = "2.2.4"
+val junit = "5.9.2"
+val logback = "1.4.5"
+val koin = "3.4.0"
+val koinKsp = "1.2.0"
 
 val githubToken: String? by project
 
@@ -28,17 +34,14 @@ repositories {
 }
 
 dependencies {
-    val ktor = "2.2.4"
-    val junit = "5.9.2"
-    val logback = "1.4.5"
-    val koin = "3.3.3"
-
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     implementation("io.github.smaugfm:monobank:0.0.1")
     implementation("io.github.smaugfm:lunchmoney:0.0.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("io.insert-koin:koin-core:$koin")
+    implementation("io.insert-koin:koin-annotations:$koinKsp")
+    ksp("io.insert-koin:koin-ksp-compiler:$koinKsp")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("com.github.elbekD:kt-telegram-bot:2.2.0")
@@ -71,6 +74,9 @@ configurations.all {
 
 configure<KtlintExtension> {
     enableExperimentalRules.set(true)
+    filter {
+        exclude("**/generated/**")
+    }
     reporters {
         reporter(ReporterType.HTML)
     }

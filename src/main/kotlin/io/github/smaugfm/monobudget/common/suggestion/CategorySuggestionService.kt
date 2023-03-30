@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common
+package io.github.smaugfm.monobudget.common.suggestion
 
 import io.github.smaugfm.monobudget.common.misc.MCC
 import mu.KotlinLogging

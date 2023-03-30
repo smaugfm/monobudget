@@ -2,9 +2,11 @@ package io.github.smaugfm.monobudget.common.misc
 
 import io.github.smaugfm.monobudget.common.util.jaroWinklerSimilarity
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}
 
+@Single
 class StringSimilarityPayeeSuggestionService {
     fun suggest(value: String, payees: List<String>): List<String> {
         log.debug { "Looking for best payee match for memo: $value" }

@@ -1,11 +1,13 @@
 package io.github.smaugfm.monobudget.lunchmoney
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.monobudget.common.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
+import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import kotlinx.coroutines.reactor.awaitSingle
+import org.koin.core.annotation.Single
 import org.koin.core.component.inject
 
+@Single
 class LunchmoneyCategorySuggestionService : CategorySuggestionService() {
     private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
     private val api: LunchmoneyApi by inject()

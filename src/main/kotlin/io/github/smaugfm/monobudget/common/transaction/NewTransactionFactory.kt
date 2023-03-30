@@ -2,8 +2,8 @@ package io.github.smaugfm.monobudget.common.transaction
 
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.common.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

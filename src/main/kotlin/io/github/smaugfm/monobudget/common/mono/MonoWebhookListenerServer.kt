@@ -22,12 +22,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.net.URI
 
 private val log = KotlinLogging.logger {}
 
+@Single
 @Suppress("ExtractKtorModule")
 class MonoWebhookListenerServer : KoinComponent {
     private val scope: CoroutineScope by inject()

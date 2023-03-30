@@ -33,12 +33,14 @@ import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.util.url
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.reflect.KFunction
 
 private val log = KotlinLogging.logger { }
 
+@Single
 @Suppress("TooManyFunctions")
 class YnabApi : KoinComponent {
     private val backend: YNAB by inject()

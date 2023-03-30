@@ -10,10 +10,12 @@ import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetec
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
+@Single
 class LunchmoneyTransactionCreator :
     TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val api: LunchmoneyApi by inject()

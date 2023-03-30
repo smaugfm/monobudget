@@ -1,8 +1,6 @@
-package io.github.smaugfm.monobudget.util
+package io.github.smaugfm.monobudget.common.misc
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.monobudget.common.misc.MCC
-import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyCategorySuggestionService
 import kotlinx.coroutines.CoroutineScope

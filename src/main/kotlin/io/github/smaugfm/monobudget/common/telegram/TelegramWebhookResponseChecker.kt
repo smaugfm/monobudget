@@ -6,11 +6,13 @@ import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.common.util.formatAmount
 import io.github.smaugfm.monobudget.common.util.pp
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
+@Single
 class TelegramWebhookResponseChecker : KoinComponent {
     private val monoAccountsService: MonoAccountsService by inject()
     private val webhookResponsesCache = SimpleCache<MonoWebhookResponseData, Unit> {}

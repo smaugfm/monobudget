@@ -9,10 +9,12 @@ import io.github.smaugfm.monobudget.common.model.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
+@Single
 class YnabNewTransactionFactory : NewTransactionFactory<YnabSaveTransaction>() {
     private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
     private val payeeSuggestingService: StringSimilarityPayeeSuggestionService by inject()

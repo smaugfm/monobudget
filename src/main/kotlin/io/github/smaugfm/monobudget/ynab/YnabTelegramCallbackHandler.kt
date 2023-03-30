@@ -7,8 +7,10 @@ import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
+import org.koin.core.annotation.Single
 import org.koin.core.component.inject
 
+@Single
 class YnabTelegramCallbackHandler : TelegramCallbackHandler<YnabTransactionDetail>() {
     private val api: YnabApi by inject()
 

@@ -1,6 +1,5 @@
-package io.github.smaugfm.monobudget.util
+package io.github.smaugfm.monobudget.common.misc
 
-import io.github.smaugfm.monobudget.common.misc.StringSimilarityPayeeSuggestionService
 import org.junit.jupiter.api.Test
 
 class PayeeSuggestorTest {

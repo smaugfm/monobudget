@@ -6,7 +6,6 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
 import com.elbekd.bot.types.ParseMode
-import io.github.smaugfm.monobudget.common.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
@@ -15,6 +14,7 @@ import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.Unapprove
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.Uncategorize
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.UpdateCategory
+import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.ktor.util.logging.error
 import mu.KotlinLogging
@@ -67,7 +67,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
             .filterIndexed { i, _ -> i % 2 == 0 }
             .map { pair ->
                 pair.toList().map { (id, name) ->
-                    TransactionUpdateType.UpdateCategory.button(id, name)
+                    UpdateCategory.button(id, name)
                 }
             }
     )

@@ -5,11 +5,13 @@ import io.github.smaugfm.monobudget.ynab.YnabApi
 import io.ktor.util.logging.error
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger { }
 
+@Single
 class BudgetSettingsVerifier : ApplicationStartupVerifier, KoinComponent {
     private val budgetBackend: io.github.smaugfm.monobudget.common.model.BudgetBackend by inject()
     private val monoSettings: io.github.smaugfm.monobudget.common.model.Settings.MultipleMonoSettings by inject()

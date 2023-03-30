@@ -3,42 +3,15 @@ package io.github.smaugfm.monobudget
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
-import io.github.smaugfm.monobudget.common.CategorySuggestionService
-import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
-import io.github.smaugfm.monobudget.common.misc.StringSimilarityPayeeSuggestionService
+import io.github.smaugfm.monobudget.common.CommonModule
+import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.common.model.Settings
 import io.github.smaugfm.monobudget.common.model.ynab.YnabSaveTransaction
 import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionDetail
-import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
-import io.github.smaugfm.monobudget.common.mono.MonoSettingsVerifier
-import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.common.mono.MonoWebhookListenerServer
-import io.github.smaugfm.monobudget.common.telegram.TelegramApi
-import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
-import io.github.smaugfm.monobudget.common.telegram.TelegramErrorUnknownErrorHandler
-import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
-import io.github.smaugfm.monobudget.common.telegram.TelegramWebhookResponseChecker
-import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
-import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
-import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
-import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
-import io.github.smaugfm.monobudget.common.verify.BudgetSettingsVerifier
-import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyCategorySuggestionService
-import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyMonoTransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyNewTransactionFactory
-import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyTelegramCallbackHandler
-import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyTransactionCreator
-import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyTransactionMessageFormatter
-import io.github.smaugfm.monobudget.ynab.YnabApi
-import io.github.smaugfm.monobudget.ynab.YnabCategorySuggestionService
-import io.github.smaugfm.monobudget.ynab.YnabCurrencyVerifier
-import io.github.smaugfm.monobudget.ynab.YnabMonoTransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.ynab.YnabNewTransactionFactory
-import io.github.smaugfm.monobudget.ynab.YnabTelegramCallbackHandler
-import io.github.smaugfm.monobudget.ynab.YnabTransactionFactory
-import io.github.smaugfm.monobudget.ynab.YnabTransactionMessageFormatter
+import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
+import io.github.smaugfm.monobudget.ynab.YnabModule
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -46,6 +19,7 @@ import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.ksp.generated.module
 import java.net.URI
 import java.nio.file.Paths
 
@@ -76,38 +50,29 @@ fun main() {
     }
 }
 
-private fun CoroutineScope.setupKoin(settings: io.github.smaugfm.monobudget.common.model.Settings) {
+private fun CoroutineScope.setupKoin(settings: Settings) {
     startKoin {
         printLogger(Level.ERROR)
 
         modules(runtimeModule(settings, this@setupKoin))
-        modules(commonModule())
+        modules(CommonModule().module)
         modules(
             when (settings.budgetBackend) {
                 is Lunchmoney -> lunchmoneyModule(settings.budgetBackend)
-                is YNAB -> ynabModule(settings.budgetBackend)
+                is YNAB -> ynabModule()
             }
         )
     }
 }
 
-private fun commonModule() = module {
-    single<ApplicationStartupVerifier> { MonoSettingsVerifier() }
-    single<ApplicationStartupVerifier> { BudgetSettingsVerifier() }
-    single { PeriodicFetcherFactory() }
-    single { MonoWebhookListenerServer() }
-    single { TelegramApi() }
-    single { TelegramMessageSender() }
-    single { TelegramErrorUnknownErrorHandler() }
-    single { TelegramWebhookResponseChecker() }
-    single { MonoAccountsService() }
-    single { StringSimilarityPayeeSuggestionService() }
-}
+private fun runtimeModule(settings: Settings, coroutineScope: CoroutineScope) = module {
+    when (settings.budgetBackend) {
+        is Lunchmoney ->
+            single { settings.budgetBackend }
 
-private fun runtimeModule(
-    settings: io.github.smaugfm.monobudget.common.model.Settings,
-    coroutineScope: CoroutineScope
-) = module {
+        is YNAB -> single { settings.budgetBackend }
+    } bind BudgetBackend::class
+
     single { settings.mcc }
     single { settings.bot }
     single { settings.mono }
@@ -115,52 +80,7 @@ private fun runtimeModule(
 }
 
 private fun lunchmoneyModule(budgetBackend: Lunchmoney) = module {
-    single { budgetBackend } bind io.github.smaugfm.monobudget.common.model.BudgetBackend::class
-
     single { LunchmoneyApi(budgetBackend.token) }
-    single<MonoTransferBetweenAccountsDetector<LunchmoneyTransaction>> {
-        LunchmoneyMonoTransferBetweenAccountsDetector()
-    }
-    single<NewTransactionFactory<LunchmoneyInsertTransaction>> {
-        LunchmoneyNewTransactionFactory()
-    }
-    single<TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>> {
-        LunchmoneyTransactionCreator()
-    }
-    single<TransactionMessageFormatter<LunchmoneyTransaction>> {
-        LunchmoneyTransactionMessageFormatter()
-    }
-    single<CategorySuggestionService>(createdAtStart = true) {
-        LunchmoneyCategorySuggestionService()
-    }
-    single<TelegramCallbackHandler<LunchmoneyTransaction>> {
-        LunchmoneyTelegramCallbackHandler()
-    }
-}
+} + LunchmoneyModule().module
 
-private fun ynabModule(budgetBackend: YNAB) = module {
-    single { budgetBackend } bind io.github.smaugfm.monobudget.common.model.BudgetBackend::class
-
-    single<NewTransactionFactory<YnabSaveTransaction>> {
-        YnabNewTransactionFactory()
-    }
-    single<CategorySuggestionService>(createdAtStart = true) {
-        YnabCategorySuggestionService()
-    }
-    single<MonoTransferBetweenAccountsDetector<YnabTransactionDetail>> {
-        YnabMonoTransferBetweenAccountsDetector()
-    }
-    single { YnabApi() }
-    single<TransactionFactory<YnabTransactionDetail, YnabSaveTransaction>> {
-        YnabTransactionFactory()
-    }
-    single<TransactionMessageFormatter<YnabTransactionDetail>> {
-        YnabTransactionMessageFormatter()
-    }
-    single<TelegramCallbackHandler<YnabTransactionDetail>> {
-        YnabTelegramCallbackHandler()
-    }
-    single<ApplicationStartupVerifier> {
-        YnabCurrencyVerifier()
-    }
-}
+private fun ynabModule() = listOf(YnabModule().module)

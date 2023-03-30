@@ -3,10 +3,12 @@ package io.github.smaugfm.monobudget.ynab
 import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.Currency
 
+@Single
 @OptIn(ExperimentalSerializationApi::class)
 class YnabCurrencyVerifier : ApplicationStartupVerifier, KoinComponent {
     private val budgetBackend: io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB by inject()

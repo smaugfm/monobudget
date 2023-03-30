@@ -8,9 +8,11 @@ import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.toJavaLocalDate
 import mu.KotlinLogging
+import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}
 
+@Single
 class LunchmoneyNewTransactionFactory :
     NewTransactionFactory<LunchmoneyInsertTransaction>() {
     override suspend fun create(response: MonoWebhookResponseData): LunchmoneyInsertTransaction {
