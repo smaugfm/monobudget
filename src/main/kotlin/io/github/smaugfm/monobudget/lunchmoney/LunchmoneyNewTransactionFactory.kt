@@ -9,6 +9,7 @@ import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.toJavaLocalDate
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
+import java.util.Currency
 
 private val log = KotlinLogging.logger {}
 
@@ -41,6 +42,12 @@ class LunchmoneyNewTransactionFactory :
         }
     }
 
-    private fun MonoStatementItem.lunchmoneyAmount() = operationAmount.toBigDecimal() /
-        (10.toBigDecimal().pow(currencyCode.defaultFractionDigits))
+    companion object {
+        private fun MonoStatementItem.lunchmoneyAmount() = operationAmount.toBigDecimal() /
+            (10.toBigDecimal().pow(currencyCode.defaultFractionDigits))
+
+        fun lunchmoneyAmount(amount: Long, currency: Currency) =
+            amount.toBigDecimal().setScale(2) /
+                (10.toBigDecimal().pow(currency.defaultFractionDigits))
+    }
 }
