@@ -41,6 +41,6 @@ class LunchmoneyNewTransactionFactory :
         }
     }
 
-    private fun MonoStatementItem.lunchmoneyAmount() =
-        amount.toBigDecimal() / 10.toBigDecimal().pow(currencyCode.defaultFractionDigits)
+    private fun MonoStatementItem.lunchmoneyAmount() = operationAmount.toBigDecimal() /
+        (10.toBigDecimal().pow(currencyCode.defaultFractionDigits))
 }
