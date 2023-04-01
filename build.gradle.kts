@@ -61,11 +61,10 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("ch.qos.logback:logback-core:$logback")
     implementation("ch.qos.logback:logback-classic:$logback")
-    testImplementation("io.insert-koin:koin-test:$koin")
+    testImplementation("io.insert-koin:koin-test-junit5:$koin")
     testImplementation("io.mockk:mockk:1.13.4")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
-    testImplementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:2.0.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit")
 
     if (Os.isArch("aarch64")) {

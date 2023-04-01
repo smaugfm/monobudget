@@ -6,15 +6,17 @@ import io.github.smaugfm.monobudget.common.misc.ExpiringMap
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import mu.KotlinLogging
-import kotlin.math.abs
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.minutes
 
 private val log = KotlinLogging.logger {}
 
-open class MonoTransferBetweenAccountsDetector<TTransaction> {
+open class MonoTransferBetweenAccountsDetector<TTransaction> : KoinComponent {
+    private val monoAccountsService: MonoAccountsService by inject()
 
     private val recentTransactions =
-        ExpiringMap<MonoStatementItem, Deferred<TTransaction>>(1.minutes)
+        ExpiringMap<MonoWebhookResponseData, Deferred<TTransaction>>(1.minutes)
 
     sealed class MaybeTransfer<TTransaction> {
         data class Transfer<TTransaction>(
@@ -48,7 +50,7 @@ open class MonoTransferBetweenAccountsDetector<TTransaction> {
     suspend fun checkTransfer(webhookResponseData: MonoWebhookResponseData): MaybeTransfer<TTransaction> {
         val existingTransfer = recentTransactions.entries.firstOrNull { (recentStatementItem) ->
             checkIsTransferTransactions(
-                webhookResponseData.statementItem,
+                webhookResponseData,
                 recentStatementItem
             ).also {
                 if (it) {
@@ -66,22 +68,50 @@ open class MonoTransferBetweenAccountsDetector<TTransaction> {
             MaybeTransfer.Transfer(webhookResponseData, existingTransfer)
         } else {
             val deferred = CompletableDeferred<TTransaction>()
-            recentTransactions.add(webhookResponseData.statementItem, deferred)
+            recentTransactions.add(webhookResponseData, deferred)
 
             MaybeTransfer.NotTransfer(webhookResponseData, deferred)
         }
     }
 
-    private fun checkIsTransferTransactions(new: MonoStatementItem, existing: MonoStatementItem): Boolean {
-        val amountMatch = abs(new.amount) == abs(existing.amount)
-        val currencyMatch = new.currencyCode == existing.currencyCode
-        val signMatch = new.amount > 0 && existing.amount < 0 || new.amount < 0 && existing.amount > 0
-        val mccMatch = new.mcc == TRANSFER_MCC && existing.mcc == TRANSFER_MCC
+    private suspend fun checkIsTransferTransactions(
+        new: MonoWebhookResponseData,
+        existing: MonoWebhookResponseData
+    ): Boolean {
+        val amountMatch = amountMatch(new.statementItem, existing.statementItem)
+        val currencyMatch = currencyMatch(new, existing)
+        val mccMatch = mccMatch(new, existing)
 
-        return amountMatch && currencyMatch && signMatch && mccMatch
+        return amountMatch && currencyMatch && mccMatch
     }
+
+    private suspend fun currencyMatch(new: MonoWebhookResponseData, existing: MonoWebhookResponseData): Boolean {
+        val newTransactionAccountCurrency = monoAccountsService.getAccountCurrency(new.account)
+        val existingTransactionAccountCurrency = monoAccountsService.getAccountCurrency(existing.account)
+        return new.statementItem.currencyCode == existing.statementItem.currencyCode ||
+            newTransactionAccountCurrency == existing.statementItem.currencyCode ||
+            existingTransactionAccountCurrency == new.statementItem.currencyCode
+    }
+
+    private fun amountMatch(new: MonoStatementItem, existing: MonoStatementItem): Boolean {
+        val a1 = new.amount
+        val a2 = existing.amount
+        val oa1 = new.operationAmount
+        val oa2 = existing.operationAmount
+
+        if (a1.equalsInverted(a2)) {
+            return true
+        }
+
+        return a1.equalsInverted(oa2) || oa1.equalsInverted(a2)
+    }
+
+    private fun mccMatch(new: MonoWebhookResponseData, existing: MonoWebhookResponseData) =
+        new.statementItem.mcc == TRANSFER_MCC && existing.statementItem.mcc == TRANSFER_MCC
 
     companion object {
         private const val TRANSFER_MCC = 4829
+
+        fun Long.equalsInverted(other: Long): Boolean = this == -other
     }
 }

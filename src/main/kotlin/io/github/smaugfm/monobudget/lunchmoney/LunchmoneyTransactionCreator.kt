@@ -24,8 +24,11 @@ class LunchmoneyTransactionCreator :
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
     override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = when (maybeTransfer) {
-        is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())
-        is MaybeTransfer.NotTransfer -> maybeTransfer.consume(::processSingle)
+        is MaybeTransfer.Transfer ->
+            processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())
+
+        is MaybeTransfer.NotTransfer ->
+            maybeTransfer.consume(::processSingle)
     }
 
     private suspend fun processTransfer(

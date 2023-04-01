@@ -55,7 +55,8 @@ class Application<TTransaction, TNewTransaction> :
                     return@handler
                 }
 
-                val maybeTransfer = monoTransferDetector.checkTransfer(responseData)
+                val maybeTransfer =
+                    monoTransferDetector.checkTransfer(responseData)
 
                 val transaction = transactionCreator.create(maybeTransfer)
                 val message = messageFormatter.format(
