@@ -64,9 +64,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         }
     }
 
-    private fun categoriesInlineKeyboard(
-        categoryIdToNameList: List<Pair<String, String>>
-    ): InlineKeyboardMarkup {
+    private fun categoriesInlineKeyboard(categoryIdToNameList: List<Pair<String, String>>): InlineKeyboardMarkup {
         val buttons = categoryIdToNameList
             .map { (id, name) -> UpdateCategory.button(id, name) }
         val rows = buttons

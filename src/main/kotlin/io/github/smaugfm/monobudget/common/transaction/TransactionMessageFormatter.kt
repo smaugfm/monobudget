@@ -122,8 +122,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             val id: String
         )
 
-        @JvmStatic
-        protected fun formatAmountWithCurrency(amount: Long, currency: Currency) =
+        fun formatAmountWithCurrency(amount: Long, currency: Currency) =
             currency.formatAmount(amount) + currency.currencyCode
 
         internal fun <T : TransactionUpdateType> callbackData(cls: KClass<out T>) = cls.simpleName!!

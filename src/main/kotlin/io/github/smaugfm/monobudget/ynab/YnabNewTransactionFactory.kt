@@ -35,7 +35,7 @@ class YnabNewTransactionFactory : NewTransactionFactory<YnabSaveTransaction>() {
             YnabSaveTransaction(
                 accountId = getBudgetAccountId(response),
                 date = time.toLocalDateTime().date,
-                amount = ynabAmount(),
+                amount = getAmount(),
                 payeeId = null,
                 payeeName = suggestedPayee,
                 categoryId = getCategoryId(response),
@@ -53,7 +53,7 @@ class YnabNewTransactionFactory : NewTransactionFactory<YnabSaveTransaction>() {
      * Monobank amount uses minimum currency units (e.g. cents for dollars)
      * and YNAB amount uses milliunits (1/1000th of a dollar)
      */
-    private fun MonoStatementItem.ynabAmount(): Long {
+    private fun MonoStatementItem.getAmount(): Long {
         return amount * MONO_TO_YNAB_ADJUST
     }
 

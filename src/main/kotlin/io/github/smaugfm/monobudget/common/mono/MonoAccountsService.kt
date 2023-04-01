@@ -39,8 +39,8 @@ class MonoAccountsService : KoinComponent {
 
     suspend fun getAccounts() = monoAccountsFetcher.getData()
 
-    suspend fun getAccountCurrency(monoAccountId: String): Currency? =
-        monoAccountsFetcher.getData().firstOrNull { it.id == monoAccountId }?.currencyCode
+    suspend fun getAccountCurrency(monoAccountId: String): Currency? = monoAccountsFetcher.getData()
+        .firstOrNull { it.id == monoAccountId }?.currencyCode
 
     fun getTelegramChatIdAccByMono(monoAccountId: String) = settings.byId[monoAccountId]
         ?.telegramChatId
