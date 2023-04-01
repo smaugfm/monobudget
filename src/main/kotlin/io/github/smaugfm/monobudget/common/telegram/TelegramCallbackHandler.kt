@@ -17,6 +17,8 @@ import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.UpdateCategory
 import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.common.util.isEven
+import io.github.smaugfm.monobudget.common.util.isOdd
 import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -62,16 +64,22 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         }
     }
 
-    private fun categoriesInlineKeyboard(categoryIdToNameList: List<Pair<String, String>>) = InlineKeyboardMarkup(
-        categoryIdToNameList
-            .zip(categoryIdToNameList.subList(1, categoryIdToNameList.size))
-            .filterIndexed { i, _ -> i % 2 == 0 }
-            .map { pair ->
-                pair.toList().map { (id, name) ->
-                    UpdateCategory.button(id, name)
-                }
-            }
-    )
+    private fun categoriesInlineKeyboard(
+        categoryIdToNameList: List<Pair<String, String>>
+    ): InlineKeyboardMarkup {
+        val buttons = categoryIdToNameList
+            .map { (id, name) -> UpdateCategory.button(id, name) }
+        val rows = buttons
+            .zipWithNext()
+            .map { it.toList() }
+            .filterIndexed { i, _ -> i.isEven() }
+            .toMutableList()
+        if (buttons.size.isOdd()) {
+            rows.add(listOf(buttons.last()))
+        }
+
+        return InlineKeyboardMarkup(rows.toList())
+    }
 
     private suspend fun handleUpdate(callbackType: TransactionUpdateType, callbackQueryId: String, message: Message) {
         val updatedTransaction = updateTransaction(callbackType).also {
