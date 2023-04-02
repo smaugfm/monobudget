@@ -49,12 +49,13 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
         val webhook2 = webhook2()
 
         declareMock<MonoAccountsService> {
-            coEvery { getAccountCurrency(webhook1.account) } returns Currency.getInstance("USD")
-            coEvery { getAccountCurrency(webhook2.account) } returns Currency.getInstance("UAH")
+            coEvery { getAccountCurrency(webhook1.account) } returns Currency.getInstance("UAH")
+            coEvery { getAccountCurrency(webhook2.account) } returns Currency.getInstance("USD")
         }
         runBlocking {
             val waitForNotTransfer = CompletableDeferred<Any>()
             val job1 = launch {
+                assertThat(detector.checkTransfer(webhook1)).isInstanceOf(NotTransfer::class)
                 val notTransfer = detector.checkTransfer(webhook1) as NotTransfer
                 waitForNotTransfer.complete(Any())
                 notTransfer.consume {
@@ -73,11 +74,11 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
         }
     }
 
-    private fun webhook2() = MonoWebhookResponseData(
-        "acc2",
+    private fun webhook1() = MonoWebhookResponseData(
+        "acc1",
         MonoStatementItem(
-            "bbb",
-            Instant.parse("2023-04-02T18:12:42Z"),
+            "aaa",
+            Instant.parse("2023-04-02T18:12:41Z"),
             "З доларової картки",
             4829,
             4829,
@@ -91,11 +92,11 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
         )
     )
 
-    private fun webhook1() = MonoWebhookResponseData(
-        "acc1",
+    private fun webhook2() = MonoWebhookResponseData(
+        "acc2",
         MonoStatementItem(
-            "aaa",
-            Instant.parse("2023-04-02T18:12:41Z"),
+            "bbb",
+            Instant.parse("2023-04-02T18:12:42Z"),
             "Переказ на картку",
             4829,
             4829,

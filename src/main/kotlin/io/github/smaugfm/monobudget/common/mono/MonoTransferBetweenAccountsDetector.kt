@@ -52,11 +52,7 @@ open class MonoTransferBetweenAccountsDetector<TTransaction> : KoinComponent {
             checkIsTransferTransactions(
                 webhookResponseData,
                 recentStatementItem
-            ).also {
-                if (it) {
-                    log.debug { "Found transfer. Waiting for deferred to finish." }
-                }
-            }
+            )
         }?.value?.await()
 
         return if (existingTransfer != null) {
@@ -82,10 +78,20 @@ open class MonoTransferBetweenAccountsDetector<TTransaction> : KoinComponent {
         val currencyMatch = currencyMatch(new, existing)
         val mccMatch = mccMatch(new, existing)
 
-        return amountMatch && currencyMatch && mccMatch
+        return (amountMatch && currencyMatch && mccMatch).also {
+            if (!it)
+                log.debug {
+                    "Transfer detection failed between " +
+                        "new=$new\nand existing=$existing\n" +
+                        "amountMatch=$amountMatch, currencyMatch=$currencyMatch, mccMatch=$mccMatch"
+                }
+        }
     }
 
-    private suspend fun currencyMatch(new: MonoWebhookResponseData, existing: MonoWebhookResponseData): Boolean {
+    private suspend fun currencyMatch(
+        new: MonoWebhookResponseData,
+        existing: MonoWebhookResponseData
+    ): Boolean {
         val newTransactionAccountCurrency = monoAccountsService.getAccountCurrency(new.account)
         val existingTransactionAccountCurrency = monoAccountsService.getAccountCurrency(existing.account)
         return new.statementItem.currencyCode == existing.statementItem.currencyCode ||
