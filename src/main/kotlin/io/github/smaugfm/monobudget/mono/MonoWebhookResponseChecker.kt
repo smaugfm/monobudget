@@ -18,6 +18,9 @@ class MonoWebhookResponseChecker(
 ) : StatementItemChecker() {
 
     override suspend fun check(item: StatementItem): Boolean {
+        if (item !is MonobankWebhookResponseStatementItem)
+            return true
+
         if (!checkValid(item) && super.check(item)) {
             return false
         }

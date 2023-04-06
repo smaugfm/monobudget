@@ -6,7 +6,7 @@ import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.Base
 import io.github.smaugfm.monobudget.common.account.AccountsService
-import io.github.smaugfm.monobudget.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
 import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer.NotTransfer
 import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer.Transfer
@@ -24,7 +24,6 @@ import org.koin.dsl.module
 import org.koin.test.inject
 import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.mock.declareMock
-import toStatementItem
 import java.util.Currency
 import java.util.concurrent.TimeUnit
 
@@ -78,39 +77,43 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
         }
     }
 
-    private fun webhook1() = MonoWebhookResponseData(
-        "acc1",
-        MonoStatementItem(
-            "aaa",
-            Instant.parse("2023-04-02T18:12:41Z"),
-            "З доларової картки",
-            4829,
-            4829,
-            true,
-            3665,
-            100,
-            Currency.getInstance("USD"),
-            0,
-            0,
-            1234
+    private fun webhook1() = MonobankWebhookResponseStatementItem(
+        MonoWebhookResponseData(
+            "acc1",
+            MonoStatementItem(
+                "aaa",
+                Instant.parse("2023-04-02T18:12:41Z"),
+                "З доларової картки",
+                4829,
+                4829,
+                true,
+                3665,
+                100,
+                Currency.getInstance("USD"),
+                0,
+                0,
+                1234
+            )
         )
-    ).toStatementItem()
+    )
 
-    private fun webhook2() = MonoWebhookResponseData(
-        "acc2",
-        MonoStatementItem(
-            "bbb",
-            Instant.parse("2023-04-02T18:12:42Z"),
-            "Переказ на картку",
-            4829,
-            4829,
-            true,
-            -100,
-            -3665,
-            Currency.getInstance("UAH"),
-            0,
-            0,
-            1234
+    private fun webhook2() = MonobankWebhookResponseStatementItem(
+        MonoWebhookResponseData(
+            "acc2",
+            MonoStatementItem(
+                "bbb",
+                Instant.parse("2023-04-02T18:12:42Z"),
+                "Переказ на картку",
+                4829,
+                4829,
+                true,
+                -100,
+                -3665,
+                Currency.getInstance("UAH"),
+                0,
+                0,
+                1234
+            )
         )
-    ).toStatementItem()
+    )
 }

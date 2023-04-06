@@ -25,7 +25,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
-import toStatementItem
 import java.net.URI
 
 private val log = KotlinLogging.logger {}
@@ -70,7 +69,7 @@ class MonoWebhookListener(
                     )
                     val response = call.receive<MonoWebhookResponse>()
                     try {
-                        flow.emit(response.data.toStatementItem())
+                        flow.emit(MonobankWebhookResponseStatementItem(response.data))
                     } finally {
                         call.respond(HttpStatusCode.OK, "OK")
                     }

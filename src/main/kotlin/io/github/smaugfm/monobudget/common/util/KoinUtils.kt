@@ -1,3 +1,5 @@
+package io.github.smaugfm.monobudget.common.util
+
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.KoinScopeComponent
 import org.koin.mp.KoinPlatformTools

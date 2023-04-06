@@ -8,6 +8,7 @@ import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.common.model.Settings
+import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
 import io.github.smaugfm.monobudget.mono.MonoModule
 import io.github.smaugfm.monobudget.mono.MonoWebhookListener
@@ -60,8 +61,14 @@ private fun CoroutineScope.setupKoin(settings: Settings, setWebhook: Boolean, mo
         modules(
             MonoModule().module + module {
                 single {
-                    MonoWebhookListener(setWebhook, monoWebhookUrl, webhookPort, get(), get())
-                }
+                    MonoWebhookListener(
+                        setWebhook,
+                        monoWebhookUrl,
+                        webhookPort,
+                        get(),
+                        get()
+                    )
+                } bind StatementService::class
             }
         )
         modules(CommonModule().module)

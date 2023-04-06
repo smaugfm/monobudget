@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget
 
-import injectAll
+import io.github.smaugfm.monobudget.common.statement.StatementItemChecker
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
@@ -8,8 +8,8 @@ import io.github.smaugfm.monobudget.common.telegram.TelegramErrorUnknownErrorHan
 import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.common.util.injectAll
 import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
-import io.github.smaugfm.monobudget.mono.MonoWebhookResponseChecker
 import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector
 import io.ktor.util.logging.error
 import kotlinx.coroutines.FlowPreview
@@ -28,15 +28,13 @@ class Application<TTransaction, TNewTransaction> :
     private val telegramApi by inject<TelegramApi>()
     private val statementServices by injectAll<StatementService>()
     private val startupVerifiers by injectAll<ApplicationStartupVerifier>()
-
     private val transactionCreator by inject<TransactionFactory<TTransaction, TNewTransaction>>()
     private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
     private val transferDetector by inject<TransferBetweenAccountsDetector<TTransaction>>()
-
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val processError by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
-    private val webhookResponseChecker by inject<MonoWebhookResponseChecker>()
+    private val checkers by injectAll<StatementItemChecker>()
 
     suspend fun run() {
         runStartupChecks()
@@ -49,9 +47,8 @@ class Application<TTransaction, TNewTransaction> :
         statementServices.asFlow()
             .flatMapMerge { it.statements() }
             .collect handler@{ responseData ->
-
                 try {
-                    if (!webhookResponseChecker.check(responseData)) {
+                    if (checkers.any { !it.check(responseData) }) {
                         return@handler
                     }
 
