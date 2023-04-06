@@ -5,12 +5,12 @@ import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import kotlinx.coroutines.reactor.awaitSingle
 import org.koin.core.annotation.Single
-import org.koin.core.component.inject
 
 @Single(createdAtStart = true)
-class LunchmoneyCategorySuggestionService : CategorySuggestionService() {
-    private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
-    private val api: LunchmoneyApi by inject()
+class LunchmoneyCategorySuggestionService(
+    periodicFetcherFactory: PeriodicFetcherFactory,
+    private val api: LunchmoneyApi
+) : CategorySuggestionService() {
 
     private val categoriesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) {
         api.getAllCategories().awaitSingle()

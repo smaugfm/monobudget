@@ -1,14 +1,14 @@
 package io.github.smaugfm.monobudget.ynab
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
-import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
-import io.github.smaugfm.monobudget.common.model.ynab.YnabCleared
-import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionDetail
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
+import io.github.smaugfm.monobudget.ynab.model.YnabCleared
+import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import org.koin.core.annotation.Single
 import java.util.Currency
 
@@ -17,17 +17,17 @@ class YnabTransactionMessageFormatter : TransactionMessageFormatter<YnabTransact
 
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        monoStatementItem: MonoStatementItem,
+        statementItem: StatementItem,
         transaction: YnabTransactionDetail
     ): String {
-        with(monoStatementItem) {
+        with(statementItem) {
             val accountAmount = formatAmountWithCurrency(amount, accountCurrency)
-            val operationAmount = formatAmountWithCurrency(this.operationAmount, currencyCode)
+            val operationAmount = formatAmountWithCurrency(this.operationAmount, currency)
             return formatHTMLStatementMessage(
                 "YNAB",
                 (description ?: "").replaceNewLines(),
                 (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
-                accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),
+                accountAmount + (if (accountCurrency != currency) " ($operationAmount)" else ""),
                 transaction.categoryName ?: "",
                 transaction.payeeName ?: "",
                 transaction.id

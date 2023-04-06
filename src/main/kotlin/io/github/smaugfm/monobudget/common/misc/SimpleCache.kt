@@ -9,5 +9,5 @@ class SimpleCache<K, V>(private val getValue: suspend (K) -> V) {
         getValue(key)
     }
 
-    fun alreadyHasKey(key: K, v: V): Boolean = cache.putIfAbsent(key, v) == null
+    fun checkAndPutKey(key: K, v: V): Boolean = cache.putIfAbsent(key, v) == null
 }

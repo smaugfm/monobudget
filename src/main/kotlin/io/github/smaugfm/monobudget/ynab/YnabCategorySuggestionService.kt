@@ -3,12 +3,12 @@ package io.github.smaugfm.monobudget.ynab
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import org.koin.core.annotation.Single
-import org.koin.core.component.inject
 
 @Single(createdAtStart = true)
-class YnabCategorySuggestionService : CategorySuggestionService() {
-    private val periodicFetcherFactory: PeriodicFetcherFactory by inject()
-    private val api: YnabApi by inject()
+class YnabCategorySuggestionService(
+    periodicFetcherFactory: PeriodicFetcherFactory,
+    private val api: YnabApi
+) : CategorySuggestionService() {
 
     private val categoriesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) {
         api.getCategoryGroups().flatMap {

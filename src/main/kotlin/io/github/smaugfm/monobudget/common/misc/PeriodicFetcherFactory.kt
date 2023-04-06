@@ -9,17 +9,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
 
 private val log = KotlinLogging.logger {}
 
 @Single
-class PeriodicFetcherFactory : KoinComponent {
-    private val scope: CoroutineScope by inject()
-
+class PeriodicFetcherFactory(private val scope: CoroutineScope) {
     fun <T> create(name: String, fetch: suspend () -> T) = PeriodicFetcher(name, fetch, 1.hours)
 
     inner class PeriodicFetcher<T>(

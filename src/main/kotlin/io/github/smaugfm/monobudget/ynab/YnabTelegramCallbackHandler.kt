@@ -2,17 +2,17 @@ package io.github.smaugfm.monobudget.ynab
 
 import com.elbekd.bot.types.Message
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
-import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
+import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import org.koin.core.annotation.Single
-import org.koin.core.component.inject
 
 @Single
-class YnabTelegramCallbackHandler : TelegramCallbackHandler<YnabTransactionDetail>() {
-    private val api: YnabApi by inject()
+class YnabTelegramCallbackHandler(
+    private val api: YnabApi
+) : TelegramCallbackHandler<YnabTransactionDetail>() {
 
     override suspend fun updateTransaction(callbackType: TransactionUpdateType): YnabTransactionDetail {
         val transactionDetail = api.getTransaction(callbackType.transactionId)

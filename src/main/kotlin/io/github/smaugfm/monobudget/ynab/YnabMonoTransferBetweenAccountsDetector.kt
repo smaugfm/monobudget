@@ -1,9 +1,9 @@
 package io.github.smaugfm.monobudget.ynab
 
-import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionDetail
-import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import org.koin.core.annotation.Single
 
 @Single
 class YnabMonoTransferBetweenAccountsDetector :
-    MonoTransferBetweenAccountsDetector<YnabTransactionDetail>()
+    TransferBetweenAccountsDetector<YnabTransactionDetail>()

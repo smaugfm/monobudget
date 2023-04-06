@@ -5,8 +5,11 @@ import assertk.assertions.isInstanceOf
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.Base
-import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer.NotTransfer
-import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer.Transfer
+import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer.NotTransfer
+import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer.Transfer
 import io.mockk.coEvery
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
@@ -21,6 +24,7 @@ import org.koin.dsl.module
 import org.koin.test.inject
 import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.mock.declareMock
+import toStatementItem
 import java.util.Currency
 import java.util.concurrent.TimeUnit
 
@@ -28,7 +32,7 @@ private val log = KotlinLogging.logger { }
 
 class MonoTransferBetweenAccountsDetectorTest : Base() {
 
-    class TestDetector : MonoTransferBetweenAccountsDetector<Any>()
+    class TestDetector : TransferBetweenAccountsDetector<Any>()
 
     val detector: TestDetector by inject()
 
@@ -48,9 +52,9 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
         val webhook1 = webhook1()
         val webhook2 = webhook2()
 
-        declareMock<MonoAccountsService> {
-            coEvery { getAccountCurrency(webhook1.account) } returns Currency.getInstance("UAH")
-            coEvery { getAccountCurrency(webhook2.account) } returns Currency.getInstance("USD")
+        declareMock<AccountsService> {
+            coEvery { getAccountCurrency(webhook1.accountId) } returns Currency.getInstance("UAH")
+            coEvery { getAccountCurrency(webhook2.accountId) } returns Currency.getInstance("USD")
         }
         runBlocking {
             val waitForNotTransfer = CompletableDeferred<Any>()
@@ -90,7 +94,7 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
             0,
             1234
         )
-    )
+    ).toStatementItem()
 
     private fun webhook2() = MonoWebhookResponseData(
         "acc2",
@@ -108,5 +112,5 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
             0,
             1234
         )
-    )
+    ).toStatementItem()
 }

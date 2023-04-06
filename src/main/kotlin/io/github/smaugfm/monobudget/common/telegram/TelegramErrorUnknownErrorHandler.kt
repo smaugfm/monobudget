@@ -3,14 +3,12 @@ package io.github.smaugfm.monobudget.common.telegram
 import com.elbekd.bot.model.ChatId
 import io.github.smaugfm.monobudget.common.model.Settings
 import org.koin.core.annotation.Single
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 @Single
-class TelegramErrorUnknownErrorHandler : KoinComponent {
-    private val monoSettings: Settings.MultipleMonoSettings by inject()
-    private val telegramApi: TelegramApi by inject()
-
+class TelegramErrorUnknownErrorHandler(
+    private val monoSettings: Settings.MultipleMonoSettings,
+    private val telegramApi: TelegramApi
+) {
     suspend operator fun invoke() {
         monoSettings.telegramChatIds
             .forEach { chatId ->

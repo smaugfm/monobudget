@@ -2,39 +2,38 @@ package io.github.smaugfm.monobudget.lunchmoney
 
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.monobank.model.MonoStatementItem
-import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
+import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.formatAmountWithCurrency
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.toJavaLocalDate
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
-import org.koin.core.component.inject
 import java.util.Currency
 
 private val log = KotlinLogging.logger {}
 
 @Single
-class LunchmoneyNewTransactionFactory : NewTransactionFactory<LunchmoneyInsertTransaction>() {
-    private val monoAccountsService: MonoAccountsService by inject()
+class LunchmoneyNewTransactionFactory(
+    private val accountsService: AccountsService
+) : NewTransactionFactory<LunchmoneyInsertTransaction>() {
 
-    override suspend fun create(response: MonoWebhookResponseData): LunchmoneyInsertTransaction {
+    override suspend fun create(statement: StatementItem): LunchmoneyInsertTransaction {
         log.debug { "Transforming Monobank statement to Lunchmoney transaction." }
 
-        val categoryId = getCategoryId(response)?.toLong()
+        val categoryId = getCategoryId(statement)?.toLong()
         val accountCurrency =
-            monoAccountsService.getAccountCurrency(response.account)!!
+            accountsService.getAccountCurrency(statement.accountId)!!
 
-        return with(response.statementItem) {
+        return with(statement) {
             LunchmoneyInsertTransaction(
                 date = time.toLocalDateTime().date.toJavaLocalDate(),
                 amount = getAmount(accountCurrency),
                 categoryId = categoryId,
                 payee = description,
                 currency = accountCurrency,
-                assetId = getBudgetAccountId(response).toLong(),
+                assetId = getBudgetAccountId(statement).toLong(),
                 recurringId = null,
                 notes = getNotes(accountCurrency),
                 status = getStatus(categoryId),
@@ -50,17 +49,17 @@ class LunchmoneyNewTransactionFactory : NewTransactionFactory<LunchmoneyInsertTr
         LunchmoneyTransactionStatus.UNCLEARED
     }
 
-    private fun MonoStatementItem.getNotes(accountCurrency: Currency): String {
+    private fun StatementItem.getNotes(accountCurrency: Currency): String {
         val desc = "$mcc " + formatDescription()
-        if (accountCurrency == currencyCode) {
+        if (accountCurrency == currency) {
             return desc
         }
 
-        return "${formatAmountWithCurrency(operationAmount, currencyCode)} $desc"
+        return "${formatAmountWithCurrency(operationAmount, currency)} $desc"
     }
 
     companion object {
-        private fun MonoStatementItem.getAmount(currency: Currency) = lunchmoneyAmount(amount, currency)
+        private fun StatementItem.getAmount(currency: Currency) = lunchmoneyAmount(amount, currency)
 
         fun lunchmoneyAmount(amount: Long, currency: Currency) = amount.toBigDecimal().setScale(2) /
             (10.toBigDecimal().pow(currency.defaultFractionDigits))

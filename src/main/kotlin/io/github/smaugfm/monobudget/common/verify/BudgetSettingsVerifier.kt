@@ -9,14 +9,14 @@ import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger { }
 
 @Single
-class BudgetSettingsVerifier : ApplicationStartupVerifier, KoinComponent {
-    private val budgetBackend: BudgetBackend by inject()
-    private val monoSettings: MultipleMonoSettings by inject()
+class BudgetSettingsVerifier(
+    private val budgetBackend: BudgetBackend,
+    private val monoSettings: MultipleMonoSettings
+) : ApplicationStartupVerifier, KoinComponent {
 
     override suspend fun verify() {
         when (budgetBackend) {

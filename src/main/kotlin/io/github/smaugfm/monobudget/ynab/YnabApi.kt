@@ -1,23 +1,23 @@
 package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.common.model.ynab.YnabAccount
-import io.github.smaugfm.monobudget.common.model.ynab.YnabAccountResponse
-import io.github.smaugfm.monobudget.common.model.ynab.YnabAccountsResponse
-import io.github.smaugfm.monobudget.common.model.ynab.YnabBudgetDetailResponseShort
-import io.github.smaugfm.monobudget.common.model.ynab.YnabBudgetDetailShort
-import io.github.smaugfm.monobudget.common.model.ynab.YnabCategoriesResponse
-import io.github.smaugfm.monobudget.common.model.ynab.YnabCategoryGroupWithCategories
-import io.github.smaugfm.monobudget.common.model.ynab.YnabPayee
-import io.github.smaugfm.monobudget.common.model.ynab.YnabPayeesResponse
-import io.github.smaugfm.monobudget.common.model.ynab.YnabSaveTransaction
-import io.github.smaugfm.monobudget.common.model.ynab.YnabSaveTransactionResponse
-import io.github.smaugfm.monobudget.common.model.ynab.YnabSaveTransactionWrapper
-import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionDetail
-import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionResponse
-import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionsResponse
 import io.github.smaugfm.monobudget.common.util.logError
 import io.github.smaugfm.monobudget.common.util.makeJson
+import io.github.smaugfm.monobudget.ynab.model.YnabAccount
+import io.github.smaugfm.monobudget.ynab.model.YnabAccountResponse
+import io.github.smaugfm.monobudget.ynab.model.YnabAccountsResponse
+import io.github.smaugfm.monobudget.ynab.model.YnabBudgetDetailResponseShort
+import io.github.smaugfm.monobudget.ynab.model.YnabBudgetDetailShort
+import io.github.smaugfm.monobudget.ynab.model.YnabCategoriesResponse
+import io.github.smaugfm.monobudget.ynab.model.YnabCategoryGroupWithCategories
+import io.github.smaugfm.monobudget.ynab.model.YnabPayee
+import io.github.smaugfm.monobudget.ynab.model.YnabPayeesResponse
+import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
+import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransactionResponse
+import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransactionWrapper
+import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
+import io.github.smaugfm.monobudget.ynab.model.YnabTransactionResponse
+import io.github.smaugfm.monobudget.ynab.model.YnabTransactionsResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -34,16 +34,13 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.util.url
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 import kotlin.reflect.KFunction
 
 private val log = KotlinLogging.logger { }
 
 @Single
 @Suppress("TooManyFunctions")
-class YnabApi : KoinComponent {
-    private val backend: YNAB by inject()
+class YnabApi(backend: YNAB) {
     private val token = backend.token
     private val budgetId = backend.ynabBudgetId
 

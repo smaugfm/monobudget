@@ -5,38 +5,37 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
-import io.github.smaugfm.monobudget.common.mono.MonoTransferBetweenAccountsDetector.MaybeTransfer
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
+import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
-import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
 @Single
-class LunchmoneyTransactionCreator :
-    TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
-    private val api: LunchmoneyApi by inject()
-    private val budgetBackend: BudgetBackend.Lunchmoney by inject()
+class LunchmoneyTransactionCreator(
+    budgetBackend: BudgetBackend.Lunchmoney,
+    private val api: LunchmoneyApi
+) : TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
     override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = when (maybeTransfer) {
         is MaybeTransfer.Transfer ->
-            processTransfer(maybeTransfer.webhookResponse, maybeTransfer.processed())
+            processTransfer(maybeTransfer.statement, maybeTransfer.processed())
 
         is MaybeTransfer.NotTransfer ->
             maybeTransfer.consume(::processSingle)
     }
 
     private suspend fun processTransfer(
-        newWebhookResponse: MonoWebhookResponseData,
+        statement: StatementItem,
         existingTransaction: LunchmoneyTransaction
     ): LunchmoneyTransaction {
         log.debug {
-            "Processed transfer transaction: $newWebhookResponse. " +
+            "Processed transfer transaction: $statement. " +
                 "Existing LunchmoneyTransaction: $existingTransaction"
         }
 
@@ -48,7 +47,7 @@ class LunchmoneyTransactionCreator :
             )
         ).awaitSingle()
 
-        val newTransaction = processSingle(newWebhookResponse, true)
+        val newTransaction = processSingle(statement, true)
 
         val groupId = api.createTransactionGroup(
             date = newTransaction.date,
@@ -63,13 +62,13 @@ class LunchmoneyTransactionCreator :
     }
 
     private suspend fun processSingle(
-        webhookResponse: MonoWebhookResponseData,
+        statement: StatementItem,
         partOfTransfer: Boolean = false
     ): LunchmoneyTransaction {
-        log.debug { "Processing transaction: $webhookResponse" }
+        log.debug { "Processing transaction: $statement" }
 
         val newTransaction =
-            newTransactionFactory.create(webhookResponse).let {
+            newTransactionFactory.create(statement).let {
                 if (partOfTransfer) {
                     it.copy(
                         status = LunchmoneyTransactionStatus.CLEARED,

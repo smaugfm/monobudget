@@ -3,12 +3,11 @@ package io.github.smaugfm.monobudget.common.transaction
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
-import io.github.smaugfm.monobank.model.MonoStatementItem
-import io.github.smaugfm.monobank.model.MonoWebhookResponseData
+import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.telegram.MessageWithReplyKeyboard
-import io.github.smaugfm.monobudget.common.mono.MonoAccountsService
 import io.github.smaugfm.monobudget.common.util.formatAmount
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
@@ -19,12 +18,12 @@ import kotlin.reflect.KClass
 private val log = KotlinLogging.logger {}
 
 abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
-    private val monoAccountsService: MonoAccountsService by inject()
+    private val accounts: AccountsService by inject()
 
-    suspend fun format(monoResponse: MonoWebhookResponseData, transaction: TTransaction): MessageWithReplyKeyboard {
+    suspend fun format(statement: StatementItem, transaction: TTransaction): MessageWithReplyKeyboard {
         val msg = formatHTMLStatementMessage(
-            monoAccountsService.getAccountCurrency(monoResponse.account)!!,
-            monoResponse.statementItem,
+            accounts.getAccountCurrency(statement.accountId)!!,
+            statement,
             transaction
         )
         val markup = getReplyKeyboard(transaction)
@@ -53,7 +52,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        monoStatementItem: MonoStatementItem,
+        statementItem: StatementItem,
         transaction: TTransaction
     ): String
 

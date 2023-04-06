@@ -19,13 +19,15 @@ import org.junit.jupiter.api.Test
 import org.koin.core.context.startKoin
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.koin.test.KoinTest
+import org.koin.test.inject
 import java.nio.file.Paths
 import kotlin.io.path.readText
 
 @Disabled
 @OptIn(DelicateCoroutinesApi::class)
-class Playground {
-    val categorySuggestion = LunchmoneyCategorySuggestionService()
+class Playground : KoinTest {
+    val categorySuggestion: LunchmoneyCategorySuggestionService by inject()
 
     companion object {
         @BeforeAll
@@ -36,10 +38,11 @@ class Playground {
                 modules(
                     module {
                         single { settings.budgetBackend as BudgetBackend.YNAB } bind BudgetBackend::class
-                        single { PeriodicFetcherFactory() }
+                        single { PeriodicFetcherFactory(get()) }
                         single<CoroutineScope> { GlobalScope }
                         single { settings.mcc }
                         single { LunchmoneyApi(settings.budgetBackend.token) }
+                        single { LunchmoneyCategorySuggestionService(get(), get()) }
                     }
                 )
             }

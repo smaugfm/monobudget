@@ -8,10 +8,12 @@ import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.common.model.Settings
-import io.github.smaugfm.monobudget.common.model.ynab.YnabSaveTransaction
-import io.github.smaugfm.monobudget.common.model.ynab.YnabTransactionDetail
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
+import io.github.smaugfm.monobudget.mono.MonoModule
+import io.github.smaugfm.monobudget.mono.MonoWebhookListener
 import io.github.smaugfm.monobudget.ynab.YnabModule
+import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
+import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
@@ -41,20 +43,27 @@ fun main() {
     log.debug { "\twebhookPort: $webhookPort" }
 
     runBlocking {
-        setupKoin(settings)
+        setupKoin(settings, setWebhook, monoWebhookUrl, webhookPort)
 
         when (budgetBackend) {
             is Lunchmoney -> Application<LunchmoneyTransaction, LunchmoneyInsertTransaction>()
             is YNAB -> Application<YnabTransactionDetail, YnabSaveTransaction>()
-        }.run(setWebhook, monoWebhookUrl, webhookPort)
+        }.run()
     }
 }
 
-private fun CoroutineScope.setupKoin(settings: Settings) {
+private fun CoroutineScope.setupKoin(settings: Settings, setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
     startKoin {
         printLogger(Level.ERROR)
 
         modules(runtimeModule(settings, this@setupKoin))
+        modules(
+            MonoModule().module + module {
+                single {
+                    MonoWebhookListener(setWebhook, monoWebhookUrl, webhookPort, get(), get())
+                }
+            }
+        )
         modules(CommonModule().module)
         modules(
             when (settings.budgetBackend) {

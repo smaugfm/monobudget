@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.common.model
 
 import com.charleskorn.kaml.Yaml
 import io.github.smaugfm.monobudget.common.model.mcc.MccGroupType
-import io.github.smaugfm.monobudget.common.mono.MonoApi
+import io.github.smaugfm.monobudget.mono.MonoApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString

@@ -14,11 +14,11 @@ import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyTransactionMessageForma
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.datetime.toKotlinLocalDate
 import org.koin.core.annotation.Single
-import org.koin.core.component.inject
 
 @Single
-class LunchmoneyTelegramCallbackHandler : TelegramCallbackHandler<LunchmoneyTransaction>() {
-    private val api: LunchmoneyApi by inject()
+class LunchmoneyTelegramCallbackHandler(
+    private val api: LunchmoneyApi
+) : TelegramCallbackHandler<LunchmoneyTransaction>() {
 
     override suspend fun updateTransaction(callbackType: TransactionUpdateType): LunchmoneyTransaction {
         val txId = callbackType.transactionId.toLong()

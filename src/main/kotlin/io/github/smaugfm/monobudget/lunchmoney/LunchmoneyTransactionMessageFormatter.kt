@@ -4,11 +4,11 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.formatW
@@ -17,12 +17,12 @@ import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
 import org.koin.core.annotation.Single
-import org.koin.core.component.inject
 import java.util.Currency
 
 @Single
-class LunchmoneyTransactionMessageFormatter : TransactionMessageFormatter<LunchmoneyTransaction>() {
-    private val categorySuggestingService: CategorySuggestionService by inject()
+class LunchmoneyTransactionMessageFormatter(
+    private val categorySuggestingService: CategorySuggestionService
+) : TransactionMessageFormatter<LunchmoneyTransaction>() {
 
     private val shouldNotifyStatuses = setOf(
         LunchmoneyTransactionStatus.UNCLEARED,
@@ -33,17 +33,17 @@ class LunchmoneyTransactionMessageFormatter : TransactionMessageFormatter<Lunchm
 
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        monoStatementItem: MonoStatementItem,
+        statementItem: StatementItem,
         transaction: LunchmoneyTransaction
     ): String {
-        with(monoStatementItem) {
+        with(statementItem) {
             val accountAmount = formatAmountWithCurrency(amount, accountCurrency)
-            val operationAmount = formatAmountWithCurrency(this.operationAmount, currencyCode)
+            val operationAmount = formatAmountWithCurrency(this.operationAmount, currency)
             return formatHTMLStatementMessage(
                 "Lunchmoney",
                 (description ?: "").replaceNewLines(),
                 (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
-                accountAmount + (if (accountCurrency != currencyCode) " ($operationAmount)" else ""),
+                accountAmount + (if (accountCurrency != currency) " ($operationAmount)" else ""),
                 categorySuggestingService.categoryNameById(transaction.categoryId?.toString()) ?: "",
                 transaction.payee,
                 transaction.id.toString(),
