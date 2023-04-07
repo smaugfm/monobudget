@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.common.transaction
 
-import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer
+import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

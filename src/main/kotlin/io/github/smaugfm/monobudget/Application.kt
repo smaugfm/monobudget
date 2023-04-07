@@ -1,6 +1,8 @@
 package io.github.smaugfm.monobudget
 
+import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.common.statement.StatementItemChecker
+import io.github.smaugfm.monobudget.common.statement.StatementItemProcessor
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
@@ -10,11 +12,14 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.injectAll
 import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
-import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector
 import io.ktor.util.logging.error
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -34,7 +39,8 @@ class Application<TTransaction, TNewTransaction> :
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val processError by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
-    private val checkers by injectAll<StatementItemChecker>()
+    private val statementChecker by inject<StatementItemChecker>()
+    private val statementProcessor by injectAll<StatementItemProcessor>()
 
     suspend fun run() {
         runStartupChecks()
@@ -46,28 +52,26 @@ class Application<TTransaction, TNewTransaction> :
         val telegramJob = telegramApi.start(telegramCallbackHandler::handle)
         statementServices.asFlow()
             .flatMapMerge { it.statements() }
-            .collect handler@{ responseData ->
-                try {
-                    if (checkers.any { !it.check(responseData) }) {
-                        return@handler
-                    }
+            .filter(statementChecker::check)
+            .onEach { item -> statementProcessor.forEach { it.process(item) } }
+            .onEach { statement ->
+                val maybeTransfer =
+                    transferDetector.checkTransfer(statement)
 
-                    val maybeTransfer =
-                        transferDetector.checkTransfer(responseData)
+                val transaction = transactionCreator.create(maybeTransfer)
+                val message = messageFormatter.format(
+                    statement,
+                    transaction
+                )
 
-                    val transaction = transactionCreator.create(maybeTransfer)
-                    val message = messageFormatter.format(
-                        responseData,
-                        transaction
-                    )
-
-                    telegramMessageSender.send(responseData.accountId, message)
-                } catch (e: Throwable) {
-                    log.error(e)
-                    processError()
-                }
+                telegramMessageSender.send(statement.accountId, message)
             }
-        log.info { "Listening for Monobank webhooks and Telegram callbacks..." }
+            .catch {
+                log.error(it)
+                processError()
+            }
+            .collect()
+        log.info { "Started application" }
         telegramJob.join()
     }
 

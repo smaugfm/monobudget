@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.common.verify
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
-import io.github.smaugfm.monobudget.common.model.Settings.MultipleMonoSettings
+import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
 import io.github.smaugfm.monobudget.ynab.YnabApi
 import io.ktor.util.logging.error
 import kotlinx.coroutines.reactor.awaitSingle
@@ -15,14 +15,14 @@ private val log = KotlinLogging.logger { }
 @Single
 class BudgetSettingsVerifier(
     private val budgetBackend: BudgetBackend,
-    private val monoSettings: MultipleMonoSettings
+    private val accountSettings: MultipleAccountSettings
 ) : ApplicationStartupVerifier, KoinComponent {
 
     override suspend fun verify() {
         when (budgetBackend) {
             is BudgetBackend.Lunchmoney -> {
                 val api = getKoin().get<LunchmoneyApi>()
-                monoSettings.settings.forEach { settings ->
+                accountSettings.settings.forEach { settings ->
                     check(
                         api.getAllAssets()
                             .awaitSingle()
@@ -37,7 +37,7 @@ class BudgetSettingsVerifier(
 
             is BudgetBackend.YNAB -> {
                 val api = getKoin().get<YnabApi>()
-                monoSettings.settings.forEach { settings ->
+                accountSettings.settings.forEach { settings ->
                     try {
                         api.getAccount(settings.budgetAccountId)
                     } catch (e: Throwable) {

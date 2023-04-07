@@ -2,8 +2,10 @@ package io.github.smaugfm.monobudget.mono
 
 import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
-import io.github.smaugfm.monobudget.common.model.Settings
 import io.github.smaugfm.monobudget.common.model.financial.Account
+import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
+import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
+import io.github.smaugfm.monobudget.common.model.settings.OtherAccountSettings
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.ExperimentalSerializationApi
 import mu.KotlinLogging
@@ -15,38 +17,45 @@ private val log = KotlinLogging.logger { }
 @OptIn(ExperimentalSerializationApi::class)
 class MonoAccountsService(
     fetcherFactory: PeriodicFetcherFactory,
-    private val settings: Settings.MultipleMonoSettings
+    private val settings: MultipleAccountSettings
 ) : AccountsService() {
 
-    private val monoAccountsFetcher = fetcherFactory.create(this::class.simpleName!!) {
-        settings.apis
-            .mapIndexed { index, api ->
-                val accountId = settings.settings[index].accountId
-                val monoAccount = api.api.getClientInformation().awaitSingle()
-                    .accounts.firstOrNull { it.id == accountId }!!
-                val id = monoAccount.id
-                Account(
-                    id,
-                    settings.byId[id]!!.alias,
-                    monoAccount.balance,
-                    monoAccount.currencyCode
-                )
+    private val fetcher = fetcherFactory.create(this::class.simpleName!!) {
+        settings.settings.map {
+            when (it) {
+                is OtherAccountSettings ->
+                    Account(it.accountId, it.alias, it.currency)
+
+                is MonoAccountSettings -> {
+                    val api = MonoApi(it.token)
+
+                    val accountId = it.accountId
+                    val monoAccount =
+                        api.api.getClientInformation().awaitSingle()
+                            .accounts.firstOrNull { account -> account.id == accountId }!!
+                    Account(
+                        accountId,
+                        settings.byId[accountId]!!.alias,
+                        monoAccount.currencyCode
+                    )
+                }
             }
+        }
     }
 
-    override suspend fun getAccounts() = monoAccountsFetcher.getData()
+    override suspend fun getAccounts() = fetcher.getData().filter { it.id in settings.accountIds }
 
-    override fun getTelegramChatIdAccByMono(monoAccountId: String) = settings.byId[monoAccountId]
+    override fun getTelegramChatIdByAccountId(accountId: String) = settings.byId[accountId]
         ?.telegramChatId
-        .logMissing("Telegram chat ID", monoAccountId)
+        .logMissing("Telegram chat ID", accountId)
 
-    override fun getBudgetAccountId(monoAccountId: String): String? = settings.byId[monoAccountId]
+    override fun getBudgetAccountId(accountId: String): String? = settings.byId[accountId]
         ?.budgetAccountId
-        .logMissing("Budget account ID", monoAccountId)
+        .logMissing("Budget account ID", accountId)
 
-    private fun <T : Any?> T.logMissing(name: String, monoAccountId: String): T {
+    private fun <T : Any?> T.logMissing(name: String, accountId: String): T {
         if (this == null) {
-            log.error { "Could not find alias for $name for Monobank accountId=$monoAccountId" }
+            log.error { "Could not find alias for $name for accountId=$accountId" }
         }
         return this
     }

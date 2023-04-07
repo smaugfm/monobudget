@@ -5,10 +5,10 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
+import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
-import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer
 import kotlinx.coroutines.reactor.awaitSingle
 import mu.KotlinLogging
 import org.koin.core.annotation.Single

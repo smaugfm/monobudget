@@ -1,6 +1,5 @@
-package io.github.smaugfm.monobudget.mono
+package io.github.smaugfm.monobudget.common.account
 
-import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.misc.ExpiringMap
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import kotlinx.coroutines.CompletableDeferred
@@ -78,7 +77,7 @@ open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
         return (amountMatch && currencyMatch && mccMatch).also {
             if (!it) {
                 log.debug {
-                    "Transfer detection failed between " +
+                    "Not transfer " +
                         "new=$new\nand existing=$existing\n" +
                         "amountMatch=$amountMatch, currencyMatch=$currencyMatch, mccMatch=$mccMatch"
                 }

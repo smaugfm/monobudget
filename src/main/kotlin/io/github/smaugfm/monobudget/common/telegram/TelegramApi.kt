@@ -6,7 +6,7 @@ import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.ParseMode
 import com.elbekd.bot.types.ReplyKeyboard
-import io.github.smaugfm.monobudget.common.model.Settings
+import io.github.smaugfm.monobudget.common.model.settings.TelegramBotSettings
 import io.github.smaugfm.monobudget.common.util.pp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +20,7 @@ private val log = KotlinLogging.logger {}
 
 @Single
 class TelegramApi(
-    botSettings: Settings.TelegramBotSettings,
+    botSettings: TelegramBotSettings,
     private val scope: CoroutineScope
 ) : KoinComponent {
 

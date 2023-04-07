@@ -5,13 +5,9 @@ import java.util.Currency
 
 abstract class AccountsService {
     abstract suspend fun getAccounts(): List<Account>
-    abstract fun getTelegramChatIdAccByMono(monoAccountId: String): Long?
-    abstract fun getBudgetAccountId(monoAccountId: String): String?
+    abstract fun getTelegramChatIdByAccountId(accountId: String): Long?
 
-    suspend fun getAccountAlias(monoAccountId: String): String? = getAccounts().find { it.id == monoAccountId }?.alias
-
-    suspend fun getAccountIds(): List<String> = getAccounts().map { it.id }
-
-    suspend fun getAccountCurrency(monoAccountId: String): Currency? =
-        getAccounts().find { it.id == monoAccountId }?.currency
+    abstract fun getBudgetAccountId(accountId: String): String?
+    suspend fun getAccountAlias(accountId: String): String? = getAccounts().find { it.id == accountId }?.alias
+    suspend fun getAccountCurrency(accountId: String): Currency? = getAccounts().find { it.id == accountId }?.currency
 }

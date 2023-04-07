@@ -1,8 +1,9 @@
 package io.github.smaugfm.monobudget.mono
 
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
-import io.github.smaugfm.monobudget.common.model.Settings
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
+import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
+import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.common.util.makeJson
 import io.ktor.http.ContentType
@@ -35,7 +36,7 @@ class MonoWebhookListener(
     private val monoWebhookUrl: URI,
     private val webhookPort: Int,
     private val scope: CoroutineScope,
-    private val monoSettings: Settings.MultipleMonoSettings
+    private val monoSettings: MultipleAccountSettings
 ) : StatementService {
 
     private val json = makeJson()
@@ -84,7 +85,9 @@ class MonoWebhookListener(
         return flow
     }
 
-    private suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) = monoSettings.apis.all {
-        it.setupWebhook(monoWebhookUrl, webhookPort)
-    }
+    private suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) = monoSettings.settings
+        .filterIsInstance<MonoAccountSettings>()
+        .map { it.token }.map(::MonoApi).all {
+            it.setupWebhook(monoWebhookUrl, webhookPort)
+        }
 }

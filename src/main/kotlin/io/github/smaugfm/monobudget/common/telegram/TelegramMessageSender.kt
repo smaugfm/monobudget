@@ -16,10 +16,10 @@ class TelegramMessageSender(
     private val telegramApi: TelegramApi
 ) {
 
-    suspend fun send(monoAccountId: String, newMessage: MessageWithReplyKeyboard) {
-        val chatId = accounts.getTelegramChatIdAccByMono(monoAccountId)
+    suspend fun send(accountId: String, newMessage: MessageWithReplyKeyboard) {
+        val chatId = accounts.getTelegramChatIdByAccountId(accountId)
         if (chatId == null) {
-            log.error { "Failed to map Monobank account to telegram chat id. Account: $monoAccountId" }
+            log.error { "Failed to map Monobank account to telegram chat id. Account: $accountId" }
             return
         }
 

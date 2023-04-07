@@ -1,10 +1,10 @@
 package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.common.misc.SimpleCache
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
-import io.github.smaugfm.monobudget.mono.TransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.ynab.model.YnabCleared
 import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail

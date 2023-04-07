@@ -7,7 +7,7 @@ import io.github.smaugfm.monobudget.common.CommonModule
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
-import io.github.smaugfm.monobudget.common.model.Settings
+import io.github.smaugfm.monobudget.common.model.settings.Settings
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
 import io.github.smaugfm.monobudget.mono.MonoModule
@@ -91,7 +91,10 @@ private fun runtimeModule(settings: Settings, coroutineScope: CoroutineScope) = 
 
     single { settings.mcc }
     single { settings.bot }
-    single { settings.mono }
+    single { settings.accounts }
+    settings.transfer.forEach { s ->
+        single { s }
+    }
     single { coroutineScope }
 }
 
