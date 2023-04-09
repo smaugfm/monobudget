@@ -1,6 +1,11 @@
 package io.github.smaugfm.monobudget
 
+import io.github.resilience4j.core.IntervalFunction
+import io.github.resilience4j.kotlin.retry.RetryConfig
+import io.github.resilience4j.kotlin.retry.executeSuspendFunction
+import io.github.resilience4j.retry.Retry
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.statement.StatementItemChecker
 import io.github.smaugfm.monobudget.common.statement.StatementItemProcessor
 import io.github.smaugfm.monobudget.common.statement.StatementService
@@ -15,7 +20,6 @@ import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
 import io.ktor.util.logging.error
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapMerge
@@ -23,6 +27,7 @@ import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+import java.time.Duration
 import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
@@ -37,10 +42,21 @@ class Application<TTransaction, TNewTransaction> :
     private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
     private val transferDetector by inject<TransferBetweenAccountsDetector<TTransaction>>()
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
-    private val processError by inject<TelegramErrorUnknownErrorHandler>()
+    private val errorHandler by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
     private val statementChecker by inject<StatementItemChecker>()
     private val statementProcessor by injectAll<StatementItemProcessor>()
+
+    private val retry = Retry.of("processStatement", RetryConfig {
+        maxAttempts(3)
+        failAfterMaxAttempts(true)
+        intervalFunction(
+            IntervalFunction.ofExponentialBackoff(
+                Duration.ofSeconds(10),
+                2.0
+            )
+        )
+    })
 
     suspend fun run() {
         runStartupChecks()
@@ -54,25 +70,40 @@ class Application<TTransaction, TNewTransaction> :
             .flatMapMerge { it.statements() }
             .filter(statementChecker::check)
             .onEach { item -> statementProcessor.forEach { it.process(item) } }
-            .onEach { statement ->
-                val maybeTransfer =
-                    transferDetector.checkTransfer(statement)
-
-                val transaction = transactionCreator.create(maybeTransfer)
-                val message = messageFormatter.format(
-                    statement,
-                    transaction
-                )
-
-                telegramMessageSender.send(statement.accountId, message)
-            }
-            .catch {
-                log.error(it)
-                processError()
-            }
+            .onEach(::process)
             .collect()
         log.info { "Started application" }
         telegramJob.join()
+    }
+
+    private suspend fun process(statement: StatementItem) {
+        try {
+            retry.executeSuspendFunction {
+                try {
+                    processStatement(statement)
+                } catch (e: Throwable) {
+                    log.error(e)
+                    errorHandler.onRetry(statement)
+                    throw e
+                }
+            }
+        } catch (e: Throwable) {
+            log.error(e)
+            errorHandler.onUnknownError()
+        }
+    }
+
+    private suspend fun processStatement(statement: StatementItem) {
+        val maybeTransfer =
+            transferDetector.checkTransfer(statement)
+
+        val transaction = transactionCreator.create(maybeTransfer)
+        val message = messageFormatter.format(
+            statement,
+            transaction
+        )
+
+        telegramMessageSender.send(statement.accountId, message)
     }
 
     private suspend fun runStartupChecks() {

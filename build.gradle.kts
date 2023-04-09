@@ -25,6 +25,7 @@ val junit = "5.9.2"
 val logback = "1.4.5"
 val koin = "3.4.0"
 val koinKsp = "1.2.0"
+val resilience4jVersion = "1.7.0"
 
 val githubToken: String? by project
 
@@ -42,6 +43,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("io.insert-koin:koin-core:$koin")
     implementation("io.insert-koin:koin-annotations:$koinKsp")
+    implementation("io.github.resilience4j:resilience4j-retry:$resilience4jVersion")
+    implementation("io.github.resilience4j:resilience4j-kotlin:$resilience4jVersion")
     ksp("io.insert-koin:koin-ksp-compiler:$koinKsp")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
