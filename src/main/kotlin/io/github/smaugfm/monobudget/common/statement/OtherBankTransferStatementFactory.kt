@@ -9,8 +9,8 @@ import org.koin.core.annotation.Single
 class OtherBankTransferStatementFactory(
     private val transferSettings: List<OtherBanksTransferSettings>,
     private val otherBanksStatementService: OtherBankStatementService
-) : StatementItemProcessor {
-    override suspend fun process(item: StatementItem) {
+) : StatementItemListener {
+    override suspend fun onNewStatementItem(item: StatementItem) {
         val matchingSetting = findMatchingSettings(item)
         if (matchingSetting != null) {
             emitTransfer(matchingSetting, item)

@@ -7,7 +7,7 @@ import io.github.resilience4j.retry.Retry
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.statement.StatementItemChecker
-import io.github.smaugfm.monobudget.common.statement.StatementItemProcessor
+import io.github.smaugfm.monobudget.common.statement.StatementItemListener
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
@@ -45,18 +45,22 @@ class Application<TTransaction, TNewTransaction> :
     private val errorHandler by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
     private val statementChecker by inject<StatementItemChecker>()
-    private val statementProcessor by injectAll<StatementItemProcessor>()
+    private val statementListeners by injectAll<StatementItemListener>()
 
-    private val retry = Retry.of("processStatement", RetryConfig {
-        maxAttempts(3)
-        failAfterMaxAttempts(true)
-        intervalFunction(
-            IntervalFunction.ofExponentialBackoff(
-                Duration.ofSeconds(10),
-                2.0
+    @Suppress("MagicNumber")
+    private val processStatementRetry = Retry.of(
+        "processStatement",
+        RetryConfig {
+            maxAttempts(3)
+            failAfterMaxAttempts(true)
+            intervalFunction(
+                IntervalFunction.ofExponentialBackoff(
+                    Duration.ofSeconds(10),
+                    2.0
+                )
             )
-        )
-    })
+        }
+    )
 
     suspend fun run() {
         runStartupChecks()
@@ -69,7 +73,7 @@ class Application<TTransaction, TNewTransaction> :
         statementServices.asFlow()
             .flatMapMerge { it.statements() }
             .filter(statementChecker::check)
-            .onEach { item -> statementProcessor.forEach { it.process(item) } }
+            .onEach { item -> statementListeners.forEach { it.onNewStatementItem(item) } }
             .onEach(::process)
             .collect()
         log.info { "Started application" }
@@ -78,7 +82,7 @@ class Application<TTransaction, TNewTransaction> :
 
     private suspend fun process(statement: StatementItem) {
         try {
-            retry.executeSuspendFunction {
+            processStatementRetry.executeSuspendFunction {
                 try {
                     processStatement(statement)
                 } catch (e: Throwable) {

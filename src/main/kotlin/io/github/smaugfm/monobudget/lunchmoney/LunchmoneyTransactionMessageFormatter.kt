@@ -4,12 +4,12 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
+import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
-import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.formatW
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
@@ -21,7 +21,7 @@ import java.util.Currency
 
 @Single
 class LunchmoneyTransactionMessageFormatter(
-    private val categorySuggestingService: CategorySuggestionService
+    private val categoryService: CategoryService
 ) : TransactionMessageFormatter<LunchmoneyTransaction>() {
 
     private val shouldNotifyStatuses = setOf(
@@ -37,14 +37,16 @@ class LunchmoneyTransactionMessageFormatter(
         transaction: LunchmoneyTransaction
     ): String {
         with(statementItem) {
-            val accountAmount = formatAmountWithCurrency(amount, accountCurrency)
-            val operationAmount = formatAmountWithCurrency(this.operationAmount, currency)
+            val accountAmount = amount.formatWithCurrency(accountCurrency)
+            val operationAmount = operationAmount.formatWithCurrency(currency)
+            val category = categoryService.budgetedCategoryById(transaction.categoryId?.toString())
+
             return formatHTMLStatementMessage(
                 "Lunchmoney",
                 (description ?: "").replaceNewLines(),
                 (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
                 accountAmount + (if (accountCurrency != currency) " ($operationAmount)" else ""),
-                categorySuggestingService.categoryNameById(transaction.categoryId?.toString()) ?: "",
+                category,
                 transaction.payee,
                 transaction.id.toString(),
                 constructTransactionsQuickUrl()
@@ -71,17 +73,20 @@ class LunchmoneyTransactionMessageFormatter(
         return pressed
     }
 
-    override fun getReplyKeyboard(transaction: LunchmoneyTransaction, pressed: PressedButtons) = InlineKeyboardMarkup(
-        listOf(
+    override fun getReplyKeyboard(transaction: LunchmoneyTransaction, pressed: PressedButtons) =
+        InlineKeyboardMarkup(
             listOf(
-                TransactionUpdateType.Unapprove.button(pressed),
-                ActionCallbackType.ChooseCategory.button(pressed)
+                listOf(
+                    TransactionUpdateType.Unapprove.button(pressed),
+                    ActionCallbackType.ChooseCategory.button(pressed)
+                )
             )
         )
-    )
 
     companion object {
-        fun constructTransactionsQuickUrl(date: LocalDate = Clock.System.now().toLocalDateTime().date): String {
+        fun constructTransactionsQuickUrl(
+            date: LocalDate = Clock.System.now().toLocalDateTime().date
+        ): String {
             val monthNumber = date.month.value.formatW()
             return "${LunchmoneyApi.LUNCHMONEY_APP_BASE_URL}/transactions/${date.year}/$monthNumber"
         }

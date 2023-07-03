@@ -4,7 +4,6 @@ import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import mu.KotlinLogging
@@ -31,9 +30,9 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
         suspend fun getData() = data.await()
 
         init {
-            log.info { "Launching periodic fetcher $name" }
+            log.info { "Launching periodic fetcher for $name" }
             data = initial
-            scope.launch(context = Dispatchers.IO) {
+            scope.launch {
                 while (true) {
                     log.debug { "$name fetching..." }
                     val result = try {

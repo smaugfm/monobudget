@@ -19,7 +19,7 @@ class YnabNewTransactionFactory(
     private val ynabApi: YnabApi
 ) : NewTransactionFactory<YnabSaveTransaction>() {
 
-    private val payeesFetcher = periodicFetcherFactory.create(this::class.simpleName!!) { ynabApi.getPayees() }
+    private val payeesFetcher = periodicFetcherFactory.create("YNAB payees") { ynabApi.getPayees() }
 
     override suspend fun create(statement: StatementItem): YnabSaveTransaction {
         log.debug { "Transforming Monobank statement to Ynab transaction." }
@@ -34,7 +34,7 @@ class YnabNewTransactionFactory(
             YnabSaveTransaction(
                 accountId = getBudgetAccountId(statement),
                 date = time.toLocalDateTime().date,
-                amount = getAmount(),
+                amount = amount.toYnabAmount(),
                 payeeId = null,
                 payeeName = suggestedPayee,
                 categoryId = getCategoryId(statement),
@@ -46,17 +46,5 @@ class YnabNewTransactionFactory(
                 subtransactions = emptyList()
             )
         }
-    }
-
-    /**
-     * Monobank amount uses minimum currency units (e.g. cents for dollars)
-     * and YNAB amount uses milliunits (1/1000th of a dollar)
-     */
-    private fun StatementItem.getAmount(): Long {
-        return amount * MONO_TO_YNAB_ADJUST
-    }
-
-    companion object {
-        private const val MONO_TO_YNAB_ADJUST = 10
     }
 }

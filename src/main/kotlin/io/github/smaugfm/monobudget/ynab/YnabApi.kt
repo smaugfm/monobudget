@@ -93,10 +93,11 @@ class YnabApi(backend: YNAB) {
             .body<YnabPayeesResponse>()
     }.data.payees
 
-    suspend fun getCategoryGroups(): List<YnabCategoryGroupWithCategories> = catching(this::getCategoryGroups) {
-        httpClient.get(buildUrl("budgets", budgetId, "categories"))
-            .body<YnabCategoriesResponse>()
-    }.data.categoryGroups
+    suspend fun getCategoryGroups(): List<YnabCategoryGroupWithCategories> =
+        catching(this::getCategoryGroups) {
+            httpClient.get(buildUrl("budgets", budgetId, "categories"))
+                .body<YnabCategoriesResponse>()
+        }.data.categoryGroups
 
     suspend fun createTransaction(transaction: YnabSaveTransaction): YnabTransactionDetail =
         catching(this::createTransaction) {
@@ -106,31 +107,34 @@ class YnabApi(backend: YNAB) {
             }.body<YnabSaveTransactionResponse>()
         }.data.transaction
 
-    suspend fun updateTransaction(transactionId: String, transaction: YnabSaveTransaction): YnabTransactionDetail =
-        catching(this::updateTransaction) {
-            httpClient.put(
-                buildUrl(
-                    "budgets",
-                    budgetId,
-                    "transactions",
-                    transactionId
-                )
-            ) {
-                contentType(ContentType.Application.Json)
-                setBody(YnabSaveTransactionWrapper(transaction))
-            }.body<YnabTransactionResponse>()
-        }.data.transaction
-
-    suspend fun getTransaction(transactionId: String): YnabTransactionDetail = catching(this::getTransaction) {
-        httpClient.get(
+    suspend fun updateTransaction(
+        transactionId: String,
+        transaction: YnabSaveTransaction
+    ): YnabTransactionDetail = catching(this::updateTransaction) {
+        httpClient.put(
             buildUrl(
                 "budgets",
                 budgetId,
                 "transactions",
                 transactionId
             )
-        ).body<YnabTransactionResponse>()
+        ) {
+            contentType(ContentType.Application.Json)
+            setBody(YnabSaveTransactionWrapper(transaction))
+        }.body<YnabTransactionResponse>()
     }.data.transaction
+
+    suspend fun getTransaction(transactionId: String): YnabTransactionDetail =
+        catching(this::getTransaction) {
+            httpClient.get(
+                buildUrl(
+                    "budgets",
+                    budgetId,
+                    "transactions",
+                    transactionId
+                )
+            ).body<YnabTransactionResponse>()
+        }.data.transaction
 
     suspend fun getAccountTransactions(accountId: String): List<YnabTransactionDetail> =
         catching(this::getAccountTransactions) {

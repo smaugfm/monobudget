@@ -53,7 +53,12 @@ fun main() {
     }
 }
 
-private fun CoroutineScope.setupKoin(settings: Settings, setWebhook: Boolean, monoWebhookUrl: URI, webhookPort: Int) {
+private fun CoroutineScope.setupKoin(
+    settings: Settings,
+    setWebhook: Boolean,
+    monoWebhookUrl: URI,
+    webhookPort: Int
+) {
     startKoin {
         printLogger(Level.ERROR)
 

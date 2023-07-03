@@ -14,7 +14,8 @@ class HashBiMapAsMapSerializer<K : Any, V : Any>(
     private val mapSerializer = MapSerializer(keySerializer, valueSerializer)
     override val descriptor = mapSerializer.descriptor
 
-    override fun deserialize(decoder: Decoder): BiMap<K, V> = decoder.decodeSerializableValue(mapSerializer).toBiMap()
+    override fun deserialize(decoder: Decoder): BiMap<K, V> =
+        decoder.decodeSerializableValue(mapSerializer).toBiMap()
 
     override fun serialize(encoder: Encoder, value: BiMap<K, V>) {
         encoder.encodeSerializableValue(mapSerializer, value)

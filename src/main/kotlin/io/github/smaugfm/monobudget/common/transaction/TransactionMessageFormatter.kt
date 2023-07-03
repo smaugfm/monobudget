@@ -4,11 +4,11 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
 import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.telegram.MessageWithReplyKeyboard
-import io.github.smaugfm.monobudget.common.util.formatAmount
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -48,7 +48,10 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
         callbackType: TransactionUpdateType? = null
     ): PressedButtons
 
-    protected abstract fun getReplyKeyboard(transaction: TTransaction, pressed: PressedButtons): InlineKeyboardMarkup
+    protected abstract fun getReplyKeyboard(
+        transaction: TTransaction,
+        pressed: PressedButtons
+    ): InlineKeyboardMarkup
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
@@ -64,7 +67,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             description: String,
             mcc: String,
             amount: String,
-            category: String,
+            category: CategoryService.BudgetedCategory?,
             payee: String,
             id: String,
             idLink: String? = null
@@ -83,13 +86,27 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
                 builder.append("\uD83D\uDCB3 <b>$description</b>\n")
                 builder.append("      $mcc\n")
                 builder.append("      <u>$amount</u>\n")
-                builder.append("      <code>Category: $category</code>\n")
+                builder.append("      <code>Category: ${category?.categoryName ?: ""}</code>\n")
                 builder.append("      <code>Payee:    $payee</code>\n")
+                val (left, budgeted) = formatBudget(category)
+                if (left != null && budgeted != null) {
+                    builder.append("\n")
+                    builder.append("Бюджет: <code>$left</code> із <code>$budgeted</code>")
+                }
                 builder.append("\n\n")
                 builder.append(if (idLink != null) "<a href=\"$idLink\">$id</a>" else "<pre>$id</pre>")
 
                 builder.toString()
             }
+        }
+
+        private fun formatBudget(category: CategoryService.BudgetedCategory?): Pair<String?, String?> {
+            val budget = category?.budget ?: return Pair(null, null)
+
+            return Pair(
+                budget.left.formatWithCurrency(budget.currency),
+                budget.budgetedThisMonth.formatWithCurrency(budget.currency)
+            )
         }
 
         @JvmStatic
@@ -121,8 +138,10 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             val id: String
         )
 
-        fun formatAmountWithCurrency(amount: Long, currency: Currency) =
-            currency.formatAmount(amount) + currency.currencyCode
+        data class FormattedBudget(
+            val left: String,
+            val budgeted: String
+        )
 
         internal fun <T : TransactionUpdateType> callbackData(cls: KClass<out T>) = cls.simpleName!!
     }

@@ -10,7 +10,9 @@ interface StatementItem {
     val description: String?
     val comment: String?
     val mcc: Int
-    val amount: Long
-    val operationAmount: Long
+    val amount: Amount
+    val operationAmount: Amount
     val currency: Currency
+
+    fun formatAmountWithCurrency() = amount.formatWithCurrency(currency)
 }

@@ -5,7 +5,6 @@ import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatu
 import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
-import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.formatAmountWithCurrency
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.toJavaLocalDate
 import mu.KotlinLogging
@@ -29,7 +28,7 @@ class LunchmoneyNewTransactionFactory(
         return with(statement) {
             LunchmoneyInsertTransaction(
                 date = time.toLocalDateTime().date.toJavaLocalDate(),
-                amount = getAmount(accountCurrency),
+                amount = amount.toLunchmoneyAmount(accountCurrency),
                 categoryId = categoryId,
                 payee = description,
                 currency = accountCurrency,
@@ -55,13 +54,6 @@ class LunchmoneyNewTransactionFactory(
             return desc
         }
 
-        return "${formatAmountWithCurrency(operationAmount, currency)} $desc"
-    }
-
-    companion object {
-        private fun StatementItem.getAmount(currency: Currency) = lunchmoneyAmount(amount, currency)
-
-        fun lunchmoneyAmount(amount: Long, currency: Currency) = amount.toBigDecimal().setScale(2) /
-            (10.toBigDecimal().pow(currency.defaultFractionDigits))
+        return "${formatAmountWithCurrency()} $desc"
     }
 }

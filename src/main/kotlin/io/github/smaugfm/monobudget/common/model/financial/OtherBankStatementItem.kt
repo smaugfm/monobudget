@@ -12,7 +12,7 @@ data class OtherBankStatementItem(
     override val description: String?,
     override val comment: String? = null,
     override val mcc: Int,
-    override val amount: Long,
-    override val operationAmount: Long,
+    override val amount: Amount,
+    override val operationAmount: Amount,
     override val currency: Currency
 ) : StatementItem

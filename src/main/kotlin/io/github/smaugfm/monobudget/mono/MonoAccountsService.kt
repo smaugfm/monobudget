@@ -20,7 +20,7 @@ class MonoAccountsService(
     private val settings: MultipleAccountSettings
 ) : AccountsService() {
 
-    private val fetcher = fetcherFactory.create(this::class.simpleName!!) {
+    private val fetcher = fetcherFactory.create("Monobank accounts") {
         settings.settings.map {
             when (it) {
                 is OtherAccountSettings ->

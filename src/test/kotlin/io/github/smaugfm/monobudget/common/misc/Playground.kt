@@ -3,7 +3,7 @@ package io.github.smaugfm.monobudget.common.misc
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.settings.Settings
-import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyCategorySuggestionService
+import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyCategoryService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -27,7 +27,7 @@ import kotlin.io.path.readText
 @Disabled
 @OptIn(DelicateCoroutinesApi::class)
 class Playground : KoinTest {
-    val categorySuggestion: LunchmoneyCategorySuggestionService by inject()
+    val categorySuggestion: LunchmoneyCategoryService by inject()
 
     companion object {
         @BeforeAll
@@ -42,7 +42,7 @@ class Playground : KoinTest {
                         single<CoroutineScope> { GlobalScope }
                         single { settings.mcc }
                         single { LunchmoneyApi(settings.budgetBackend.token) }
-                        single { LunchmoneyCategorySuggestionService(get(), get()) }
+                        single { LunchmoneyCategoryService(get(), get()) }
                     }
                 )
             }
@@ -66,7 +66,7 @@ class Playground : KoinTest {
             ).map {
                 CsvOutputItem(
                     it.time,
-                    categorySuggestion.categoryNameByMcc(it.mcc.toInt()) ?: "",
+                    categorySuggestion.inferCategoryNameByMcc(it.mcc.toInt()) ?: "",
                     it.details,
                     if (it.currency == "UAH") it.amount + it.currency else it.operationAmount + it.currency,
                     "${it.mcc} " + MCC.map[it.mcc.toInt()]?.fullDescription

@@ -9,5 +9,6 @@ abstract class AccountsService {
 
     abstract fun getBudgetAccountId(accountId: String): String?
     suspend fun getAccountAlias(accountId: String): String? = getAccounts().find { it.id == accountId }?.alias
-    suspend fun getAccountCurrency(accountId: String): Currency? = getAccounts().find { it.id == accountId }?.currency
+    suspend fun getAccountCurrency(accountId: String): Currency? =
+        getAccounts().find { it.id == accountId }?.currency
 }

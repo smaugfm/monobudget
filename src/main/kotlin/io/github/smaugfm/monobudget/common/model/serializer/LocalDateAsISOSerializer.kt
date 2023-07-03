@@ -10,7 +10,10 @@ import kotlinx.serialization.encoding.Encoder
 
 class LocalDateAsISOSerializer : KSerializer<LocalDate> {
     override val descriptor =
-        PrimitiveSerialDescriptor(LocalDateAsISOSerializer::class.qualifiedName.toString(), PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor(
+            LocalDateAsISOSerializer::class.qualifiedName.toString(),
+            PrimitiveKind.STRING
+        )
 
     override fun serialize(encoder: Encoder, value: LocalDate) {
         encoder.encodeString(value.toString())

@@ -4,7 +4,6 @@ import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.misc.SimpleCache
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
-import io.github.smaugfm.monobudget.common.util.formatAmount
 import io.github.smaugfm.monobudget.common.util.pp
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
@@ -57,7 +56,7 @@ class StatementItemChecker(
                     if (log.isDebugEnabled) {
                         this.pp()
                     } else {
-                        "\tAmount: ${currency.formatAmount(amount)}\n" +
+                        "\tAmount: ${item.amount.format(currency)}\n" +
                             "\tDescription: $description" +
                             "\tMemo: $comment"
                     }

@@ -19,14 +19,21 @@ private val gson =
         .registerTypeAdapter(
             Currency::class.java,
             object : JsonSerializer<Currency> {
-                override fun serialize(src: Currency, typeOfSrc: Type, context: JsonSerializationContext): JsonElement =
-                    context.serialize(src.currencyCode)
+                override fun serialize(
+                    src: Currency,
+                    typeOfSrc: Type,
+                    context: JsonSerializationContext
+                ): JsonElement = context.serialize(src.currencyCode)
             }
         )
         .registerTypeAdapter(
             Instant::class.java,
             object : JsonSerializer<Instant> {
-                override fun serialize(src: Instant, typeOfSrc: Type, context: JsonSerializationContext): JsonElement =
+                override fun serialize(
+                    src: Instant,
+                    typeOfSrc: Type,
+                    context: JsonSerializationContext
+                ): JsonElement =
                     context.serialize(src.toLocalDateTime(TimeZone.currentSystemDefault()).toString())
             }
         )

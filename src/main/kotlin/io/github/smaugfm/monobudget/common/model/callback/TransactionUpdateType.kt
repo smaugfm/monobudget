@@ -16,7 +16,10 @@ sealed class TransactionUpdateType : CallbackType() {
         companion object : ButtonBase(MakePayee::class)
     }
 
-    data class UpdateCategory(override val transactionId: String, val categoryId: String) : TransactionUpdateType() {
+    data class UpdateCategory(
+        override val transactionId: String,
+        val categoryId: String
+    ) : TransactionUpdateType() {
         companion object {
             private const val DELIMITER = "#"
             fun button(categoryId: String, categoryName: String) = InlineKeyboardButton(

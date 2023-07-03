@@ -8,7 +8,8 @@ sealed class ActionCallbackType : CallbackType() {
     }
 
     companion object {
-        fun classFromCallbackData(callbackData: String?): KClass<out ActionCallbackType>? = ActionCallbackType::class
-            .sealedSubclasses.find { callbackData == it.simpleName }
+        fun classFromCallbackData(callbackData: String?): KClass<out ActionCallbackType>? =
+            ActionCallbackType::class
+                .sealedSubclasses.find { callbackData == it.simpleName }
     }
 }

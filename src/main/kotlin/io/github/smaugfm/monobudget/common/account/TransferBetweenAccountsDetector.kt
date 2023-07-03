@@ -111,7 +111,5 @@ open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
 
     companion object {
         private const val TRANSFER_MCC = 4829
-
-        fun Long.equalsInverted(other: Long): Boolean = this == -other
     }
 }

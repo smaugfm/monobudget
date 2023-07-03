@@ -6,6 +6,7 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
 import com.elbekd.bot.types.ParseMode
+import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
@@ -15,7 +16,6 @@ import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.Uncategorize
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.UpdateCategory
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
-import io.github.smaugfm.monobudget.common.suggestion.CategorySuggestionService
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.isEven
 import io.github.smaugfm.monobudget.common.util.isOdd
@@ -27,7 +27,7 @@ import org.koin.core.component.inject
 private val log = KotlinLogging.logger {}
 
 abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
-    protected val categorySuggestionService: CategorySuggestionService by inject()
+    protected val categoryService: CategoryService by inject()
     private val telegram: TelegramApi by inject()
     private val formatter: TransactionMessageFormatter<TTransaction> by inject()
     private val monoSettings: MultipleAccountSettings by inject()
@@ -58,13 +58,15 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
                     ChatId.IntegerId(message.chat.id),
                     message.messageId,
                     categoriesInlineKeyboard(
-                        categorySuggestionService.categoryIdToNameList()
+                        categoryService.categoryIdToNameList()
                     )
                 )
         }
     }
 
-    private fun categoriesInlineKeyboard(categoryIdToNameList: List<Pair<String, String>>): InlineKeyboardMarkup {
+    private fun categoriesInlineKeyboard(
+        categoryIdToNameList: List<Pair<String, String>>
+    ): InlineKeyboardMarkup {
         val buttons = categoryIdToNameList
             .map { (id, name) -> UpdateCategory.button(id, name) }
         val rows = buttons
@@ -79,7 +81,11 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         return InlineKeyboardMarkup(rows.toList())
     }
 
-    private suspend fun handleUpdate(callbackType: TransactionUpdateType, callbackQueryId: String, message: Message) {
+    private suspend fun handleUpdate(
+        callbackType: TransactionUpdateType,
+        callbackQueryId: String,
+        message: Message
+    ) {
         val updatedTransaction = updateTransaction(callbackType).also {
             try {
                 telegram.answerCallbackQuery(callbackQueryId)
@@ -114,7 +120,9 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         oldMessage: Message
     ): String
 
-    private suspend fun parseCallbackQuery(callbackQuery: CallbackQuery): TransactionUpdateCallbackQueryWrapper? {
+    private suspend fun parseCallbackQuery(
+        callbackQuery: CallbackQuery
+    ): TransactionUpdateCallbackQueryWrapper? {
         val callbackQueryId = callbackQuery.id
         val data = callbackQueryData(callbackQuery)
         val message = callbackQueryMessage(callbackQuery)

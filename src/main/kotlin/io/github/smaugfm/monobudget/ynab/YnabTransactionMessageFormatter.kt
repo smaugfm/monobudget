@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.ynab
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
+import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
@@ -13,7 +14,9 @@ import org.koin.core.annotation.Single
 import java.util.Currency
 
 @Single
-class YnabTransactionMessageFormatter : TransactionMessageFormatter<YnabTransactionDetail>() {
+class YnabTransactionMessageFormatter(
+    private val categoryService: CategoryService
+) : TransactionMessageFormatter<YnabTransactionDetail>() {
 
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
@@ -21,14 +24,17 @@ class YnabTransactionMessageFormatter : TransactionMessageFormatter<YnabTransact
         transaction: YnabTransactionDetail
     ): String {
         with(statementItem) {
-            val accountAmount = formatAmountWithCurrency(amount, accountCurrency)
-            val operationAmount = formatAmountWithCurrency(this.operationAmount, currency)
+            val accountAmount = amount.formatWithCurrency(accountCurrency)
+            val operationAmount = operationAmount.formatWithCurrency(currency)
+
+            val category = categoryService.budgetedCategoryById(transaction.categoryId)
+
             return formatHTMLStatementMessage(
                 "YNAB",
                 (description ?: "").replaceNewLines(),
                 (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
                 accountAmount + (if (accountCurrency != currency) " ($operationAmount)" else ""),
-                transaction.categoryName ?: "",
+                category,
                 transaction.payeeName ?: "",
                 transaction.id
             )
@@ -54,13 +60,14 @@ class YnabTransactionMessageFormatter : TransactionMessageFormatter<YnabTransact
         return pressed
     }
 
-    override fun getReplyKeyboard(transaction: YnabTransactionDetail, pressed: PressedButtons) = InlineKeyboardMarkup(
-        listOf(
+    override fun getReplyKeyboard(transaction: YnabTransactionDetail, pressed: PressedButtons) =
+        InlineKeyboardMarkup(
             listOf(
-                TransactionUpdateType.Unapprove.button(pressed),
-                TransactionUpdateType.Uncategorize.button(pressed),
-                TransactionUpdateType.MakePayee.button(pressed)
+                listOf(
+                    TransactionUpdateType.Unapprove.button(pressed),
+                    TransactionUpdateType.Uncategorize.button(pressed),
+                    TransactionUpdateType.MakePayee.button(pressed)
+                )
             )
         )
-    )
 }

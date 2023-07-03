@@ -58,14 +58,14 @@ class LunchmoneyTelegramCallbackHandler(
     ): String {
         val description = extractDescriptionFromOldMessage(oldMessage)
         val (mcc, currency, transactionId) = extractFromOldMessage(oldMessage)
+        val category = categoryService.budgetedCategoryById(updatedTransaction.categoryId?.toString())
 
         return formatHTMLStatementMessage(
             "Lunchmoney",
             description,
             mcc,
             currency,
-            categorySuggestionService
-                .categoryNameById(updatedTransaction.categoryId?.toString()) ?: "",
+            category,
             updatedTransaction.payee,
             transactionId,
             constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate())
