@@ -15,12 +15,12 @@ private val log = KotlinLogging.logger {}
 
 @Single
 class PeriodicFetcherFactory(private val scope: CoroutineScope) {
-    fun <T> create(name: String, fetch: suspend () -> T) = PeriodicFetcher(name, fetch, 1.hours)
+    fun <T> create(name: String, fetch: suspend () -> T) = PeriodicFetcher(name, 1.hours, fetch)
 
     inner class PeriodicFetcher<T>(
         name: String,
-        fetch: suspend () -> T,
-        interval: Duration
+        interval: Duration,
+        fetch: suspend () -> T
     ) {
         private val initial = CompletableDeferred<T>()
 
@@ -31,7 +31,6 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
 
         init {
             log.info { "Launching periodic fetcher for $name" }
-            data = initial
             scope.launch {
                 while (true) {
                     log.debug { "$name fetching..." }
@@ -43,9 +42,9 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
                     }
                     if (data === initial) {
                         initial.complete(result)
-                    } else {
-                        data = CompletableDeferred(result)
                     }
+                    data = CompletableDeferred(result)
+                    log.debug { "$name fetched: $result" }
                     delay(interval)
                 }
             }

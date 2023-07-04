@@ -8,7 +8,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class ExpiryContainerTest {
     @Test
-    fun simple() {
+    fun expiryContainerSimpleTest() {
         val delay = 100L
         val tolerance = 10
 

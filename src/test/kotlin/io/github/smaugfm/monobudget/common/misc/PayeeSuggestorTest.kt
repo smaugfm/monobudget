@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test
 
 class PayeeSuggestorTest {
     @Test
-    fun test() {
+    fun payyeSuggestorSimpleTest() {
         val suggestor = StringSimilarityPayeeSuggestionService()
         val result = suggestor.twoPass(
             "Intellij Idea Ultimate",

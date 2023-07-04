@@ -10,7 +10,7 @@ import java.util.Currency
 class LunchmoneyNewTransactionFactoryTest {
 
     @Test
-    fun lunchmoneyAmount() {
+    fun lunchmoneyAmountTest() {
         assertThat(
             Amount(499).toLunchmoneyAmount(Currency.getInstance("USD"))
         ).isEqualTo(BigDecimal("4.99"))

@@ -1,7 +1,6 @@
 package io.github.smaugfm.monobudget.lunchmoney
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
-import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.category.CategoryService
@@ -88,7 +87,7 @@ class LunchmoneyTransactionMessageFormatter(
             date: LocalDate = Clock.System.now().toLocalDateTime().date
         ): String {
             val monthNumber = date.month.value.formatW()
-            return "${LunchmoneyApi.LUNCHMONEY_APP_BASE_URL}/transactions/${date.year}/$monthNumber"
+            return "https://my.lunchmoney.app/transactions/${date.year}/$monthNumber"
         }
     }
 }

@@ -47,12 +47,12 @@ class LunchmoneyCategoryService(
                 .getData()
                 .firstOrNull { it.categoryId == idLong }
                 ?.data?.values?.first()
-                ?.takeIf { it.budgetToBase != null && it.budgetAmount != null && it.budgetCurrency != null }
+                ?.takeIf { it.budgetToBase != null && it.budgetCurrency != null }
                 ?.takeUnless { it.isAutomated == true }
                 ?.let {
                     BudgetedCategory.CategoryBudget(
                         Amount.fromLunchmoneyAmount(
-                            it.budgetToBase!! - it.spendingToBase,
+                            it.budgetToBase!! - (it.spendingToBase ?: 0.0),
                             it.budgetCurrency!!
                         ),
                         Amount.fromLunchmoneyAmount(
