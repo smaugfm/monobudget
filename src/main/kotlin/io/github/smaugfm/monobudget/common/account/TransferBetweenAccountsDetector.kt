@@ -106,10 +106,5 @@ open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
         return a1.equalsInverted(oa2) || oa1.equalsInverted(a2)
     }
 
-    private fun mccMatch(new: StatementItem, existing: StatementItem) =
-        new.mcc == TRANSFER_MCC && existing.mcc == TRANSFER_MCC
-
-    companion object {
-        private const val TRANSFER_MCC = 4829
-    }
+    private fun mccMatch(new: StatementItem, existing: StatementItem) = new.mcc == existing.mcc
 }

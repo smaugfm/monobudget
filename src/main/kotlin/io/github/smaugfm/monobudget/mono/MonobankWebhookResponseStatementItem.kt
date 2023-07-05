@@ -4,8 +4,8 @@ import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.common.model.financial.Amount
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 
-class MonobankWebhookResponseStatementItem(
-    original: MonoWebhookResponseData
+data class MonobankWebhookResponseStatementItem(
+    val original: MonoWebhookResponseData
 ) : StatementItem {
     override val id = original.statementItem.id
     override val accountId = original.account
