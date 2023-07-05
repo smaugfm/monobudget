@@ -91,7 +91,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
                 val (left, budgeted) = formatBudget(category)
                 if (left != null && budgeted != null) {
                     builder.append("\n")
-                    builder.append("Бюджет: <code>$left</code> із <code>$budgeted</code>")
+                    builder.append("Залишок: <code>$left</code> із <code>$budgeted</code>")
                 }
                 builder.append("\n\n")
                 builder.append(if (idLink != null) "<a href=\"$idLink\">$id</a>" else "<pre>$id</pre>")
@@ -104,8 +104,8 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             val budget = category?.budget ?: return Pair(null, null)
 
             return Pair(
-                budget.left.formatWithCurrency(budget.currency),
-                budget.budgetedThisMonth.formatWithCurrency(budget.currency)
+                budget.left.format(budget.currency, true),
+                budget.budgetedThisMonth.formatWithCurrency(budget.currency, true)
             )
         }
 

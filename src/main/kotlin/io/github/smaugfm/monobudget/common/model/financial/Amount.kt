@@ -9,13 +9,13 @@ import kotlin.math.roundToLong
 @JvmInline
 value class Amount(val value: Long) {
 
-    fun formatWithCurrency(currency: Currency): String {
-        return format(currency) + currency.currencyCode
+    fun formatWithCurrency(currency: Currency, noDecimals: Boolean = false): String {
+        return format(currency, noDecimals) + currency.currencyCode
     }
 
-    fun format(currency: Currency): String {
+    fun format(currency: Currency, noDecimals: Boolean = false): String {
         val delimiter = (10.0.pow(currency.defaultFractionDigits)).toInt()
-        return "${value / delimiter}.${(abs(value % delimiter).formatW())}"
+        return "${value / delimiter}${if (noDecimals) "" else ".${(abs(value % delimiter).formatW())}"}"
     }
 
     operator fun unaryMinus() = Amount(-value)
