@@ -91,7 +91,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
                 val (left, budgeted) = formatBudget(category)
                 if (left != null && budgeted != null) {
                     builder.append("\n")
-                    builder.append("Залишок: <code>$left</code> із <code>$budgeted</code>")
+                    builder.append("Budget: <code>$left</code> із <code>$budgeted</code>")
                 }
                 builder.append("\n\n")
                 builder.append(if (idLink != null) "<a href=\"$idLink\">$id</a>" else "<pre>$id</pre>")

@@ -1,12 +1,14 @@
 package io.github.smaugfm.monobudget.lunchmoney
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
+import io.github.smaugfm.lunchmoney.model.LunchmoneyBudget
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.model.financial.Amount
 import kotlinx.coroutines.reactor.awaitSingle
 import org.koin.core.annotation.Single
 import java.time.LocalDate
+import java.util.Currency
 
 @Single(createdAtStart = true)
 class LunchmoneyCategoryService(
@@ -18,18 +20,10 @@ class LunchmoneyCategoryService(
         api.getAllCategories().awaitSingle()
     }
 
-    private val budgetsFetcher = periodicFetcherFactory.create("Lunchmoney budgets") {
-        val now = LocalDate.now()
-        val startOfMonth = now.withDayOfMonth(1)
-        val endOfMonth = now.withDayOfMonth(
-            now.month.length(now.isLeapYear)
-        )
-        api.getBudgetSummary(
-            startOfMonth,
-            endOfMonth,
-            null
-        ).awaitSingle()
-    }
+    override suspend fun categoryIdByName(categoryName: String): String? = categoriesFetcher.getData()
+        .firstOrNull { it.name == categoryName }
+        ?.id
+        ?.toString()
 
     override suspend fun categoryIdToNameList(): List<Pair<String, String>> =
         categoriesFetcher.getData().map {
@@ -37,37 +31,43 @@ class LunchmoneyCategoryService(
         }
 
     override suspend fun budgetedCategoryById(categoryId: String?): BudgetedCategory? {
-        if (categoryId == null) {
-            return null
-        }
-        val idLong = categoryId.toLong()
-        val categoryName = categoriesFetcher.getData().find { it.id == idLong }?.name
-        val budget =
-            budgetsFetcher
-                .getData()
-                .firstOrNull { it.categoryId == idLong }
-                ?.data?.values?.first()
-                ?.takeIf { it.budgetToBase != null && it.budgetCurrency != null }
-                ?.takeUnless { it.isAutomated == true }
-                ?.let {
-                    BudgetedCategory.CategoryBudget(
-                        Amount.fromLunchmoneyAmount(
-                            it.budgetToBase!! - (it.spendingToBase ?: 0.0),
-                            it.budgetCurrency!!
-                        ),
-                        Amount.fromLunchmoneyAmount(
-                            it.budgetToBase!!,
-                            it.budgetCurrency!!
-                        ),
-                        it.budgetCurrency!!
-                    )
-                }
+        val categoryIdLong = categoryId?.toLongOrNull() ?: return null
+        val categoryName = categoriesFetcher.getData().find { it.id == categoryIdLong }?.name
+
+        val budget = getCategoryBudget(categoryIdLong)
 
         return categoryName?.let { BudgetedCategory(it, budget) }
     }
 
-    override suspend fun categoryIdByName(categoryName: String): String? = categoriesFetcher.getData()
-        .firstOrNull { it.name == categoryName }
-        ?.id
-        ?.toString()
+    private suspend fun fetchCurrentBudget(categoryId: Long): LunchmoneyBudget? {
+        val now = LocalDate.now()
+        val startOfMonth = now.withDayOfMonth(1)
+        val endOfMonth = now.withDayOfMonth(
+            now.month.length(now.isLeapYear)
+        )
+        val budgets = api.getBudgetSummary(
+            startOfMonth,
+            endOfMonth,
+            null
+        ).awaitSingle()
+
+        return budgets.firstOrNull { it.categoryId != null && it.categoryId == categoryId }
+    }
+
+    private suspend fun getCategoryBudget(categoryIdLong: Long): BudgetedCategory.CategoryBudget? =
+        fetchCurrentBudget(categoryIdLong)
+            ?.data?.values?.firstOrNull { it.isAutomated != true }
+            ?.let {
+                val budget = it.budgetToBase ?: return@let null
+                val spending = it.spendingToBase ?: return@let null
+                val currency = it.budgetCurrency ?: return@let null
+                toCategoryBudget(budget, spending, currency)
+            }
+
+    private fun toCategoryBudget(budget: Double, spending: Double, currency: Currency) =
+        BudgetedCategory.CategoryBudget(
+            Amount.fromLunchmoneyAmount(budget - spending, currency),
+            Amount.fromLunchmoneyAmount(budget, currency),
+            currency
+        )
 }
