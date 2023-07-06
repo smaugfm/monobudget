@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.common.model.financial
 
 import io.github.smaugfm.monobudget.common.util.formatW
+import io.github.smaugfm.monobudget.common.util.toHumanReadable
 import java.util.Currency
 import kotlin.math.abs
 import kotlin.math.pow
@@ -9,13 +10,16 @@ import kotlin.math.roundToLong
 @JvmInline
 value class Amount(val value: Long) {
 
-    fun formatWithCurrency(currency: Currency, noDecimals: Boolean = false): String {
-        return format(currency, noDecimals) + currency.currencyCode
+    fun formatShort(currency: Currency? = null): String =
+        value.toHumanReadable() + (currency?.toString() ?: "")
+
+    fun formatWithCurrency(currency: Currency): String {
+        return format(currency) + currency.currencyCode
     }
 
-    fun format(currency: Currency, noDecimals: Boolean = false): String {
+    fun format(currency: Currency): String {
         val delimiter = (10.0.pow(currency.defaultFractionDigits)).toInt()
-        return "${value / delimiter}${if (noDecimals) "" else ".${(abs(value % delimiter).formatW())}"}"
+        return "${value / delimiter}.${(abs(value % delimiter).formatW())}"
     }
 
     operator fun unaryMinus() = Amount(-value)
@@ -36,8 +40,12 @@ value class Amount(val value: Long) {
         fun fromYnabAmount(ynabAmount: Long) = Amount(ynabAmount / YNAB_MULTIPLIER)
 
         fun fromLunchmoneyAmount(lunchmoneyAmount: Double, currency: Currency) = Amount(
-            (lunchmoneyAmount * (10.toBigDecimal()
-                .pow(currency.defaultFractionDigits)).toLong()).roundToLong()
+            (
+                lunchmoneyAmount * (
+                    10.toBigDecimal()
+                        .pow(currency.defaultFractionDigits)
+                    ).toLong()
+                ).roundToLong()
         )
 
         private const val YNAB_MULTIPLIER = 10
