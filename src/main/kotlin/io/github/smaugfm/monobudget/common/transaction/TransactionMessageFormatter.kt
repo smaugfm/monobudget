@@ -88,8 +88,10 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
                 builder.append("      <u>$amount</u>\n")
                 builder.append("      <code>Category: ${category?.categoryName ?: ""}</code>\n")
                 builder.append("      <code>Payee:    $payee</code>\n")
-                val (left, budgeted) = formatBudget(category)
-                if (left != null && budgeted != null) {
+
+                val budget = category?.budget
+                if (budget != null) {
+                    val (left, budgeted) = formatBudget(budget)
                     builder.append("\n")
                     builder.append("Budget: <code>$left</code> з <code>$budgeted</code>")
                 }
@@ -100,14 +102,11 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             }
         }
 
-        private fun formatBudget(category: CategoryService.BudgetedCategory?): Pair<String?, String?> {
-            val budget = category?.budget ?: return Pair(null, null)
-
-            return Pair(
-                budget.left.formatShort(),
-                budget.budgetedThisMonth.formatShort(budget.currency)
+        fun formatBudget(budget: CategoryService.BudgetedCategory.CategoryBudget): Pair<String, String> =
+            Pair(
+                budget.left.formatShort(false),
+                budget.budgetedThisMonth.formatShort(true)
             )
-        }
 
         @JvmStatic
         @Suppress("MagicNumber")

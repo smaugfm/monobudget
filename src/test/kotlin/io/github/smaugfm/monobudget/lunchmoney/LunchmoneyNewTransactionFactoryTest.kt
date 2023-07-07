@@ -12,7 +12,7 @@ class LunchmoneyNewTransactionFactoryTest {
     @Test
     fun lunchmoneyAmountTest() {
         assertThat(
-            Amount(499).toLunchmoneyAmount(Currency.getInstance("USD"))
+            Amount(499, Currency.getInstance("USD")).toLunchmoneyAmountBigDecimal()
         ).isEqualTo(BigDecimal("4.99"))
     }
 }

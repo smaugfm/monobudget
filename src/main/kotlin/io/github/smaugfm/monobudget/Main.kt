@@ -71,6 +71,7 @@ private fun CoroutineScope.setupKoin(
                         monoWebhookUrl,
                         webhookPort,
                         get(),
+                        get(),
                         get()
                     )
                 } bind StatementService::class

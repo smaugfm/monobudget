@@ -5,6 +5,7 @@ import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
+import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
@@ -58,7 +59,7 @@ class LunchmoneyTelegramCallbackHandler(
     ): String {
         val description = extractDescriptionFromOldMessage(oldMessage)
         val (mcc, currency, transactionId) = extractFromOldMessage(oldMessage)
-        val category = categoryService.budgetedCategoryById(updatedTransaction.categoryId?.toString())
+        val category = getBudgetedCategory(updatedTransaction)
 
         return formatHTMLStatementMessage(
             "Lunchmoney",
@@ -69,6 +70,22 @@ class LunchmoneyTelegramCallbackHandler(
             updatedTransaction.payee,
             transactionId,
             constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate())
+        )
+    }
+
+    private suspend fun getBudgetedCategory(
+        updatedTransaction: LunchmoneyTransaction
+    ): CategoryService.BudgetedCategory? {
+        val categoryId = updatedTransaction.categoryId?.toString()
+        val assetId = updatedTransaction.assetId?.toString()
+        val accountCurrency = assetId?.let { accounts.getAccountCurrency(it) }
+        if (categoryId == null || assetId == null || accountCurrency == null) {
+            return null
+        }
+
+        return categoryService.budgetedCategoryById(
+            categoryId,
+            accountCurrency
         )
     }
 }

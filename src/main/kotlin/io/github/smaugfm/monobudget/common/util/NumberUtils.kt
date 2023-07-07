@@ -17,5 +17,10 @@ fun Long.toHumanReadable(): String {
         num /= 1000
         ci.next()
     }
-    return String.format(Locale.getDefault(), "%.1f%c", num / 1000.0, ci.current())
+    val resultNumber = num / 1000.0
+    return if (resultNumber == resultNumber.toLong().toDouble()) {
+        String.format(Locale.getDefault(), "%d%c", resultNumber.toLong(), ci.current())
+    } else {
+        String.format(Locale.getDefault(), "%.1f%c", resultNumber, ci.current())
+    }
 }

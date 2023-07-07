@@ -34,7 +34,7 @@ class YnabNewTransactionFactory(
             YnabSaveTransaction(
                 accountId = getBudgetAccountId(statement),
                 date = time.toLocalDateTime().date,
-                amount = amount.toYnabAmount(),
+                amount = amount.toYnabAmountLong(),
                 payeeId = null,
                 payeeName = suggestedPayee,
                 categoryId = getCategoryId(statement),

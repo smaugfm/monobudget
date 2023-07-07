@@ -45,7 +45,10 @@ class YnabTelegramCallbackHandler(
         val description = extractDescriptionFromOldMessage(oldMessage)
         val (mcc, currency, transactionId) = extractFromOldMessage(oldMessage)
 
-        val category = categoryService.budgetedCategoryById(updatedTransaction.categoryId)
+        val category = categoryService.budgetedCategoryById(
+            updatedTransaction.categoryId,
+            accounts.getAccountCurrency(updatedTransaction.accountId)!!
+        )
         return formatHTMLStatementMessage(
             "YNAB",
             description,

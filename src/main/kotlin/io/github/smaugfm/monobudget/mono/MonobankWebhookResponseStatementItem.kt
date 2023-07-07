@@ -3,17 +3,21 @@ package io.github.smaugfm.monobudget.mono
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.common.model.financial.Amount
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
+import java.util.Currency
 
 data class MonobankWebhookResponseStatementItem(
-    val original: MonoWebhookResponseData
+    val d: MonoWebhookResponseData,
+    val accountCurrency: Currency
 ) : StatementItem {
-    override val id = original.statementItem.id
-    override val accountId = original.account
-    override val time = original.statementItem.time
-    override val description = original.statementItem.description
-    override val comment = original.statementItem.comment
-    override val mcc = original.statementItem.mcc
-    override val amount = Amount(original.statementItem.amount)
-    override val operationAmount = Amount(original.statementItem.operationAmount)
-    override val currency = original.statementItem.currencyCode
+    override val id = d.statementItem.id
+    override val accountId = d.account
+    override val time = d.statementItem.time
+    override val description = d.statementItem.description
+    override val comment = d.statementItem.comment
+    override val mcc = d.statementItem.mcc
+    override val amount =
+        Amount(d.statementItem.amount, accountCurrency)
+    override val operationAmount =
+        Amount(d.statementItem.operationAmount, d.statementItem.currencyCode)
+    override val currency = d.statementItem.currencyCode
 }

@@ -94,7 +94,8 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
                 0,
                 1234
             )
-        )
+        ),
+        Currency.getInstance("UAH")
     )
 
     private fun webhook2() = MonobankWebhookResponseStatementItem(
@@ -114,6 +115,7 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
                 0,
                 1234
             )
-        )
+        ),
+        Currency.getInstance("UAH")
     )
 }

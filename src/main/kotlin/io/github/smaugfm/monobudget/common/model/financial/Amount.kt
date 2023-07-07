@@ -2,52 +2,51 @@ package io.github.smaugfm.monobudget.common.model.financial
 
 import io.github.smaugfm.monobudget.common.util.formatW
 import io.github.smaugfm.monobudget.common.util.toHumanReadable
+import java.math.BigDecimal
 import java.util.Currency
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToLong
 
-@JvmInline
-value class Amount(val value: Long) {
+/**
+ * In minimum currency units (e.g. 1/100th of a dollar)
+ */
+class Amount(val value: Long, val currency: Currency) {
+    private val multiplier = 10.0.pow(currency.defaultFractionDigits).toInt()
 
-    fun formatShort(currency: Currency? = null): String =
-        value.toHumanReadable() + (currency?.toString() ?: "")
+    fun formatShort(withCurrency: Boolean = true): String =
+        "${(value / multiplier).toHumanReadable()} ${if (withCurrency) currency.toString() else ""}".trim()
 
-    fun formatWithCurrency(currency: Currency): String {
-        return format(currency) + currency.currencyCode
+    fun format(): String =
+        "${value / multiplier}.${(abs(value % multiplier).formatW())} ${currency.currencyCode}"
+
+    override fun toString(): String {
+        return format()
     }
 
-    fun format(currency: Currency): String {
-        val delimiter = (10.0.pow(currency.defaultFractionDigits)).toInt()
-        return "${value / delimiter}.${(abs(value % delimiter).formatW())}"
-    }
+    operator fun unaryMinus() = Amount(-value, currency)
 
-    operator fun unaryMinus() = Amount(-value)
-
-    fun equalsInverted(other: Amount): Boolean = this.value == -other.value
+    fun equalsInverted(other: Amount): Boolean = this.value == -other.value && currency == other.currency
 
     /**
      * Monobank amount uses minimum currency units (e.g. cents for dollars)
      * and YNAB amount uses milliunits (1/1000th of a dollar)
      */
-    fun toYnabAmount() = value * YNAB_MULTIPLIER
+    fun toYnabAmountLong() = value * (YNAB_MILLI_MILTIPLIER / currency.defaultFractionDigits)
 
-    fun toLunchmoneyAmount(currency: Currency) =
-        value.toBigDecimal().setScale(2) / (10.toBigDecimal().pow(currency.defaultFractionDigits))
+    fun toLunchmoneyAmountBigDecimal() = value.toBigDecimal().setScale(currency.defaultFractionDigits) /
+        multiplier.toBigDecimal()
 
     companion object {
 
-        fun fromYnabAmount(ynabAmount: Long) = Amount(ynabAmount / YNAB_MULTIPLIER)
+        fun fromYnabAmount(ynabAmount: Long, currency: Currency) =
+            Amount(ynabAmount / (YNAB_MILLI_MILTIPLIER / currency.defaultFractionDigits), currency)
 
         fun fromLunchmoneyAmount(lunchmoneyAmount: Double, currency: Currency) = Amount(
-            (
-                lunchmoneyAmount * (
-                    10.toBigDecimal()
-                        .pow(currency.defaultFractionDigits)
-                    ).toLong()
-                ).roundToLong()
+            (lunchmoneyAmount * (BigDecimal.TEN.pow(currency.defaultFractionDigits)).toLong()).roundToLong(),
+            currency
         )
 
-        private const val YNAB_MULTIPLIER = 10
+        private const val YNAB_MILLI_MILTIPLIER = 1000
     }
 }

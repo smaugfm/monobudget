@@ -4,9 +4,10 @@ import io.github.resilience4j.core.IntervalFunction
 import io.github.resilience4j.kotlin.retry.RetryConfig
 import io.github.resilience4j.kotlin.retry.executeSuspendFunction
 import io.github.resilience4j.retry.Retry
+import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
-import io.github.smaugfm.monobudget.common.statement.StatementItemChecker
+import io.github.smaugfm.monobudget.common.statement.DuplicateChecker
 import io.github.smaugfm.monobudget.common.statement.StatementItemListener
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
@@ -16,12 +17,13 @@ import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.injectAll
+import io.github.smaugfm.monobudget.common.util.pp
 import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
 import io.ktor.util.logging.error
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
@@ -44,8 +46,9 @@ class Application<TTransaction, TNewTransaction> :
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val errorHandler by inject<TelegramErrorUnknownErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
-    private val statementChecker by inject<StatementItemChecker>()
+    private val duplicateChecker by inject<DuplicateChecker>()
     private val statementListeners by injectAll<StatementItemListener>()
+    private val accounts by inject<AccountsService>()
 
     @Suppress("MagicNumber")
     private val processStatementRetry = Retry.of(
@@ -72,7 +75,8 @@ class Application<TTransaction, TNewTransaction> :
         val telegramJob = telegramApi.start(telegramCallbackHandler::handle)
         statementServices.asFlow()
             .flatMapMerge { it.statements() }
-            .filter(statementChecker::check)
+            .filterNot(duplicateChecker::isDuplicate)
+            .onEach { logStatement(it, accounts.getAccountAlias(it.accountId)) }
             .onEach { item -> statementListeners.forEach { it.onNewStatementItem(item) } }
             .onEach(::process)
             .collect()
@@ -116,6 +120,21 @@ class Application<TTransaction, TNewTransaction> :
         } catch (e: Throwable) {
             log.error(e) { "Failed to start application. Exiting..." }
             exitProcess(1)
+        }
+    }
+
+    private fun logStatement(item: StatementItem, alias: String?) {
+        with(item) {
+            log.info {
+                "Incoming transaction from $alias's account.\n" +
+                    if (log.isDebugEnabled) {
+                        this.pp()
+                    } else {
+                        "\tAmount: ${item.amount}\n" +
+                            "\tDescription: $description" +
+                            "\tMemo: $comment"
+                    }
+            }
         }
     }
 }

@@ -36,15 +36,16 @@ class LunchmoneyTransactionMessageFormatter(
         transaction: LunchmoneyTransaction
     ): String {
         with(statementItem) {
-            val accountAmount = amount.formatWithCurrency(accountCurrency)
-            val operationAmount = operationAmount.formatWithCurrency(currency)
-            val category = categoryService.budgetedCategoryById(transaction.categoryId?.toString())
+            val category = categoryService.budgetedCategoryById(
+                transaction.categoryId?.toString(),
+                accountCurrency
+            )
 
             return formatHTMLStatementMessage(
                 "Lunchmoney",
                 (description ?: "").replaceNewLines(),
                 (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
-                accountAmount + (if (accountCurrency != currency) " ($operationAmount)" else ""),
+                "$amount${(if (accountCurrency != currency) " ($operationAmount)" else "")}",
                 category,
                 transaction.payee,
                 transaction.id.toString(),

@@ -6,6 +6,7 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
 import com.elbekd.bot.types.ParseMode
+import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
@@ -28,6 +29,7 @@ private val log = KotlinLogging.logger {}
 
 abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     protected val categoryService: CategoryService by inject()
+    protected val accounts: AccountsService by inject()
     private val telegram: TelegramApi by inject()
     private val formatter: TransactionMessageFormatter<TTransaction> by inject()
     private val monoSettings: MultipleAccountSettings by inject()

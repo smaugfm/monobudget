@@ -13,7 +13,19 @@ private val log = KotlinLogging.logger { }
 abstract class CategoryService : KoinComponent {
     private val mccOverride: MccOverrideSettings by inject()
 
-    abstract suspend fun budgetedCategoryById(categoryId: String?): BudgetedCategory?
+    abstract suspend fun budgetedCategoryByIdInternal(
+        categoryId: String,
+        accountCurrency: Currency
+    ): BudgetedCategory?
+
+    suspend fun budgetedCategoryById(categoryId: String?, accountCurrency: Currency): BudgetedCategory? {
+        if (categoryId == null) {
+            return null
+        }
+
+        return budgetedCategoryByIdInternal(categoryId, accountCurrency)
+    }
+
     abstract suspend fun categoryIdToNameList(): List<Pair<String, String>>
 
     suspend fun inferCategoryIdByMcc(mcc: Int): String? =
@@ -43,8 +55,7 @@ abstract class CategoryService : KoinComponent {
     ) {
         data class CategoryBudget(
             val left: Amount,
-            val budgetedThisMonth: Amount,
-            val currency: Currency
+            val budgetedThisMonth: Amount
         )
     }
 }

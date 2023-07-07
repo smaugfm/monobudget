@@ -36,7 +36,8 @@ class MonoWebhookListener(
     private val monoWebhookUrl: URI,
     private val webhookPort: Int,
     private val scope: CoroutineScope,
-    private val monoSettings: MultipleAccountSettings
+    private val monoSettings: MultipleAccountSettings,
+    private val monoAccountsService: MonoAccountsService
 ) : StatementService {
 
     private val json = makeJson()
@@ -70,7 +71,17 @@ class MonoWebhookListener(
                     )
                     val response = call.receive<MonoWebhookResponse>()
                     try {
-                        flow.emit(MonobankWebhookResponseStatementItem(response.data))
+                        val account =
+                            monoAccountsService.getAccounts().firstOrNull { it.id == response.data.account }
+                        if (account == null) {
+                            log.error {
+                                "Skipping transaction from Monobank " +
+                                    "accountId=${response.data.account} " +
+                                    "because this account is not configured: $response"
+                            }
+                        } else {
+                            flow.emit(MonobankWebhookResponseStatementItem(response.data, account.currency))
+                        }
                     } finally {
                         call.respond(HttpStatusCode.OK, "OK")
                     }

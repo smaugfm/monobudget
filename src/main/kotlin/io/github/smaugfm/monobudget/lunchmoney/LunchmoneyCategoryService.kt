@@ -30,13 +30,16 @@ class LunchmoneyCategoryService(
             it.id.toString() to it.name
         }
 
-    override suspend fun budgetedCategoryById(categoryId: String?): BudgetedCategory? {
-        val categoryIdLong = categoryId?.toLongOrNull() ?: return null
-        val categoryName = categoriesFetcher.getData().find { it.id == categoryIdLong }?.name
+    override suspend fun budgetedCategoryByIdInternal(
+        categoryId: String,
+        accountCurrency: Currency
+    ): BudgetedCategory? {
+        val categoryIdLong = categoryId.toLong()
+        val categoryName = categoriesFetcher.getData().find { it.id == categoryIdLong }?.name ?: return null
 
-        val budget = getCategoryBudget(categoryIdLong)
+        val budget = getCategoryBudget(categoryIdLong, accountCurrency)
 
-        return categoryName?.let { BudgetedCategory(it, budget) }
+        return BudgetedCategory(categoryName, budget)
     }
 
     private suspend fun fetchCurrentBudget(categoryId: Long): LunchmoneyBudget? {
@@ -54,20 +57,22 @@ class LunchmoneyCategoryService(
         return budgets.firstOrNull { it.categoryId != null && it.categoryId == categoryId }
     }
 
-    private suspend fun getCategoryBudget(categoryIdLong: Long): BudgetedCategory.CategoryBudget? =
-        fetchCurrentBudget(categoryIdLong)
-            ?.data?.values?.firstOrNull { it.isAutomated != true }
-            ?.let {
-                val budget = it.budgetToBase ?: return@let null
-                val spending = it.spendingToBase ?: return@let null
-                val currency = it.budgetCurrency ?: return@let null
-                toCategoryBudget(budget, spending, currency)
-            }
+    private suspend fun getCategoryBudget(
+        categoryIdLong: Long,
+        accountCurrency: Currency
+    ): BudgetedCategory.CategoryBudget? = fetchCurrentBudget(categoryIdLong)
+        ?.data?.values?.firstOrNull { it.isAutomated != true }
+        ?.let {
+            val budget = it.budgetToBase ?: return@let null
+            val spending = it.spendingToBase ?: return@let null
+            if (budget <= 0) return@let null
+
+            toCategoryBudget(budget, spending, accountCurrency)
+        }
 
     private fun toCategoryBudget(budget: Double, spending: Double, currency: Currency) =
         BudgetedCategory.CategoryBudget(
             Amount.fromLunchmoneyAmount(budget - spending, currency),
-            Amount.fromLunchmoneyAmount(budget, currency),
-            currency
+            Amount.fromLunchmoneyAmount(budget, currency)
         )
 }
