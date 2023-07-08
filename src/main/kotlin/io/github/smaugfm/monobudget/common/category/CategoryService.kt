@@ -12,9 +12,7 @@ private val log = KotlinLogging.logger { }
 abstract class CategoryService : KoinComponent {
     private val mccOverride: MccOverrideSettings by inject()
 
-    abstract suspend fun budgetedCategoryByIdInternal(
-        categoryId: String
-    ): BudgetedCategory?
+    abstract suspend fun budgetedCategoryByIdInternal(categoryId: String): BudgetedCategory?
 
     suspend fun budgetedCategoryById(categoryId: String?): BudgetedCategory? {
         if (categoryId == null) {

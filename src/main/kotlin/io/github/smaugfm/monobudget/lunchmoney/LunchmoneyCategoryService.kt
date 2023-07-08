@@ -54,18 +54,17 @@ class LunchmoneyCategoryService(
         return budgets.firstOrNull { it.categoryId != null && it.categoryId == categoryId }
     }
 
-    private suspend fun getCategoryBudget(
-        categoryIdLong: Long
-    ): BudgetedCategory.CategoryBudget? = fetchCurrentBudget(categoryIdLong)
-        ?.data?.values?.firstOrNull { it.isAutomated != true }
-        ?.let {
-            val budgeted = it.budgetToBase ?: return@let null
-            val spending = it.spendingToBase ?: return@let null
-            val currency = it.budgetCurrency ?: return@let null
-            if (budgeted <= 0) return@let null
+    private suspend fun getCategoryBudget(categoryIdLong: Long): BudgetedCategory.CategoryBudget? =
+        fetchCurrentBudget(categoryIdLong)
+            ?.data?.values?.firstOrNull { it.isAutomated != true }
+            ?.let {
+                val budgeted = it.budgetToBase ?: return@let null
+                val spending = it.spendingToBase ?: return@let null
+                val currency = it.budgetCurrency ?: return@let null
+                if (budgeted <= 0) return@let null
 
-            toCategoryBudget(budgeted, spending, currency)
-        }
+                toCategoryBudget(budgeted, spending, currency)
+            }
 
     private fun toCategoryBudget(budget: Double, spending: Double, currency: Currency) =
         BudgetedCategory.CategoryBudget(

@@ -5,7 +5,6 @@ import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.ParseMode
-import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
@@ -36,22 +35,30 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     private val telegramChatIds = monoSettings.telegramChatIds
 
     suspend fun handle(callbackQuery: CallbackQuery) {
-        if (callbackQuery.from.id !in telegramChatIds) {
-            log.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }
-            return
-        }
+        try {
+            if (callbackQuery.from.id !in telegramChatIds) {
+                log.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }
+                return
+            }
 
-        val (callbackQueryId, callbackType, message) =
-            parseCallbackQuery(callbackQuery) ?: return
+            val (callbackType, message) =
+                parseCallbackQuery(callbackQuery) ?: return
 
-        log.debug { "Parsed callback query of callbackType: $callbackType" }
+            log.debug { "Parsed callback query of callbackType: $callbackType" }
 
-        when (callbackType) {
-            is ActionCallbackType ->
-                handleAction(callbackType, message)
+            when (callbackType) {
+                is ActionCallbackType ->
+                    handleAction(callbackType, message)
 
-            is TransactionUpdateType ->
-                handleUpdate(callbackType, callbackQueryId, message)
+                is TransactionUpdateType ->
+                    handleUpdate(callbackType, message)
+            }
+        } finally {
+            try {
+                telegram.answerCallbackQuery(callbackQuery.id)
+            } catch (e: Throwable) {
+                log.error(e)
+            }
         }
     }
 
@@ -87,17 +94,9 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
 
     private suspend fun handleUpdate(
         callbackType: TransactionUpdateType,
-        callbackQueryId: String,
         message: Message
     ) {
-        val updatedTransaction = updateTransaction(callbackType).also {
-            try {
-                telegram.answerCallbackQuery(callbackQueryId)
-            } catch (e: Throwable) {
-                log.error(e)
-            }
-        }
-
+        val updatedTransaction = updateTransaction(callbackType)
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
 
         val updatedMarkup =
@@ -124,10 +123,9 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         oldMessage: Message
     ): String
 
-    private suspend fun parseCallbackQuery(
+    private fun parseCallbackQuery(
         callbackQuery: CallbackQuery
     ): TransactionUpdateCallbackQueryWrapper? {
-        val callbackQueryId = callbackQuery.id
         val data = callbackQueryData(callbackQuery)
         val message = callbackQueryMessage(callbackQuery)
 
@@ -137,14 +135,11 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
 
         val callbackType = deserializeCallbackType(data, message)
         if (callbackType == null) {
-            telegram.answerCallbackQuery(
-                callbackQueryId,
-                TelegramApi.UNKNOWN_ERROR_MSG
-            )
+            log.error { "Unknown callbackType. Skipping this callback query: $callbackQuery" }
             return null
         }
 
-        return TransactionUpdateCallbackQueryWrapper(callbackQueryId, callbackType, message)
+        return TransactionUpdateCallbackQueryWrapper(callbackType, message)
     }
 
     private fun callbackQueryMessage(callbackQuery: CallbackQuery): Message? =
@@ -162,7 +157,6 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     }
 
     private data class TransactionUpdateCallbackQueryWrapper(
-        val callbackQueryId: String,
         val updateType: CallbackType,
         val message: Message
     )
