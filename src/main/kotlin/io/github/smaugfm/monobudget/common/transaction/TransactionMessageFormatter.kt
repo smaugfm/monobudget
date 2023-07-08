@@ -92,9 +92,8 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
 
                 val budget = category?.budget
                 if (budget != null) {
-                    val (left, budgeted, percent) = formatBudget(budget)
                     builder.append("\n")
-                    builder.append("Залишок: <code>$left із $budgeted</code> (<b>$percent</b>)")
+                    formatBudget(budget, builder)
                 }
                 builder.append("\n\n")
                 builder.append(if (idLink != null) "<a href=\"$idLink\">$id</a>" else "<pre>$id</pre>")
@@ -105,12 +104,17 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
 
         @Suppress("MagicNumber")
         fun formatBudget(
-            budget: CategoryService.BudgetedCategory.CategoryBudget
-        ): Triple<String, String, String> = Triple(
-            budget.left.formatShort(),
-            budget.budgetedThisMonth.formatShort(),
-            "${(budget.left.value.toDouble() * 100 / budget.budgetedThisMonth.value).roundToLong()}%"
-        )
+            budget: CategoryService.BudgetedCategory.CategoryBudget,
+            builder: StringBuilder
+        ) {
+            val left = budget.left.formatShort()
+            val budgeted = budget.budgetedThisMonth.formatShort()
+            val percent =
+                "${(budget.left.value.toDouble() * 100 / budget.budgetedThisMonth.value).roundToLong()}%"
+            val alert = if (budget.left.value < 0) " ⚠️" else ""
+
+            builder.append("Залишок$alert: <code>$left із $budgeted</code> (<b>$percent</b>)")
+        }
 
         @JvmStatic
         @Suppress("MagicNumber")
