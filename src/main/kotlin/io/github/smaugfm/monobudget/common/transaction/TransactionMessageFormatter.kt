@@ -3,7 +3,7 @@ package io.github.smaugfm.monobudget.common.transaction
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
-import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
@@ -18,11 +18,11 @@ import kotlin.reflect.KClass
 private val log = KotlinLogging.logger {}
 
 abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
-    private val accounts: AccountsService by inject()
+    private val bankAccounts: BankAccountService by inject()
 
     suspend fun format(statement: StatementItem, transaction: TTransaction): MessageWithReplyKeyboard {
         val msg = formatHTMLStatementMessage(
-            accounts.getAccountCurrency(statement.accountId)!!,
+            bankAccounts.getAccountCurrency(statement.accountId)!!,
             statement,
             transaction
         )

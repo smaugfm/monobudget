@@ -30,14 +30,11 @@ class LunchmoneyCategoryService(
             it.id.toString() to it.name
         }
 
-    override suspend fun budgetedCategoryByIdInternal(
-        categoryId: String,
-        accountCurrency: Currency
-    ): BudgetedCategory? {
+    override suspend fun budgetedCategoryByIdInternal(categoryId: String): BudgetedCategory? {
         val categoryIdLong = categoryId.toLong()
         val categoryName = categoriesFetcher.getData().find { it.id == categoryIdLong }?.name ?: return null
 
-        val budget = getCategoryBudget(categoryIdLong, accountCurrency)
+        val budget = getCategoryBudget(categoryIdLong)
 
         return BudgetedCategory(categoryName, budget)
     }
@@ -58,16 +55,16 @@ class LunchmoneyCategoryService(
     }
 
     private suspend fun getCategoryBudget(
-        categoryIdLong: Long,
-        accountCurrency: Currency
+        categoryIdLong: Long
     ): BudgetedCategory.CategoryBudget? = fetchCurrentBudget(categoryIdLong)
         ?.data?.values?.firstOrNull { it.isAutomated != true }
         ?.let {
-            val budget = it.budgetToBase ?: return@let null
+            val budgeted = it.budgetToBase ?: return@let null
             val spending = it.spendingToBase ?: return@let null
-            if (budget <= 0) return@let null
+            val currency = it.budgetCurrency ?: return@let null
+            if (budgeted <= 0) return@let null
 
-            toCategoryBudget(budget, spending, accountCurrency)
+            toCategoryBudget(budgeted, spending, currency)
         }
 
     private fun toCategoryBudget(budget: Double, spending: Double, currency: Currency) =

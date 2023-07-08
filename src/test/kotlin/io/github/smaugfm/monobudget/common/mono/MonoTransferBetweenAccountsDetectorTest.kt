@@ -5,7 +5,7 @@ import assertk.assertions.isInstanceOf
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.Base
-import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer.NotTransfer
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer.Transfer
@@ -51,7 +51,7 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
         val webhook1 = webhook1()
         val webhook2 = webhook2()
 
-        declareMock<AccountsService> {
+        declareMock<BankAccountService> {
             coEvery { getAccountCurrency(webhook1.accountId) } returns Currency.getInstance("UAH")
             coEvery { getAccountCurrency(webhook2.accountId) } returns Currency.getInstance("USD")
         }

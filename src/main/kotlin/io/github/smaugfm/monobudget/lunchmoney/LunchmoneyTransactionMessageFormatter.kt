@@ -36,10 +36,7 @@ class LunchmoneyTransactionMessageFormatter(
         transaction: LunchmoneyTransaction
     ): String {
         with(statementItem) {
-            val category = categoryService.budgetedCategoryById(
-                transaction.categoryId?.toString(),
-                accountCurrency
-            )
+            val category = categoryService.budgetedCategoryById(transaction.categoryId?.toString())
 
             return formatHTMLStatementMessage(
                 "Lunchmoney",

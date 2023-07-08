@@ -6,7 +6,6 @@ import io.github.smaugfm.monobudget.common.model.settings.MccOverrideSettings
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.util.Currency
 
 private val log = KotlinLogging.logger { }
 
@@ -14,16 +13,15 @@ abstract class CategoryService : KoinComponent {
     private val mccOverride: MccOverrideSettings by inject()
 
     abstract suspend fun budgetedCategoryByIdInternal(
-        categoryId: String,
-        accountCurrency: Currency
+        categoryId: String
     ): BudgetedCategory?
 
-    suspend fun budgetedCategoryById(categoryId: String?, accountCurrency: Currency): BudgetedCategory? {
+    suspend fun budgetedCategoryById(categoryId: String?): BudgetedCategory? {
         if (categoryId == null) {
             return null
         }
 
-        return budgetedCategoryByIdInternal(categoryId, accountCurrency)
+        return budgetedCategoryByIdInternal(categoryId)
     }
 
     abstract suspend fun categoryIdToNameList(): List<Pair<String, String>>

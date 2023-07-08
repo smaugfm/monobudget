@@ -4,7 +4,7 @@ import io.github.resilience4j.core.IntervalFunction
 import io.github.resilience4j.kotlin.retry.RetryConfig
 import io.github.resilience4j.kotlin.retry.executeSuspendFunction
 import io.github.resilience4j.retry.Retry
-import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.statement.DuplicateChecker
@@ -48,7 +48,7 @@ class Application<TTransaction, TNewTransaction> :
     private val telegramMessageSender by inject<TelegramMessageSender>()
     private val duplicateChecker by inject<DuplicateChecker>()
     private val statementListeners by injectAll<StatementItemListener>()
-    private val accounts by inject<AccountsService>()
+    private val bankAccounts by inject<BankAccountService>()
 
     @Suppress("MagicNumber")
     private val processStatementRetry = Retry.of(
@@ -76,7 +76,7 @@ class Application<TTransaction, TNewTransaction> :
         statementServices.asFlow()
             .flatMapMerge { it.statements() }
             .filterNot(duplicateChecker::isDuplicate)
-            .onEach { logStatement(it, accounts.getAccountAlias(it.accountId)) }
+            .onEach { logStatement(it, bankAccounts.getAccountAlias(it.accountId)) }
             .onEach { item -> statementListeners.forEach { it.onNewStatementItem(item) } }
             .onEach(::process)
             .collect()

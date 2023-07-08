@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.common.transaction
 
-import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
@@ -9,12 +9,12 @@ import org.koin.core.component.inject
 
 abstract class NewTransactionFactory<TNewTransaction> : KoinComponent {
 
-    private val accounts: AccountsService by inject()
+    private val bankAccounts: BankAccountService by inject()
     private val categorySuggestingService: CategoryService by inject()
 
     abstract suspend fun create(statement: StatementItem): TNewTransaction
 
-    protected fun getBudgetAccountId(statement: StatementItem) = accounts.getBudgetAccountId(
+    protected fun getBudgetAccountId(statement: StatementItem) = bankAccounts.getBudgetAccountId(
         statement.accountId
     )
         ?: error("Could not find Budgeting app account for mono account ${statement.accountId}")

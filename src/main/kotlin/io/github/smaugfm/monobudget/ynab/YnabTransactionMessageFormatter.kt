@@ -24,10 +24,7 @@ class YnabTransactionMessageFormatter(
         transaction: YnabTransactionDetail
     ): String {
         with(statementItem) {
-            val category = categoryService.budgetedCategoryById(
-                transaction.categoryId,
-                accountCurrency
-            )
+            val category = categoryService.budgetedCategoryById(transaction.categoryId)
 
             return formatHTMLStatementMessage(
                 "YNAB",

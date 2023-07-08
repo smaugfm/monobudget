@@ -83,18 +83,11 @@ class LunchmoneyTelegramCallbackHandler(
     ): CategoryService.BudgetedCategory? {
         val categoryId = updatedTransaction.categoryId?.toString()
         val assetId = updatedTransaction.assetId?.toString()
-        val accountCurrency = assetId?.let { accounts.getAccountCurrency(it) }
-        if (categoryId == null || assetId == null || accountCurrency == null) {
-            log.error {
-                "Failed to get budgeted category: " +
-                    "categoryId=$categoryId, assetId=$assetId, accountCurrency=$accountCurrency"
-            }
+        if (categoryId == null || assetId == null) {
+            log.error { "Failed to get budgeted category: categoryId=$categoryId, assetId=$assetId" }
             return null
         }
 
-        return categoryService.budgetedCategoryById(
-            categoryId,
-            accountCurrency
-        )
+        return categoryService.budgetedCategoryById(categoryId)
     }
 }

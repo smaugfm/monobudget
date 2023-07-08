@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.ynab
 
-import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.common.misc.SimpleCache
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
@@ -16,7 +16,7 @@ private val log = KotlinLogging.logger {}
 @Single
 class YnabTransactionFactory(
     private val api: YnabApi,
-    private val accounts: AccountsService
+    private val bankAccounts: BankAccountService
 ) : TransactionFactory<YnabTransactionDetail, YnabSaveTransaction>() {
 
     private val transferPayeeIdsCache = SimpleCache<String, String> {
@@ -38,7 +38,7 @@ class YnabTransactionFactory(
         }
 
         val transferPayeeId =
-            transferPayeeIdsCache.get(accounts.getBudgetAccountId(statement.accountId)!!)
+            transferPayeeIdsCache.get(bankAccounts.getBudgetAccountId(statement.accountId)!!)
 
         val existingTransactionUpdated = api
             .updateTransaction(

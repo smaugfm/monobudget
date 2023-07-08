@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.mono
 
-import io.github.smaugfm.monobudget.common.account.AccountsService
+import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.model.financial.Account
 import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
@@ -18,7 +18,7 @@ private val log = KotlinLogging.logger { }
 class MonoAccountsService(
     fetcherFactory: PeriodicFetcherFactory,
     private val settings: MultipleAccountSettings
-) : AccountsService() {
+) : BankAccountService() {
 
     private val fetcher = fetcherFactory.create("Monobank accounts") {
         settings.settings.map {

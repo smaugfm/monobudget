@@ -12,7 +12,7 @@ import kotlin.time.Duration.Companion.minutes
 private val log = KotlinLogging.logger {}
 
 open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
-    private val accounts: AccountsService by inject()
+    private val bankAccounts: BankAccountService by inject()
 
     private val recentTransactions =
         ExpiringMap<StatementItem, Deferred<TTransaction>>(1.minutes)
@@ -86,8 +86,8 @@ open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
     }
 
     private suspend fun currencyMatch(new: StatementItem, existing: StatementItem): Boolean {
-        val newTransactionAccountCurrency = accounts.getAccountCurrency(new.accountId)
-        val existingTransactionAccountCurrency = accounts.getAccountCurrency(existing.accountId)
+        val newTransactionAccountCurrency = bankAccounts.getAccountCurrency(new.accountId)
+        val existingTransactionAccountCurrency = bankAccounts.getAccountCurrency(existing.accountId)
         return new.currency == existing.currency ||
             newTransactionAccountCurrency == existing.currency ||
             existingTransactionAccountCurrency == new.currency

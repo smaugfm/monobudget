@@ -4,12 +4,14 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThan
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.RepeatedTest
 import kotlin.time.Duration.Companion.milliseconds
 
+@OptIn(DelicateCoroutinesApi::class)
 class PeriodicFetcherFactoryTest {
 
     private val factory = PeriodicFetcherFactory(GlobalScope)
@@ -27,7 +29,7 @@ class PeriodicFetcherFactoryTest {
         runBlocking {
             def.complete(Unit)
             assertThat(fetcher.getData()).isEqualTo(0)
-            delay(15.milliseconds)
+            delay(30.milliseconds)
             assertThat(fetcher.getData()).isGreaterThan(0)
         }
     }

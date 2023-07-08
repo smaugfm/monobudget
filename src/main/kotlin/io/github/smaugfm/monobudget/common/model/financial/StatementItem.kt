@@ -5,7 +5,7 @@ import java.util.Currency
 
 interface StatementItem {
     val id: String
-    val accountId: String
+    val accountId: BankAccountId
     val time: Instant
     val description: String?
     val comment: String?
