@@ -73,13 +73,13 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             idLink: String? = null
         ): String {
             log.info {
-                "Formatting message:\n" +
-                    "\t$description" +
-                    "\t$mcc" +
-                    "\t$amount" +
-                    "\t$category" +
-                    "\t$payee" +
-                    "\t$id"
+                "Formatting message:" +
+                    "\n\t$description" +
+                    "\n\t$mcc" +
+                    "\n\t$amount" +
+                    "\n\t$category" +
+                    "\n\t$payee" +
+                    "\n\t$id"
             }
             val builder = StringBuilder("Нова транзакція Monobank додана в $budgetBackend\n")
             return with(Unit) {
@@ -110,31 +110,40 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
 
         @JvmStatic
         @Suppress("MagicNumber")
-        internal fun extractDescriptionFromOldMessage(oldMessage: Message) =
-            oldMessage.entities.find { it.type == MessageEntity.Type.BOLD }
-                ?.run { oldMessage.text!!.substring(offset, offset + length) }!!
+        fun extractFromOldMessage(message: Message): OldMessageEntities {
+            val text = message.text!!
+            val textLines = text.split("\n").filter { it.isNotBlank() }
+            val description = message.entities.find { it.type == MessageEntity.Type.BOLD }
+                ?.run { text.substring(offset, offset + length) }!!
 
-        @JvmStatic
-        @Suppress("MagicNumber")
-        internal fun extractFromOldMessage(oldMessage: Message): OldMessageEntities {
-            val oldText = oldMessage.text!!
-            val oldTextLines = oldText.split("\n").filter { it.isNotBlank() }
-
-            val mcc = oldTextLines[2].trim()
-            val currencyText = oldTextLines[3].trim()
-            val id = oldTextLines[6].trim()
+            val mcc = textLines[2].trim()
+            val currencyText = textLines[3].trim()
 
             return OldMessageEntities(
+                description,
                 mcc,
-                currencyText,
-                id
+                currencyText
             )
         }
 
+        fun extractTransactionId(message: Message): String = message.text!!.let {
+            it.substring(it.lastIndexOf('\n')).trim()
+        }
+
+        fun extractPayee(message: Message): String? {
+            val text = message.text!!
+            val payee =
+                message.entities.find { it.type == MessageEntity.Type.BOLD }?.run {
+                    text.substring(offset, offset + length)
+                } ?: return null
+
+            return payee
+        }
+
         data class OldMessageEntities(
+            val description: String,
             val mcc: String,
-            val currency: String,
-            val id: String
+            val currency: String
         )
 
         data class FormattedBudget(

@@ -87,7 +87,7 @@ class TelegramApi(
 
     fun start(callbackHandler: suspend (CallbackQuery) -> Unit): Job {
         bot.onCallbackQuery {
-            log.debug { "Received callbackQuery.\n\t$it" }
+            log.debug { "Received callbackQuery.\n$it" }
             callbackHandler(it)
         }
         return scope.launch(context = Dispatchers.IO) {

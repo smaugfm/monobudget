@@ -8,7 +8,6 @@ import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatu
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
-import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractDescriptionFromOldMessage
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyTransactionMessageFormatter.Companion.constructTransactionsQuickUrl
@@ -57,19 +56,18 @@ class LunchmoneyTelegramCallbackHandler(
         updatedTransaction: LunchmoneyTransaction,
         oldMessage: Message
     ): String {
-        val description = extractDescriptionFromOldMessage(oldMessage)
-        val (mcc, currency, transactionId) = extractFromOldMessage(oldMessage)
+        val (description, mcc, currency) = extractFromOldMessage(oldMessage)
         val category = getBudgetedCategory(updatedTransaction)
 
         return formatHTMLStatementMessage(
-            "Lunchmoney",
-            description,
-            mcc,
-            currency,
-            category,
-            updatedTransaction.payee,
-            transactionId,
-            constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate())
+            budgetBackend = "Lunchmoney",
+            description = description,
+            mcc = mcc,
+            amount = currency,
+            category = category,
+            payee = updatedTransaction.payee,
+            id = updatedTransaction.id.toString(),
+            idLink = constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate())
         )
     }
 

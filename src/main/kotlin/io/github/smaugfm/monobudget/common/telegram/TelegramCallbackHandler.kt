@@ -4,7 +4,6 @@ import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
-import com.elbekd.bot.types.MessageEntity
 import com.elbekd.bot.types.ParseMode
 import io.github.smaugfm.monobudget.common.account.AccountsService
 import io.github.smaugfm.monobudget.common.category.CategoryService
@@ -18,6 +17,8 @@ import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.UpdateCategory
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractPayee
+import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractTransactionId
 import io.github.smaugfm.monobudget.common.util.isEven
 import io.github.smaugfm.monobudget.common.util.isOdd
 import io.ktor.util.logging.error
@@ -43,6 +44,8 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
 
         val (callbackQueryId, callbackType, message) =
             parseCallbackQuery(callbackQuery) ?: return
+
+        log.debug { "Parsed callback query of callbackType: $callbackType" }
 
         when (callbackType) {
             is ActionCallbackType ->
@@ -171,7 +174,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
                 CallbackType.classFromCallbackData(callbackData)
 
             val payee = extractPayee(message) ?: return null
-            val transactionId = extractTransactionId(message.text!!)
+            val transactionId = extractTransactionId(message)
 
             return when (cls) {
                 Uncategorize::class ->
@@ -197,20 +200,6 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
                     "Unknown class CallbackType: ${cls?.simpleName}"
                 )
             }
-        }
-
-        private fun extractPayee(message: Message): String? {
-            val text = message.text!!
-            val payee =
-                message.entities.find { it.type == MessageEntity.Type.BOLD }?.run {
-                    text.substring(offset, offset + length)
-                } ?: return null
-
-            return payee
-        }
-
-        internal fun extractTransactionId(text: String): String {
-            return text.substring(text.lastIndexOf('\n')).trim()
         }
     }
 }
