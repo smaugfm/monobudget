@@ -13,6 +13,7 @@ import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.Currency
+import kotlin.math.roundToLong
 import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger {}
@@ -74,12 +75,12 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
         ): String {
             log.info {
                 "Formatting message:" +
-                    "\n\t$description" +
-                    "\n\t$mcc" +
-                    "\n\t$amount" +
-                    "\n\t$category" +
-                    "\n\t$payee" +
-                    "\n\t$id"
+                    "\n\tdescription: $description" +
+                    "\n\tmcc: $mcc" +
+                    "\n\tamount: $amount" +
+                    "\n\tcategory: $category" +
+                    "\n\tpayee: $payee" +
+                    "\n\tid: $id"
             }
             val builder = StringBuilder("Нова транзакція Monobank додана в $budgetBackend\n")
             return with(Unit) {
@@ -91,9 +92,9 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
 
                 val budget = category?.budget
                 if (budget != null) {
-                    val (left, budgeted) = formatBudget(budget)
+                    val (left, budgeted, percent) = formatBudget(budget)
                     builder.append("\n")
-                    builder.append("Budget: <code>$left</code> з <code>$budgeted</code>")
+                    builder.append("Залишок: <code>$left із $budgeted</code> (<b>$percent</b>)")
                 }
                 builder.append("\n\n")
                 builder.append(if (idLink != null) "<a href=\"$idLink\">$id</a>" else "<pre>$id</pre>")
@@ -102,11 +103,14 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             }
         }
 
-        fun formatBudget(budget: CategoryService.BudgetedCategory.CategoryBudget): Pair<String, String> =
-            Pair(
-                budget.left.formatShort(false),
-                budget.budgetedThisMonth.formatShort(true)
-            )
+        @Suppress("MagicNumber")
+        fun formatBudget(
+            budget: CategoryService.BudgetedCategory.CategoryBudget
+        ): Triple<String, String, String> = Triple(
+            budget.left.formatShort(),
+            budget.budgetedThisMonth.formatShort(),
+            "${(budget.left.value.toDouble() * 100 / budget.budgetedThisMonth.value).roundToLong()}%"
+        )
 
         @JvmStatic
         @Suppress("MagicNumber")

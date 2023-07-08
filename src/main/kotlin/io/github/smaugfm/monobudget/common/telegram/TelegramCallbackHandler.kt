@@ -20,7 +20,6 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatt
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractTransactionId
 import io.github.smaugfm.monobudget.common.util.isEven
 import io.github.smaugfm.monobudget.common.util.isOdd
-import io.ktor.util.logging.error
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -57,7 +56,9 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
             try {
                 telegram.answerCallbackQuery(callbackQuery.id)
             } catch (e: Throwable) {
-                log.error(e)
+                log.error(e) {
+                    "Error answering callback queryId=${callbackQuery.id}"
+                }
             }
         }
     }
@@ -92,10 +93,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         return InlineKeyboardMarkup(rows.toList())
     }
 
-    private suspend fun handleUpdate(
-        callbackType: TransactionUpdateType,
-        message: Message
-    ) {
+    private suspend fun handleUpdate(callbackType: TransactionUpdateType, message: Message) {
         val updatedTransaction = updateTransaction(callbackType)
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
 
@@ -123,9 +121,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         oldMessage: Message
     ): String
 
-    private fun parseCallbackQuery(
-        callbackQuery: CallbackQuery
-    ): TransactionUpdateCallbackQueryWrapper? {
+    private fun parseCallbackQuery(callbackQuery: CallbackQuery): TransactionUpdateCallbackQueryWrapper? {
         val data = callbackQueryData(callbackQuery)
         val message = callbackQueryMessage(callbackQuery)
 

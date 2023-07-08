@@ -14,8 +14,14 @@ import kotlin.math.roundToLong
 class Amount(val value: Long, val currency: Currency) {
     private val multiplier = 10.0.pow(currency.defaultFractionDigits).toInt()
 
-    fun formatShort(withCurrency: Boolean = true): String =
-        "${(value / multiplier).toHumanReadable()} ${if (withCurrency) currency.toString() else ""}".trim()
+    fun formatShort(): String {
+        val formatted = (value / multiplier).toHumanReadable()
+        val symbol = if (currency.currencyCode == "UAH") "₴" else currency.symbol
+        if (formatted.startsWith('-')) {
+            return "-$symbol${formatted.substring(1)}"
+        }
+        return "$symbol${(value / multiplier).toHumanReadable()}"
+    }
 
     fun format(): String =
         "${value / multiplier}.${(abs(value % multiplier).formatW())} ${currency.currencyCode}"
