@@ -21,7 +21,7 @@ Ukrainian digital bank [Monobank](https://www.monobank.ua/) into one of the budg
 1. Get API token for each of the Monobank accounts you want to use as
    described [here](https://api.monobank.ua/docs/#tag/Kliyentski-personalni-dani).
 2. Get API token for the budgeting app:
-    - [Article](https://api.youneedabudget.com) how obtain token for YNAB.
+    - [Article](https://api.youneedabudget.com) on how obtain token for YNAB.
     - [Docs](https://lunchmoney.dev/#authentication) for Lunchmoney.
 3. Create Telegram bot and obtain its token as described [here](https://core.telegram.org/bots#how-do-i-create-a-bot).
 4. Create a file `settings.yml` with the following structure:
