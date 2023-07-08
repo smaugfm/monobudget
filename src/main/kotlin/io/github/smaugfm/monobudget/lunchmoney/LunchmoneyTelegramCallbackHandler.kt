@@ -13,7 +13,10 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatt
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyTransactionMessageFormatter.Companion.constructTransactionsQuickUrl
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.datetime.toKotlinLocalDate
+import mu.KotlinLogging
 import org.koin.core.annotation.Single
+
+private val log = KotlinLogging.logger {}
 
 @Single
 class LunchmoneyTelegramCallbackHandler(
@@ -45,7 +48,11 @@ class LunchmoneyTelegramCallbackHandler(
             skipBalanceUpdate = false
         ).awaitSingle()
 
-        return readTransaction(txId)
+        return readTransaction(txId).also {
+            log.debug {
+                "Updated and re-read transactionId=$txId: $it"
+            }
+        }
     }
 
     private suspend fun readTransaction(txId: Long) = api
@@ -78,6 +85,10 @@ class LunchmoneyTelegramCallbackHandler(
         val assetId = updatedTransaction.assetId?.toString()
         val accountCurrency = assetId?.let { accounts.getAccountCurrency(it) }
         if (categoryId == null || assetId == null || accountCurrency == null) {
+            log.error {
+                "Failed to get budgeted category: " +
+                    "categoryId=$categoryId, assetId=$assetId, accountCurrency=$accountCurrency"
+            }
             return null
         }
 
