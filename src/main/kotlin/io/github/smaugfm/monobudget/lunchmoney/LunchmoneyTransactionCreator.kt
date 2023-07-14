@@ -1,11 +1,13 @@
 package io.github.smaugfm.monobudget.lunchmoney
 
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
+import io.github.smaugfm.lunchmoney.exception.LunchmoneyApiResponseException
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
@@ -22,13 +24,21 @@ class LunchmoneyTransactionCreator(
 ) : TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
-    override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = when (maybeTransfer) {
-        is MaybeTransfer.Transfer ->
-            processTransfer(maybeTransfer.statement, maybeTransfer.processed())
+    override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) =
+        try {
+            when (maybeTransfer) {
+                is MaybeTransfer.Transfer ->
+                    processTransfer(maybeTransfer.statement, maybeTransfer.processed())
 
-        is MaybeTransfer.NotTransfer ->
-            maybeTransfer.consume(::processSingle)
-    }
+                is MaybeTransfer.NotTransfer ->
+                    maybeTransfer.consume(::processSingle)
+            }
+        } catch (e: LunchmoneyApiResponseException) {
+            throw BudgetBackendError(
+                e,
+                e.message ?: "Виникла неочікувана помилка при створенні транзакції"
+            )
+        }
 
     private suspend fun processTransfer(
         statement: StatementItem,
@@ -45,7 +55,8 @@ class LunchmoneyTransactionCreator(
                 status = LunchmoneyTransactionStatus.CLEARED,
                 categoryId = transferCategoryId
             )
-        ).awaitSingle()
+        )
+            .awaitSingle()
 
         val newTransaction = processSingle(statement, true)
 
@@ -54,7 +65,8 @@ class LunchmoneyTransactionCreator(
             payee = TRANSFER_PAYEE,
             transactions = listOf(existingTransaction, newTransaction).map { it.id },
             categoryId = transferCategoryId
-        ).awaitSingle()
+        )
+            .awaitSingle()
 
         log.debug { "Created new Lunchmoney transaction group id=$groupId" }
 
@@ -84,7 +96,8 @@ class LunchmoneyTransactionCreator(
                 applyRules = true,
                 checkForRecurring = true,
                 debitAsNegative = true
-            ).awaitSingle().first()
+            )
+                .awaitSingle().first()
         return api
             .getSingleTransaction(createdId)
             .awaitSingle()

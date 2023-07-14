@@ -1,6 +1,5 @@
 package io.github.smaugfm.monobudget.common.misc
 
-import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -37,7 +36,7 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
                     val result = try {
                         fetch()
                     } catch (e: Throwable) {
-                        log.error(e)
+                        log.error(e) { "Error fetching $name: " }
                         continue
                     }
                     if (data === initial) {

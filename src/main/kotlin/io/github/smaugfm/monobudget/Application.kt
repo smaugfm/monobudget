@@ -1,11 +1,8 @@
 package io.github.smaugfm.monobudget
 
-import io.github.resilience4j.core.IntervalFunction
-import io.github.resilience4j.kotlin.retry.RetryConfig
-import io.github.resilience4j.kotlin.retry.executeSuspendFunction
-import io.github.resilience4j.retry.Retry
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.statement.DuplicateChecker
 import io.github.smaugfm.monobudget.common.statement.StatementItemListener
@@ -29,7 +26,6 @@ import kotlinx.coroutines.flow.onEach
 import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import java.time.Duration
 import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
@@ -49,21 +45,6 @@ class Application<TTransaction, TNewTransaction> :
     private val duplicateChecker by inject<DuplicateChecker>()
     private val statementListeners by injectAll<StatementItemListener>()
     private val bankAccounts by inject<BankAccountService>()
-
-    @Suppress("MagicNumber")
-    private val processStatementRetry = Retry.of(
-        "processStatement",
-        RetryConfig {
-            maxAttempts(3)
-            failAfterMaxAttempts(true)
-            intervalFunction(
-                IntervalFunction.ofExponentialBackoff(
-                    Duration.ofSeconds(10),
-                    2.0
-                )
-            )
-        }
-    )
 
     suspend fun run() {
         runStartupChecks()
@@ -86,15 +67,10 @@ class Application<TTransaction, TNewTransaction> :
 
     private suspend fun process(statement: StatementItem) {
         try {
-            processStatementRetry.executeSuspendFunction {
-                try {
-                    processStatement(statement)
-                } catch (e: Throwable) {
-                    log.error(e)
-                    errorHandler.onRetry(statement)
-                    throw e
-                }
-            }
+            processStatement(statement)
+        } catch (e: BudgetBackendError) {
+            log.error(e)
+            errorHandler.onBudgetBackendError(e)
         } catch (e: Throwable) {
             log.error(e)
             errorHandler.onUnknownError()

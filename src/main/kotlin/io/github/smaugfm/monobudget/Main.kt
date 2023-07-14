@@ -1,5 +1,9 @@
 package io.github.smaugfm.monobudget
 
+import io.github.resilience4j.core.IntervalFunction
+import io.github.resilience4j.kotlin.retry.RetryConfig
+import io.github.resilience4j.reactor.retry.RetryOperator
+import io.github.resilience4j.retry.Retry
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
@@ -25,6 +29,7 @@ import org.koin.dsl.module
 import org.koin.ksp.generated.module
 import java.net.URI
 import java.nio.file.Paths
+import java.time.Duration
 
 private val log = KotlinLogging.logger {}
 
@@ -98,14 +103,35 @@ private fun runtimeModule(settings: Settings, coroutineScope: CoroutineScope) = 
     single { settings.mcc }
     single { settings.bot }
     single { settings.accounts }
+    single { apiRetry() }
     settings.transfer.forEach { s ->
         single { s }
     }
     single { coroutineScope }
 }
 
+@Suppress("MagicNumber")
+private fun apiRetry(): Retry = Retry.of(
+    "apiRetry",
+    RetryConfig {
+        maxAttempts(3)
+        failAfterMaxAttempts(true)
+        intervalFunction(
+            IntervalFunction.ofExponentialBackoff(
+                Duration.ofSeconds(2),
+                2.0
+            )
+        )
+    }
+)
+
 private fun lunchmoneyModule(budgetBackend: Lunchmoney) = module {
-    single { LunchmoneyApi(budgetBackend.token) }
+    single {
+        LunchmoneyApi(
+            budgetBackend.token,
+            requestTransformer = RetryOperator.of(get())
+        )
+    }
 } + LunchmoneyModule().module
 
 private fun ynabModule() = listOf(YnabModule().module)

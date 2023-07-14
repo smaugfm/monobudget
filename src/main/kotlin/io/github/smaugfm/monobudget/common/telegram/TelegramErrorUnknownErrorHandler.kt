@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.common.telegram
 
 import com.elbekd.bot.model.ChatId
 import io.github.smaugfm.monobudget.common.account.BankAccountService
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
 import org.koin.core.annotation.Single
@@ -18,6 +19,16 @@ class TelegramErrorUnknownErrorHandler(
                 telegramApi.sendMessage(
                     chatId = ChatId.IntegerId(chatId),
                     text = TelegramApi.UNKNOWN_ERROR_MSG
+                )
+            }
+    }
+
+    suspend fun onBudgetBackendError(budgetBackendError: BudgetBackendError) {
+        monoSettings.telegramChatIds
+            .forEach { chatId ->
+                telegramApi.sendMessage(
+                    chatId = ChatId.IntegerId(chatId),
+                    text = budgetBackendError.userMessage
                 )
             }
     }

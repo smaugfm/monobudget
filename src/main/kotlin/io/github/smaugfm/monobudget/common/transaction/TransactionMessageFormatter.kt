@@ -103,10 +103,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
         }
 
         @Suppress("MagicNumber")
-        fun formatBudget(
-            budget: CategoryService.BudgetedCategory.CategoryBudget,
-            builder: StringBuilder
-        ) {
+        fun formatBudget(budget: CategoryService.BudgetedCategory.CategoryBudget, builder: StringBuilder) {
             val left = budget.left.formatShort()
             val budgeted = budget.budgetedThisMonth.formatShort()
             val percent =
