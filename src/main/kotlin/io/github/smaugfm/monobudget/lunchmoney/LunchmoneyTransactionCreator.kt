@@ -7,7 +7,8 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendError.BudgetBackendApiError
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendError.BudgetBackendClientError
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
@@ -24,21 +25,29 @@ class LunchmoneyTransactionCreator(
 ) : TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
-    override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) =
-        try {
-            when (maybeTransfer) {
-                is MaybeTransfer.Transfer ->
-                    processTransfer(maybeTransfer.statement, maybeTransfer.processed())
+    override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = try {
+        when (maybeTransfer) {
+            is MaybeTransfer.Transfer ->
+                processTransfer(maybeTransfer.statement, maybeTransfer.processed())
 
-                is MaybeTransfer.NotTransfer ->
-                    maybeTransfer.consume(::processSingle)
-            }
-        } catch (e: LunchmoneyApiResponseException) {
-            throw BudgetBackendError(
+            is MaybeTransfer.NotTransfer ->
+                maybeTransfer.consume(::processSingle)
+        }
+    } catch (e: LunchmoneyApiResponseException) {
+        if (e.apiErrorResponse != null) {
+            throw BudgetBackendClientError(
                 e,
-                e.message ?: "Виникла неочікувана помилка при створенні транзакції"
+                "Виникла помилка при створенні транзакції. " +
+                    "Будь ласка створи цю транзакцію вручну"
+            )
+        } else {
+            throw BudgetBackendApiError(
+                e,
+                "На стороні Lunchmoney виникла помилка " +
+                    "при спробі створити транзакцію. Будь ласка створи цю транзакцію вручну"
             )
         }
+    }
 
     private suspend fun processTransfer(
         statement: StatementItem,
