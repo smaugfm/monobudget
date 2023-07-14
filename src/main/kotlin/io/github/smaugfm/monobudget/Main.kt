@@ -24,6 +24,7 @@ import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
+import org.koin.core.qualifier.StringQualifier
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.ksp.generated.module
@@ -66,7 +67,6 @@ private fun CoroutineScope.setupKoin(
 ) {
     startKoin {
         printLogger(Level.ERROR)
-
         modules(runtimeModule(settings, this@setupKoin))
         modules(
             MonoModule().module + module {
@@ -105,7 +105,7 @@ private fun runtimeModule(settings: Settings, coroutineScope: CoroutineScope) = 
     single { settings.accounts }
     single { apiRetry() }
     settings.transfer.forEach { s ->
-        single { s }
+        single(qualifier = StringQualifier(s.descriptionRegex.pattern)) { s }
     }
     single { coroutineScope }
 }
