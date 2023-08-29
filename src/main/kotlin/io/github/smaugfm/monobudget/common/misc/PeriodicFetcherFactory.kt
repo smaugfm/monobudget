@@ -37,6 +37,7 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
                         fetch()
                     } catch (e: Throwable) {
                         log.error(e) { "Error fetching $name: " }
+                        delay(interval)
                         continue
                     }
                     if (data === initial) {

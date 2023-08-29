@@ -38,7 +38,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
-    implementation("io.github.smaugfm:monobank:0.0.1")
+    implementation("io.github.smaugfm:monobank:0.0.2")
     implementation("io.github.smaugfm:lunchmoney:1.0.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.6.4")
     implementation("io.insert-koin:koin-core:$koin")

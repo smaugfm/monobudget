@@ -10,6 +10,7 @@ import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.ExperimentalSerializationApi
 import mu.KotlinLogging
 import org.koin.core.annotation.Single
+import reactor.core.publisher.Flux
 
 private val log = KotlinLogging.logger { }
 
@@ -20,27 +21,23 @@ class MonoAccountsService(
     private val settings: MultipleAccountSettings
 ) : BankAccountService() {
 
+    private val otherAccounts = settings.settings.filterIsInstance<OtherAccountSettings>()
+        .map { Account(it.accountId, it.alias, it.currency) }
+    private val monoApis = settings.settings.filterIsInstance<MonoAccountSettings>()
+        .map { MonoApi(it.token) to it.accountId }
+
     private val fetcher = fetcherFactory.create("Monobank accounts") {
-        settings.settings.map {
-            when (it) {
-                is OtherAccountSettings ->
-                    Account(it.accountId, it.alias, it.currency)
-
-                is MonoAccountSettings -> {
-                    val api = MonoApi(it.token)
-
-                    val accountId = it.accountId
-                    val monoAccount =
-                        api.api.getClientInformation().awaitSingle()
-                            .accounts.firstOrNull { account -> account.id == accountId }!!
+        Flux.concat(monoApis.map { (api, accountId) ->
+            api.api.getClientInformation()
+                .map { info -> info.accounts.first { a -> a.id == accountId } }
+                .map {
                     Account(
                         accountId,
                         settings.byId[accountId]!!.alias,
-                        monoAccount.currencyCode
+                        it!!.currencyCode
                     )
                 }
-            }
-        }
+        }).collectList().awaitSingle() + otherAccounts
     }
 
     override suspend fun getAccounts() = fetcher.getData().filter { it.id in settings.accountIds }
