@@ -24,6 +24,7 @@ class TelegramMessageSender(
             return
         }
 
+        log.info { "Sending message to telegramChatId=$chatId. monoAccountId=$accountId)" }
         this.send(
             ChatId.IntegerId(chatId),
             newMessage.message,

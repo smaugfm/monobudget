@@ -27,17 +27,19 @@ class MonoAccountsService(
         .map { MonoApi(it.token) to it.accountId }
 
     private val fetcher = fetcherFactory.create("Monobank accounts") {
-        Flux.concat(monoApis.map { (api, accountId) ->
-            api.api.getClientInformation()
-                .map { info -> info.accounts.first { a -> a.id == accountId } }
-                .map {
-                    Account(
-                        accountId,
-                        settings.byId[accountId]!!.alias,
-                        it!!.currencyCode
-                    )
-                }
-        }).collectList().awaitSingle() + otherAccounts
+        Flux.concat(
+            monoApis.map { (api, accountId) ->
+                api.api.getClientInformation()
+                    .map { info -> info.accounts.first { a -> a.id == accountId } }
+                    .map {
+                        Account(
+                            accountId,
+                            settings.byId[accountId]!!.alias,
+                            it!!.currencyCode
+                        )
+                    }
+            }
+        ).collectList().awaitSingle() + otherAccounts
     }
 
     override suspend fun getAccounts() = fetcher.getData().filter { it.id in settings.accountIds }

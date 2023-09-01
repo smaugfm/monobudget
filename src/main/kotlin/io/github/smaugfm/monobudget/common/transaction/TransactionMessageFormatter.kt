@@ -73,7 +73,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             id: String,
             idLink: String? = null
         ): String {
-            log.info {
+            log.trace {
                 "Formatting message:" +
                     "\n\tdescription: $description" +
                     "\n\tmcc: $mcc" +
