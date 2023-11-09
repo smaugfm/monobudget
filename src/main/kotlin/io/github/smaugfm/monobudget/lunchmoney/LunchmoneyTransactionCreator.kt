@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.lunchmoney
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.exception.LunchmoneyApiResponseException
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
@@ -12,7 +13,6 @@ import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}

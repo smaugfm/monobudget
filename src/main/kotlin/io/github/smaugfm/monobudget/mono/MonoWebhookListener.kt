@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.mono
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
@@ -25,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 import java.net.URI
 
 private val log = KotlinLogging.logger {}
@@ -64,11 +64,11 @@ class MonoWebhookListener(
             }
             routing {
                 post(monoWebhookUrl.path) {
-                    log.info(
+                    log.info {
                         "Webhook queried. " +
                             "Host: ${call.request.origin.remoteHost} " +
                             "Uri: ${call.request.uri}"
-                    )
+                    }
                     val response = call.receive<MonoWebhookResponse>()
                     try {
                         val account =

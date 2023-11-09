@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
@@ -16,21 +17,19 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatt
 import io.github.smaugfm.monobudget.common.util.injectAll
 import io.github.smaugfm.monobudget.common.util.pp
 import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
-import io.ktor.util.logging.error
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filterNot
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.onEach
-import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
 
-@OptIn(FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class Application<TTransaction, TNewTransaction> :
     KoinComponent {
     private val telegramApi by inject<TelegramApi>()
@@ -69,10 +68,10 @@ class Application<TTransaction, TNewTransaction> :
         try {
             processStatement(statement)
         } catch (e: BudgetBackendError) {
-            log.error(e)
+            log.error(e) {}
             errorHandler.onBudgetBackendError(e)
         } catch (e: Throwable) {
-            log.error(e)
+            log.error(e) {}
             errorHandler.onUnknownError()
         }
     }
@@ -103,7 +102,7 @@ class Application<TTransaction, TNewTransaction> :
         with(item) {
             log.info {
                 "Incoming transaction from $alias's account.\n" +
-                    if (log.isDebugEnabled) {
+                    if (log.isTraceEnabled()) {
                         this.pp()
                     } else {
                         "\tAmount: ${item.amount}\n" +

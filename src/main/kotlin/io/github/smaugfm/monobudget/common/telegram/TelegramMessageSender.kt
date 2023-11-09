@@ -3,10 +3,10 @@ package io.github.smaugfm.monobudget.common.telegram
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.ParseMode
 import com.elbekd.bot.types.ReplyKeyboard
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.model.financial.BankAccountId
 import io.github.smaugfm.monobudget.common.model.telegram.MessageWithReplyKeyboard
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}

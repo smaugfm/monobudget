@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget.common.util
 
+import io.github.oshai.kotlinlogging.KLogger
 import io.ktor.client.plugins.ResponseException
-import mu.KLogger
 
 @Suppress("LongParameterList")
 inline fun <reified T : Any> logError(

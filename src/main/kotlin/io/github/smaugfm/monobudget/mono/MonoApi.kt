@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.mono
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobank.MonobankPersonalApi
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -9,10 +10,8 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
-import io.ktor.util.logging.error
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.reactor.awaitSingleOrNull
-import mu.KotlinLogging
 import java.net.URI
 
 private val log = KotlinLogging.logger {}
@@ -24,7 +23,6 @@ class MonoApi(token: String) {
 
     val api = MonobankPersonalApi(token)
 
-    @Suppress("ExtractKtorModule")
     suspend fun setupWebhook(url: URI, port: Int): Boolean {
         require(url.toASCIIString() == url.toString())
 
@@ -47,16 +45,16 @@ class MonoApi(token: String) {
             waitForWebhook.await()
             log.info { "Webhook setup completed. Stopping temporary server..." }
         } catch (e: Throwable) {
-            log.error(e)
+            log.error(e) {}
             return false
         } finally {
-            tempServer.stop(serverStopGracePeriod, serverStopGracePeriod)
+            tempServer.stop(SERVER_STOP_GRACE_PERIOD, SERVER_STOP_GRACE_PERIOD)
         }
 
         return true
     }
 
     companion object {
-        private const val serverStopGracePeriod = 100L
+        private const val SERVER_STOP_GRACE_PERIOD = 100L
     }
 }

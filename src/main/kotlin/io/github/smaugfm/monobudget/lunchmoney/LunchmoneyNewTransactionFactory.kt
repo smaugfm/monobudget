@@ -1,12 +1,12 @@
 package io.github.smaugfm.monobudget.lunchmoney
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.toJavaLocalDate
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 import java.util.Currency
 

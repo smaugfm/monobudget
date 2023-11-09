@@ -1,12 +1,11 @@
 package io.github.smaugfm.monobudget.common.verify
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
 import io.github.smaugfm.monobudget.ynab.YnabApi
-import io.ktor.util.logging.error
 import kotlinx.coroutines.reactor.awaitSingle
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 
@@ -41,7 +40,7 @@ class BudgetSettingsVerifier(
                     try {
                         api.getAccount(settings.budgetAccountId)
                     } catch (e: Throwable) {
-                        log.error(e)
+                        log.error(e) {}
                         error("Failed to find YNAB account with id=${settings.budgetAccountId}")
                     }
                 }

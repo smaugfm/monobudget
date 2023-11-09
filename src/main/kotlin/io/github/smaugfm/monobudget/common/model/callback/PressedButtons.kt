@@ -3,8 +3,6 @@ package io.github.smaugfm.monobudget.common.model.callback
 import kotlin.reflect.KClass
 
 class PressedButtons(initial: CallbackType?) {
-    constructor() : this(null)
-
     private val pressed: MutableSet<KClass<out CallbackType>> =
         if (initial != null) mutableSetOf(initial::class) else mutableSetOf()
 

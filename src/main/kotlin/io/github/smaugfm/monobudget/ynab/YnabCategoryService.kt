@@ -14,7 +14,7 @@ class YnabCategoryService(
     private val ynab: BudgetBackend.YNAB
 ) : CategoryService() {
 
-    private val categoriesFetcher = periodicFetcherFactory.create("YNAB categoires") {
+    private val categoriesFetcher = periodicFetcherFactory.create("YNAB categories") {
         api.getCategoryGroups().flatMap {
             it.categories
         }

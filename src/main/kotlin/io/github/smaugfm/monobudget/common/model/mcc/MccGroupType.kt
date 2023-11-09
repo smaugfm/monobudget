@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.common.model.mcc
 
 import kotlinx.serialization.Serializable
 
+@Suppress("unused")
 @Serializable
 enum class MccGroupType {
     AS,

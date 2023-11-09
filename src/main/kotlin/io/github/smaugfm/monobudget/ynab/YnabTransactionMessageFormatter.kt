@@ -57,14 +57,13 @@ class YnabTransactionMessageFormatter(
         return pressed
     }
 
-    override fun getReplyKeyboard(transaction: YnabTransactionDetail, pressed: PressedButtons) =
-        InlineKeyboardMarkup(
+    override fun getReplyKeyboard(pressed: PressedButtons) = InlineKeyboardMarkup(
+        listOf(
             listOf(
-                listOf(
-                    TransactionUpdateType.Unapprove.button(pressed),
-                    TransactionUpdateType.Uncategorize.button(pressed),
-                    TransactionUpdateType.MakePayee.button(pressed)
-                )
+                TransactionUpdateType.Unapprove.button(pressed),
+                TransactionUpdateType.Uncategorize.button(pressed),
+                TransactionUpdateType.MakePayee.button(pressed)
             )
         )
+    )
 }

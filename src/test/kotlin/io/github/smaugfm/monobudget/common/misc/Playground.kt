@@ -27,7 +27,7 @@ import kotlin.io.path.readText
 @Disabled
 @OptIn(DelicateCoroutinesApi::class)
 class Playground : KoinTest {
-    val categorySuggestion: LunchmoneyCategoryService by inject()
+    private val categorySuggestion: LunchmoneyCategoryService by inject()
 
     companion object {
         @BeforeAll

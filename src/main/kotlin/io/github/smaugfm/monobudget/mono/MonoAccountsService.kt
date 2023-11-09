@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.mono
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.model.financial.Account
@@ -8,7 +9,6 @@ import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSetting
 import io.github.smaugfm.monobudget.common.model.settings.OtherAccountSettings
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.ExperimentalSerializationApi
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 import reactor.core.publisher.Flux
 

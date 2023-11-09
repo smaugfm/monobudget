@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.common.mono
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.Base
@@ -11,18 +12,19 @@ import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetect
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer.Transfer
 import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
 import io.mockk.coEvery
+import io.mockk.mockkClass
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
-import mu.KotlinLogging
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.dsl.module
 import org.koin.test.inject
 import org.koin.test.junit5.KoinTestExtension
+import org.koin.test.mock.MockProvider
 import org.koin.test.mock.declareMock
 import java.util.Currency
 import java.util.concurrent.TimeUnit
@@ -33,8 +35,9 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
 
     class TestDetector : TransferBetweenAccountsDetector<Any>()
 
-    val detector: TestDetector by inject()
+    private val detector: TestDetector by inject()
 
+    @Suppress("unused")
     @JvmField
     @RegisterExtension
     val koinTestExtension = KoinTestExtension.create {
@@ -48,6 +51,7 @@ class MonoTransferBetweenAccountsDetectorTest : Base() {
     @Timeout(2, unit = TimeUnit.SECONDS)
     @Test
     fun test() {
+        MockProvider.register { mockkClass(it) }
         val webhook1 = webhook1()
         val webhook2 = webhook2()
 

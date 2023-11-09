@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.ynab
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
 import io.github.smaugfm.monobudget.common.misc.SimpleCache
@@ -8,7 +9,6 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.ynab.model.YnabCleared
 import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}

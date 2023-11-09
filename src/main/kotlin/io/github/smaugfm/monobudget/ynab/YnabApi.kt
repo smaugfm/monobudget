@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.ynab
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.common.util.logError
 import io.github.smaugfm.monobudget.common.util.makeJson
@@ -17,7 +18,6 @@ import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransactionResponse
 import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransactionWrapper
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionResponse
-import io.github.smaugfm.monobudget.ynab.model.YnabTransactionsResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -32,7 +32,6 @@ import io.ktor.http.contentType
 import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.util.url
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 import kotlin.reflect.KFunction
 
@@ -135,17 +134,4 @@ class YnabApi(backend: YNAB) {
                 )
             ).body<YnabTransactionResponse>()
         }.data.transaction
-
-    suspend fun getAccountTransactions(accountId: String): List<YnabTransactionDetail> =
-        catching(this::getAccountTransactions) {
-            httpClient.get(
-                buildUrl(
-                    "budgets",
-                    budgetId,
-                    "accounts",
-                    accountId,
-                    "transactions"
-                )
-            ).body<YnabTransactionsResponse>()
-        }.data.transactions
 }

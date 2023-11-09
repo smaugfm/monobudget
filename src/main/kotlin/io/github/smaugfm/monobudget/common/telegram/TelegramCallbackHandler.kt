@@ -6,6 +6,7 @@ import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.ParseMode
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
@@ -21,7 +22,6 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatt
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractTransactionId
 import io.github.smaugfm.monobudget.common.util.isEven
 import io.github.smaugfm.monobudget.common.util.isOdd
-import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 

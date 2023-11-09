@@ -2,7 +2,6 @@ package io.github.smaugfm.monobudget.common.misc
 
 import io.github.smaugfm.monobudget.common.model.mcc.MccEntry
 import io.github.smaugfm.monobudget.common.util.resourceAsString
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 object MCC {

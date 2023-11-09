@@ -97,7 +97,7 @@ There are a couple of environment variables you must set:
 
 ### About YNAB support
 
-Previously this app supported only YNAB as this was my preferred financial manager. Then I switched to Lunchmoney and refactored the app to support both but I only tested YNAB support with the minimal effort after that and I am not confident it works reliably.
+Previously this app supported only YNAB as this was my preferred financial manager. Then I switched to Lunchmoney and refactored the app to support both, but I only tested YNAB support with the minimal effort after that, and I am not confident it works reliably.
 
 Last commit where YNAB support was working reliably (and I was personally using it)
 is [3a7da7af](https://github.com/smaugfm/monobudget/commit/3a7da7afd85bffa310f54a322c46d626d24f488c) (May 2022)

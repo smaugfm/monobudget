@@ -36,7 +36,7 @@ class Amount(val value: Long, val currency: Currency) {
 
     /**
      * Monobank amount uses minimum currency units (e.g. cents for dollars)
-     * and YNAB amount uses milliunits (1/1000th of a dollar)
+     * and YNAB amount uses milli units (1/1000th of a dollar)
      */
     fun toYnabAmountLong() = value * (YNAB_MILLI_MILTIPLIER / currency.defaultFractionDigits)
 

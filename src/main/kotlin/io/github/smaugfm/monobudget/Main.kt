@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.core.IntervalFunction
 import io.github.resilience4j.kotlin.retry.RetryConfig
 import io.github.resilience4j.reactor.retry.RetryOperator
@@ -21,7 +22,6 @@ import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.qualifier.StringQualifier

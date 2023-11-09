@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.lunchmoney
 
 import com.elbekd.bot.types.Message
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
@@ -13,7 +14,6 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatt
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyTransactionMessageFormatter.Companion.constructTransactionsQuickUrl
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.datetime.toKotlinLocalDate
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}

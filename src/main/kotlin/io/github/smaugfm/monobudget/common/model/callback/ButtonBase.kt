@@ -13,13 +13,13 @@ open class ButtonBase(private val cls: KClass<out CallbackType>) {
 
     private fun buttonText(pressed: Boolean) = when (cls) {
         TransactionUpdateType.MakePayee::class ->
-            (if (pressed) pressedChar else "➕") + "payee"
+            (if (pressed) PRESSED_CHAR else "➕") + "payee"
 
         TransactionUpdateType.Uncategorize::class ->
-            (if (pressed) pressedChar else "❌") + "категорію"
+            (if (pressed) PRESSED_CHAR else "❌") + "категорію"
 
         TransactionUpdateType.Unapprove::class ->
-            (if (pressed) pressedChar else "🚫") + "unapprove"
+            (if (pressed) PRESSED_CHAR else "🚫") + "unapprove"
 
         ActionCallbackType.ChooseCategory::class ->
             "⤴️категорію"
@@ -28,6 +28,6 @@ open class ButtonBase(private val cls: KClass<out CallbackType>) {
     }
 
     companion object {
-        private const val pressedChar: String = "✅"
+        private const val PRESSED_CHAR: String = "✅"
     }
 }

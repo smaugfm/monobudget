@@ -6,13 +6,13 @@ import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.ParseMode
 import com.elbekd.bot.types.ReplyKeyboard
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.model.settings.TelegramBotSettings
 import io.github.smaugfm.monobudget.common.util.pp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 

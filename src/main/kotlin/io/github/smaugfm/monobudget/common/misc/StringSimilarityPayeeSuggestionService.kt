@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget.common.misc
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.util.jaroWinklerSimilarity
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}

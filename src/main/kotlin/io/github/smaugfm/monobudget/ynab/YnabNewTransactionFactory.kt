@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.ynab
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.misc.StringSimilarityPayeeSuggestionService
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
@@ -7,7 +8,6 @@ import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import io.github.smaugfm.monobudget.ynab.model.YnabCleared
 import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}

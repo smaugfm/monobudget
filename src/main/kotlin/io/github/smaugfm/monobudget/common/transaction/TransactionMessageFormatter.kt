@@ -3,18 +3,17 @@ package io.github.smaugfm.monobudget.common.transaction
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.MessageEntity
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.category.CategoryService
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.telegram.MessageWithReplyKeyboard
-import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import java.util.Currency
 import kotlin.math.roundToLong
-import kotlin.reflect.KClass
 
 private val log = KotlinLogging.logger {}
 
@@ -39,7 +38,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
 
     fun getReplyKeyboard(transaction: TTransaction): InlineKeyboardMarkup {
         val pressed = getReplyKeyboardPressedButtons(transaction)
-        return getReplyKeyboard(transaction, pressed)
+        return getReplyKeyboard(pressed)
     }
 
     abstract fun shouldNotify(transaction: TTransaction): Boolean
@@ -49,10 +48,7 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
         callbackType: TransactionUpdateType? = null
     ): PressedButtons
 
-    protected abstract fun getReplyKeyboard(
-        transaction: TTransaction,
-        pressed: PressedButtons
-    ): InlineKeyboardMarkup
+    protected abstract fun getReplyKeyboard(pressed: PressedButtons): InlineKeyboardMarkup
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
@@ -150,12 +146,5 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
             val mcc: String,
             val currency: String
         )
-
-        data class FormattedBudget(
-            val left: String,
-            val budgeted: String
-        )
-
-        internal fun <T : TransactionUpdateType> callbackData(cls: KClass<out T>) = cls.simpleName!!
     }
 }

@@ -1,8 +1,8 @@
 package io.github.smaugfm.monobudget.common.statement
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.misc.SimpleCache
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
-import mu.KotlinLogging
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}

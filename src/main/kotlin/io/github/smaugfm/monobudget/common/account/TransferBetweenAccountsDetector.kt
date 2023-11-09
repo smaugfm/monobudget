@@ -1,10 +1,10 @@
 package io.github.smaugfm.monobudget.common.account
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.misc.ExpiringMap
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import mu.KotlinLogging
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import kotlin.time.Duration.Companion.minutes

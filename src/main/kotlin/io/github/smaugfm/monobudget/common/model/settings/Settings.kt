@@ -1,10 +1,10 @@
 package io.github.smaugfm.monobudget.common.model.settings
 
 import com.charleskorn.kaml.Yaml
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
-import mu.KotlinLogging
 import java.io.File
 import java.nio.file.Path
 

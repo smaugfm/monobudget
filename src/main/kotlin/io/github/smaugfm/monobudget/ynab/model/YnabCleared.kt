@@ -3,6 +3,7 @@ package io.github.smaugfm.monobudget.ynab.model
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@Suppress("unused")
 @Serializable
 enum class YnabCleared {
     @SerialName("cleared")
