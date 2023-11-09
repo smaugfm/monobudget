@@ -1,8 +1,9 @@
 package io.github.smaugfm.monobudget.common.exception
 
-sealed class BudgetBackendError(cause: Throwable, val userMessage: String) : Exception(cause) {
-    class BudgetBackendApiError(cause: Throwable, userMessage: String) :
-        BudgetBackendError(cause, userMessage)
-    class BudgetBackendClientError(cause: Throwable, userMessage: String) :
-        BudgetBackendError(cause, userMessage)
-}
+import io.github.smaugfm.monobudget.common.model.financial.BankAccountId
+
+class BudgetBackendError(
+    cause: Throwable,
+    val bankAccountId: BankAccountId,
+    val userMessage: String
+) : Exception(cause)

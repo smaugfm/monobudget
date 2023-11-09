@@ -67,6 +67,7 @@ class TelegramApi(
         parseMode: ParseMode?,
         replyMarkup: InlineKeyboardMarkup
     ) {
+        log.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup.pp()}" }
         bot.editMessageText(
             chatId,
             messageId,
@@ -76,13 +77,11 @@ class TelegramApi(
             null,
             true,
             replyMarkup
-        ).also {
-            log.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup.pp()}" }
-        }
+        )
     }
 
-    suspend fun answerCallbackQuery(id: String, text: String? = null) {
-        bot.answerCallbackQuery(id, text = text)
+    suspend fun answerCallbackQuery(id: String) {
+        bot.answerCallbackQuery(id, cacheTime = 5)
     }
 
     fun start(callbackHandler: suspend (CallbackQuery) -> Unit): Job {

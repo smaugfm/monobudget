@@ -18,8 +18,9 @@ open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
         ExpiringMap<StatementItem, Deferred<TTransaction>>(1.minutes)
 
     sealed class MaybeTransfer<TTransaction> {
+        abstract val statement: StatementItem
         data class Transfer<TTransaction>(
-            val statement: StatementItem,
+            override val statement: StatementItem,
             private val processed: TTransaction
         ) : MaybeTransfer<TTransaction>() {
             @Suppress("UNCHECKED_CAST")
@@ -29,7 +30,7 @@ open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
         }
 
         class NotTransfer<TTransaction>(
-            private val statement: StatementItem,
+            override val statement: StatementItem,
             private val processedDeferred: CompletableDeferred<TTransaction>
         ) : MaybeTransfer<TTransaction>() {
             @Volatile

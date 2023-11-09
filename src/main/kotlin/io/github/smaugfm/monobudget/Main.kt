@@ -118,7 +118,7 @@ private fun apiRetry(): Retry = Retry.of(
         failAfterMaxAttempts(true)
         intervalFunction(
             IntervalFunction.ofExponentialBackoff(
-                Duration.ofSeconds(2),
+                Duration.ofSeconds(1),
                 2.0
             )
         )

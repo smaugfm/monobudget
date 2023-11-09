@@ -9,7 +9,7 @@ import io.github.smaugfm.monobudget.common.statement.StatementItemListener
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
-import io.github.smaugfm.monobudget.common.telegram.TelegramErrorUnknownErrorHandler
+import io.github.smaugfm.monobudget.common.telegram.TelegramErrorHandler
 import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
@@ -40,7 +40,7 @@ class Application<TTransaction, TNewTransaction> :
     private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
     private val transferDetector by inject<TransferBetweenAccountsDetector<TTransaction>>()
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
-    private val errorHandler by inject<TelegramErrorUnknownErrorHandler>()
+    private val errorHandler by inject<TelegramErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
     private val duplicateChecker by inject<DuplicateChecker>()
     private val statementListeners by injectAll<StatementItemListener>()

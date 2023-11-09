@@ -7,8 +7,7 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError.BudgetBackendApiError
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError.BudgetBackendClientError
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
@@ -34,19 +33,12 @@ class LunchmoneyTransactionCreator(
                 maybeTransfer.consume(::processSingle)
         }
     } catch (e: LunchmoneyApiResponseException) {
-        if (e.apiErrorResponse != null) {
-            throw BudgetBackendClientError(
-                e,
-                "Виникла помилка при створенні транзакції. " +
-                    "Будь ласка створи цю транзакцію вручну"
-            )
-        } else {
-            throw BudgetBackendApiError(
-                e,
-                "На стороні Lunchmoney виникла помилка " +
-                    "при спробі створити транзакцію. Будь ласка створи цю транзакцію вручну"
-            )
-        }
+        throw BudgetBackendError(
+            e,
+            maybeTransfer.statement.accountId,
+            "Виникла помилка при створенні транзакції. " +
+                "Будь ласка створи цю транзакцію вручну. Текст помилки: ${e.message}"
+        )
     }
 
     private suspend fun processTransfer(

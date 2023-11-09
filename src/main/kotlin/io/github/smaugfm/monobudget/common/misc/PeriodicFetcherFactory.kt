@@ -32,7 +32,7 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
             log.info { "Launching periodic fetcher for $name" }
             scope.launch {
                 while (true) {
-                    log.debug { "$name fetching..." }
+                    log.trace { "$name fetching..." }
                     val result = try {
                         fetch()
                     } catch (e: Throwable) {
@@ -44,7 +44,7 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
                         initial.complete(result)
                     }
                     data = CompletableDeferred(result)
-                    log.debug { "$name fetched: $result" }
+                    log.trace { "$name fetched: $result" }
                     delay(interval)
                 }
             }

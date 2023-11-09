@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.common.telegram
 
 import com.elbekd.bot.model.ChatId
+import com.elbekd.bot.model.TelegramApiError
 import com.elbekd.bot.types.CallbackQuery
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import com.elbekd.bot.types.Message
@@ -43,7 +44,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
             val (callbackType, message) =
                 parseCallbackQuery(callbackQuery) ?: return
 
-            log.debug { "Parsed callback query of callbackType: $callbackType" }
+            log.debug { "Parsed callback query id=${callbackQuery.id}of callbackType: $callbackType" }
 
             when (callbackType) {
                 is ActionCallbackType ->
@@ -103,7 +104,17 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         if (stripHTMLTagsFromMessage(updatedText) != message.text ||
             updatedMarkup != message.replyMarkup
         ) {
-            with(message) {
+            editMessage(message, updatedText, updatedMarkup)
+        }
+    }
+
+    private suspend fun TelegramCallbackHandler<TTransaction>.editMessage(
+        message: Message,
+        updatedText: String,
+        updatedMarkup: InlineKeyboardMarkup
+    ) {
+        with(message) {
+            try {
                 telegram.editMessage(
                     ChatId.IntegerId(chat.id),
                     messageId,
@@ -111,6 +122,10 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
                     ParseMode.Html,
                     updatedMarkup
                 )
+            } catch (e: TelegramApiError) {
+                if (e.description.contains("message is not modified")) {
+                    return
+                }
             }
         }
     }

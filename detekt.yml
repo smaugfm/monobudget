@@ -22,6 +22,9 @@ naming:
     excludes: [ '**/models/ynab/Ynab*.kt' ]
 
 complexity:
+  TooManyFunctions:
+    active: true
+    ignorePrivate: true
   LargeClass:
     active: true
     excludes: [ '**/MCC.kt' ]
