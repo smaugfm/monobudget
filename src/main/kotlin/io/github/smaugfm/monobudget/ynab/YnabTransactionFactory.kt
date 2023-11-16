@@ -3,13 +3,13 @@ package io.github.smaugfm.monobudget.ynab
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
-import io.github.smaugfm.monobudget.common.misc.SimpleCache
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.ynab.model.YnabCleared
 import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import org.koin.core.annotation.Single
+import java.util.concurrent.ConcurrentHashMap
 
 private val log = KotlinLogging.logger {}
 
@@ -19,9 +19,7 @@ class YnabTransactionFactory(
     private val bankAccounts: BankAccountService
 ) : TransactionFactory<YnabTransactionDetail, YnabSaveTransaction>() {
 
-    private val transferPayeeIdsCache = SimpleCache<String, String> {
-        api.getAccount(it).transferPayeeId
-    }
+    private val transferPayeeIdsCache = ConcurrentHashMap<String, String>()
 
     override suspend fun create(maybeTransfer: MaybeTransfer<YnabTransactionDetail>) = when (maybeTransfer) {
         is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.statement, maybeTransfer.processed())
@@ -38,7 +36,9 @@ class YnabTransactionFactory(
         }
 
         val transferPayeeId =
-            transferPayeeIdsCache.get(bankAccounts.getBudgetAccountId(statement.accountId)!!)
+            transferPayeeIdsCache.getOrPut(bankAccounts.getBudgetAccountId(statement.accountId)!!) {
+                api.getAccount(statement.accountId).transferPayeeId
+            }
 
         val existingTransactionUpdated = api
             .updateTransaction(

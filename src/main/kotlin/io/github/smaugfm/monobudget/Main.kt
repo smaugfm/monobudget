@@ -27,7 +27,7 @@ import org.koin.core.logger.Level
 import org.koin.core.qualifier.StringQualifier
 import org.koin.dsl.bind
 import org.koin.dsl.module
-import org.koin.ksp.generated.module
+import org.koin.ksp.generated.*
 import java.net.URI
 import java.nio.file.Paths
 import java.time.Duration

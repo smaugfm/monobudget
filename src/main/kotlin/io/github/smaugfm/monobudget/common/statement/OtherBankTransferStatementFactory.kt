@@ -9,12 +9,18 @@ import org.koin.core.annotation.Single
 class OtherBankTransferStatementFactory(
     private val transferSettings: List<OtherBanksTransferSettings>,
     private val otherBanksStatementService: OtherBankStatementService
-) : StatementItemListener {
-    override suspend fun onNewStatementItem(item: StatementItem) {
+) : NewStatementListener {
+    override suspend fun onNewStatement(item: StatementItem): Boolean {
+        if (item is OtherBankStatementItem) {
+            return true
+        }
+
         val matchingSetting = findMatchingSettings(item)
         if (matchingSetting != null) {
             emitTransfer(matchingSetting, item)
         }
+
+        return true
     }
 
     private fun findMatchingSettings(item: StatementItem) = transferSettings.find {

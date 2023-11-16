@@ -3,10 +3,10 @@ package io.github.smaugfm.monobudget
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.context.StatementProcessingContextContainer
 import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
-import io.github.smaugfm.monobudget.common.statement.DuplicateChecker
-import io.github.smaugfm.monobudget.common.statement.StatementItemListener
+import io.github.smaugfm.monobudget.common.statement.NewStatementListener
 import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
@@ -20,7 +20,7 @@ import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.filterNot
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.onEach
 import org.koin.core.component.KoinComponent
@@ -41,9 +41,9 @@ class Application<TTransaction, TNewTransaction> :
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val errorHandler by inject<TelegramErrorHandler>()
     private val telegramMessageSender by inject<TelegramMessageSender>()
-    private val duplicateChecker by inject<DuplicateChecker>()
-    private val statementListeners by injectAll<StatementItemListener>()
+    private val checkers by injectAll<NewStatementListener>()
     private val bankAccounts by inject<BankAccountService>()
+    private val contextContainer by inject<StatementProcessingContextContainer>()
 
     suspend fun run() {
         runStartupChecks()
@@ -55,9 +55,8 @@ class Application<TTransaction, TNewTransaction> :
         val telegramJob = telegramApi.start(telegramCallbackHandler::handle)
         statementServices.asFlow()
             .flatMapMerge { it.statements() }
-            .filterNot(duplicateChecker::isDuplicate)
+            .filter { item -> checkers.all { it.onNewStatement(item) } }
             .onEach { logStatement(it, bankAccounts.getAccountAlias(it.accountId)) }
-            .onEach { item -> statementListeners.forEach { it.onNewStatementItem(item) } }
             .onEach(::process)
             .collect()
         log.info { "Started application" }
@@ -67,6 +66,7 @@ class Application<TTransaction, TNewTransaction> :
     private suspend fun process(statement: StatementItem) {
         try {
             processStatement(statement)
+            contextContainer.get(statement.id).markCompleted()
         } catch (e: BudgetBackendError) {
             log.error(e) {}
             errorHandler.onBudgetBackendError(e)

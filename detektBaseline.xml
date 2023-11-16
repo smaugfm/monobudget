@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <SmellBaseline>
-    <CurrentIssues>
-        <ID>TooManyFunctions:YnabApi.kt$YnabApi</ID>
-    </CurrentIssues>
+  <ManuallySuppressedIssues>
+    <ID>WildcardImport:Main.kt$import org.koin.ksp.generated.*</ID>
+  </ManuallySuppressedIssues>
 </SmellBaseline>
