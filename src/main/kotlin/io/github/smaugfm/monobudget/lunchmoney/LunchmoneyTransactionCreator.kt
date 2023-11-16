@@ -13,6 +13,7 @@ import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
+import kotlinx.serialization.SerializationException
 import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}
@@ -33,12 +34,21 @@ class LunchmoneyTransactionCreator(
                 maybeTransfer.consume(::processSingle)
         }
     } catch (e: LunchmoneyApiResponseException) {
-        throw BudgetBackendError(
-            e,
-            maybeTransfer.statement.accountId,
-            "Виникла помилка при створенні транзакції. " +
-                "Будь ласка створи цю транзакцію вручну. Текст помилки: ${e.message}"
-        )
+        val template = "Виникла помилка при створенні транзакції. " +
+            "Будь ласка створи цю транзакцію вручну. Текст помилки: "
+        if (e.cause is SerializationException) {
+            throw BudgetBackendError(
+                e,
+                maybeTransfer.statement.accountId,
+                template + (e.message?.substringBefore("JSON input:") + "HTTP Body:\n" + e.body)
+            )
+        } else {
+            throw BudgetBackendError(
+                e,
+                maybeTransfer.statement.accountId,
+                template + e.message
+            )
+        }
     }
 
     private suspend fun processTransfer(
