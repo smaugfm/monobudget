@@ -9,7 +9,7 @@ import java.util.concurrent.Executors
 import kotlin.time.Duration
 import kotlin.time.toJavaDuration
 
-class ExpiringMap<T : Any, K>(
+open class ConcurrentExpiringMap<T : Any, K>(
     private val expirationTime: Duration,
     private val map: ConcurrentHashMap<T, K> = ConcurrentHashMap()
 ) : Map<T, K> by map {

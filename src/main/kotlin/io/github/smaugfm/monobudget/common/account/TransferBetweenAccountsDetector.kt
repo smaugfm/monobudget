@@ -1,25 +1,20 @@
 package io.github.smaugfm.monobudget.common.account
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.smaugfm.monobudget.common.misc.ExpiringMap
+import io.github.smaugfm.monobudget.common.misc.ConcurrentExpiringMap
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import kotlin.time.Duration.Companion.minutes
 
 private val log = KotlinLogging.logger {}
 
-abstract class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
-    private val bankAccounts: BankAccountService by inject()
-    private val statementItem by inject<StatementItem>()
-
-    private val recentTransactions =
-        ExpiringMap<StatementItem, Deferred<TTransaction>>(1.minutes)
-
+abstract class TransferBetweenAccountsDetector<TTransaction>(
+    private val bankAccounts: BankAccountService,
+    private val statementItem: StatementItem,
+    private val cache: ConcurrentExpiringMap<StatementItem, Deferred<TTransaction>>
+) {
     suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> {
-        val existingTransfer = recentTransactions.entries.firstOrNull { (recentStatementItem) ->
+        val existingTransfer = cache.entries.firstOrNull { (recentStatementItem) ->
             checkIsTransferTransactions(recentStatementItem)
         }?.value?.await()
 
@@ -32,7 +27,7 @@ abstract class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
             MaybeTransferStatement.Transfer(statementItem, existingTransfer)
         } else {
             val deferred = CompletableDeferred<TTransaction>()
-            recentTransactions.add(statementItem, deferred)
+            cache.add(statementItem, deferred)
 
             MaybeTransferStatement.NotTransfer(statementItem, deferred)
         }

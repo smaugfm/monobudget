@@ -8,18 +8,17 @@ import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.pp
-import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
-abstract class StatementItemProcessor<TTransaction, TNewTransaction> : KoinComponent {
-    private val statementItem by inject<StatementItem>()
-    private val transactionFactory by inject<TransactionFactory<TTransaction, TNewTransaction>>()
-    private val bankAccounts by inject<BankAccountService>()
-    private val transferDetector by inject<TransferBetweenAccountsDetector<TTransaction>>()
-    private val messageFormatter by inject<TransactionMessageFormatter<TTransaction>>()
-    private val telegramMessageSender by inject<TelegramMessageSender>()
+abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
+    private val statementItem: StatementItem,
+    private val transactionFactory: TransactionFactory<TTransaction, TNewTransaction>,
+    private val bankAccounts: BankAccountService,
+    private val transferDetector: TransferBetweenAccountsDetector<TTransaction>,
+    private val messageFormatter: TransactionMessageFormatter<TTransaction>,
+    private val telegramMessageSender: TelegramMessageSender
+) {
 
     suspend fun process() {
         logStatement()

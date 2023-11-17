@@ -12,7 +12,7 @@ class ExpiryContainerTest {
         val delay = 100L
         val tolerance = 10
 
-        val container = ExpiringMap<String, Int>(delay.milliseconds)
+        val container = ConcurrentExpiringMap<String, Int>(delay.milliseconds)
 
         fun checkOne(item: Int) {
             fun contains(): Boolean = container.contains(item.toString())
