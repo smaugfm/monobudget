@@ -17,13 +17,14 @@ import kotlin.math.roundToLong
 
 private val log = KotlinLogging.logger {}
 
-abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
+abstract class TransactionMessageFormatter<TTransaction>(
+    protected val statementItem: StatementItem
+) : KoinComponent {
     private val bankAccounts: BankAccountService by inject()
 
-    suspend fun format(statement: StatementItem, transaction: TTransaction): MessageWithReplyKeyboard {
+    suspend fun format(transaction: TTransaction): MessageWithReplyKeyboard {
         val msg = formatHTMLStatementMessage(
-            bankAccounts.getAccountCurrency(statement.accountId)!!,
-            statement,
+            bankAccounts.getAccountCurrency(statementItem.accountId)!!,
             transaction
         )
         val markup = getReplyKeyboard(transaction)
@@ -52,7 +53,6 @@ abstract class TransactionMessageFormatter<TTransaction> : KoinComponent {
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        statementItem: StatementItem,
         transaction: TTransaction
     ): String
 

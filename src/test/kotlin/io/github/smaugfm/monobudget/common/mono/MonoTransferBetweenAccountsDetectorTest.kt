@@ -7,9 +7,9 @@ import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.Base
 import io.github.smaugfm.monobudget.common.account.BankAccountService
+import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement.NotTransfer
+import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement.Transfer
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer.NotTransfer
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer.Transfer
 import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
 import io.mockk.coEvery
 import io.mockk.mockkClass

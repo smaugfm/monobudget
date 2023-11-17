@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.ynab
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
+import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.ynab.model.YnabCleared
@@ -21,10 +21,14 @@ class YnabTransactionFactory(
 
     private val transferPayeeIdsCache = ConcurrentHashMap<String, String>()
 
-    override suspend fun create(maybeTransfer: MaybeTransfer<YnabTransactionDetail>) = when (maybeTransfer) {
-        is MaybeTransfer.Transfer -> processTransfer(maybeTransfer.statement, maybeTransfer.processed())
-        is MaybeTransfer.NotTransfer -> maybeTransfer.consume(::processSingle)
-    }
+    override suspend fun create(maybeTransfer: MaybeTransferStatement<YnabTransactionDetail>) =
+        when (maybeTransfer) {
+            is MaybeTransferStatement.Transfer -> processTransfer(
+                maybeTransfer.statement,
+                maybeTransfer.processed()
+            )
+            is MaybeTransferStatement.NotTransfer -> maybeTransfer.consume(::processSingle)
+        }
 
     private suspend fun processTransfer(
         statement: StatementItem,

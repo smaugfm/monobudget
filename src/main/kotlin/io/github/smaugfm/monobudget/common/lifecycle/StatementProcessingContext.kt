@@ -1,6 +1,10 @@
-package io.github.smaugfm.monobudget.common.context
+package io.github.smaugfm.monobudget.common.lifecycle
 
-class StatementProcessingContext {
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
+
+class StatementProcessingContext(
+    val item: StatementItem
+) {
     private val map: MutableMap<String, Any> = mutableMapOf()
 
     var isCompleted: Boolean = false

@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.common.statement
 
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventListener
 import io.github.smaugfm.monobudget.common.model.financial.OtherBankStatementItem
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.settings.OtherBanksTransferSettings
@@ -9,8 +10,9 @@ import org.koin.core.annotation.Single
 class OtherBankTransferStatementFactory(
     private val transferSettings: List<OtherBanksTransferSettings>,
     private val otherBanksStatementService: OtherBankStatementService
-) : NewStatementListener {
-    override suspend fun onNewStatement(item: StatementItem): Boolean {
+) : StatementProcessingEventListener.New {
+
+    override suspend fun handleNewStatement(item: StatementItem): Boolean {
         if (item is OtherBankStatementItem) {
             return true
         }

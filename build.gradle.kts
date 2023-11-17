@@ -54,6 +54,7 @@ dependencies {
     testImplementation("io.mockk:mockk:1.13.8")
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.27.0")
     implementation("io.insert-koin:koin-core:$koin")
+    implementation("io.insert-koin:koin-ktor:$koin")
     testImplementation("io.insert-koin:koin-test-junit5:$koin")
     implementation("io.insert-koin:koin-annotations:$koinKsp")
     ksp("io.insert-koin:koin-ksp-compiler:$koinKsp")

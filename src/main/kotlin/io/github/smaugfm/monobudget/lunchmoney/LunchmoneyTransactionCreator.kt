@@ -7,30 +7,33 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector.MaybeTransfer
+import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement
 import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.SerializationException
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Scope
+import org.koin.core.annotation.Scoped
 
 private val log = KotlinLogging.logger {}
 
-@Single
+@Scoped
+@Scope(StatementProcessingScopeComponent::class)
 class LunchmoneyTransactionCreator(
     budgetBackend: BudgetBackend.Lunchmoney,
     private val api: LunchmoneyApi
 ) : TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
-    override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) = try {
+    override suspend fun create(maybeTransfer: MaybeTransferStatement<LunchmoneyTransaction>) = try {
         when (maybeTransfer) {
-            is MaybeTransfer.Transfer ->
+            is MaybeTransferStatement.Transfer ->
                 processTransfer(maybeTransfer.statement, maybeTransfer.processed())
 
-            is MaybeTransfer.NotTransfer ->
+            is MaybeTransferStatement.NotTransfer ->
                 maybeTransfer.consume(::processSingle)
         }
     } catch (e: LunchmoneyApiResponseException) {

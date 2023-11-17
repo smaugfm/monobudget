@@ -11,66 +11,36 @@ import kotlin.time.Duration.Companion.minutes
 
 private val log = KotlinLogging.logger {}
 
-open class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
+abstract class TransferBetweenAccountsDetector<TTransaction> : KoinComponent {
     private val bankAccounts: BankAccountService by inject()
+    private val statementItem by inject<StatementItem>()
 
     private val recentTransactions =
         ExpiringMap<StatementItem, Deferred<TTransaction>>(1.minutes)
 
-    sealed class MaybeTransfer<TTransaction> {
-        abstract val statement: StatementItem
-        data class Transfer<TTransaction>(
-            override val statement: StatementItem,
-            private val processed: TTransaction
-        ) : MaybeTransfer<TTransaction>() {
-            @Suppress("UNCHECKED_CAST")
-            fun <T : Any> processed(): T {
-                return processed as T
-            }
-        }
-
-        class NotTransfer<TTransaction>(
-            override val statement: StatementItem,
-            private val processedDeferred: CompletableDeferred<TTransaction>
-        ) : MaybeTransfer<TTransaction>() {
-            @Volatile
-            private var ran = false
-
-            suspend fun consume(block: suspend (StatementItem) -> TTransaction): TTransaction {
-                check(!ran) { "Can consume NotTransfer only once" }
-
-                return block(statement).also {
-                    processedDeferred.complete(it)
-                    ran = true
-                }
-            }
-        }
-    }
-
-    suspend fun checkTransfer(statement: StatementItem): MaybeTransfer<TTransaction> {
+    suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> {
         val existingTransfer = recentTransactions.entries.firstOrNull { (recentStatementItem) ->
-            checkIsTransferTransactions(
-                statement,
-                recentStatementItem
-            )
+            checkIsTransferTransactions(recentStatementItem)
         }?.value?.await()
 
         return if (existingTransfer != null) {
             log.debug {
                 "Found matching transfer transaction.\n" +
-                    "Current: $statement\n" +
+                    "Current: $statementItem\n" +
                     "Recent transfer: $existingTransfer"
             }
-            MaybeTransfer.Transfer(statement, existingTransfer)
+            MaybeTransferStatement.Transfer(statementItem, existingTransfer)
         } else {
             val deferred = CompletableDeferred<TTransaction>()
-            recentTransactions.add(statement, deferred)
+            recentTransactions.add(statementItem, deferred)
 
-            MaybeTransfer.NotTransfer(statement, deferred)
+            MaybeTransferStatement.NotTransfer(statementItem, deferred)
         }
     }
 
-    private suspend fun checkIsTransferTransactions(new: StatementItem, existing: StatementItem): Boolean {
+    private suspend fun checkIsTransferTransactions(existing: StatementItem): Boolean {
+        val new = statementItem
+
         val amountMatch = amountMatch(new, existing)
         val currencyMatch = currencyMatch(new, existing)
         val mccMatch = mccMatch(new, existing)

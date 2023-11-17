@@ -4,6 +4,7 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.category.CategoryService
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
@@ -15,13 +16,16 @@ import io.github.smaugfm.monobudget.common.util.replaceNewLines
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import org.koin.core.annotation.Single
+import org.koin.core.annotation.Scope
+import org.koin.core.annotation.Scoped
 import java.util.Currency
 
-@Single
+@Scoped
+@Scope(StatementProcessingScopeComponent::class)
 class LunchmoneyTransactionMessageFormatter(
-    private val categoryService: CategoryService
-) : TransactionMessageFormatter<LunchmoneyTransaction>() {
+    private val categoryService: CategoryService,
+    statementItem: StatementItem
+) : TransactionMessageFormatter<LunchmoneyTransaction>(statementItem) {
 
     private val shouldNotifyStatuses = setOf(
         LunchmoneyTransactionStatus.UNCLEARED,
@@ -32,7 +36,6 @@ class LunchmoneyTransactionMessageFormatter(
 
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        statementItem: StatementItem,
         transaction: LunchmoneyTransaction
     ): String {
         with(statementItem) {
