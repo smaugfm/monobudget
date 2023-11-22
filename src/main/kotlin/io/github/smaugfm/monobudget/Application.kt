@@ -48,9 +48,9 @@ class Application<TTransaction, TNewTransaction> :
                     try {
                         scope.get<StatementItemProcessor<TTransaction, TNewTransaction>>()
                             .process()
-                        statementEvents.onStatementEnd(statementItem)
+                        statementEvents.onStatementEnd(ctx)
                     } catch (e: Throwable) {
-                        statementEvents.onStatementError(statementItem, e)
+                        statementEvents.onStatementError(ctx, e)
                     } finally {
                         scope.close()
                     }

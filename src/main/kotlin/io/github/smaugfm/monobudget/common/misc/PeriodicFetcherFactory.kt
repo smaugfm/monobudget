@@ -6,9 +6,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import org.koin.core.annotation.Single
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.hours
+import kotlin.time.Duration.Companion.seconds
 
 private val log = KotlinLogging.logger {}
 
@@ -26,7 +28,9 @@ class PeriodicFetcherFactory(private val scope: CoroutineScope) {
         @Volatile
         private var data: Deferred<T> = initial
 
-        suspend fun getData() = data.await()
+        suspend fun getData() = withTimeout(5.seconds) {
+            data.await()
+        }
 
         init {
             log.info { "Launching periodic fetcher for $name" }

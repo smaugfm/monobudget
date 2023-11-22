@@ -1,7 +1,6 @@
 package io.github.smaugfm.monobudget.common.lifecycle
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.util.injectAll
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
@@ -17,20 +16,20 @@ class StatementProcessingEventDelivery : KoinComponent {
     private val statementErrorListeners
         by injectAll<StatementProcessingEventListener.Error>()
 
-    suspend fun onNewStatement(item: StatementItem): Boolean = newStatementListeners.all { l ->
-        l.handleNewStatement(item)
+    suspend fun onNewStatement(ctx: StatementProcessingContext): Boolean = newStatementListeners.all { l ->
+        l.handleNewStatement(ctx)
     }
 
-    suspend fun onStatementEnd(item: StatementItem) {
+    suspend fun onStatementEnd(ctx: StatementProcessingContext) {
         statementEndListeners.forEach { l ->
-            l.handleProcessingEnd(item)
+            l.handleProcessingEnd(ctx)
         }
     }
 
-    suspend fun onStatementError(item: StatementItem, throwable: Throwable) {
+    suspend fun onStatementError(ctx: StatementProcessingContext, throwable: Throwable) {
         log.error(throwable) {}
         statementErrorListeners.forEach { l ->
-            l.handleProcessingError(item, throwable)
+            l.handleProcessingError(ctx, throwable)
         }
     }
 }

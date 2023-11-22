@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.common.statement
 
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventListener
 import io.github.smaugfm.monobudget.common.model.financial.OtherBankStatementItem
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
@@ -12,17 +13,19 @@ class OtherBankTransferStatementFactory(
     private val otherBanksStatementService: OtherBankStatementService
 ) : StatementProcessingEventListener.New {
 
-    override suspend fun handleNewStatement(item: StatementItem): Boolean {
-        if (item is OtherBankStatementItem) {
+    override suspend fun handleNewStatement(ctx: StatementProcessingContext): Boolean {
+        with(ctx) {
+            if (item is OtherBankStatementItem) {
+                return true
+            }
+
+            val matchingSetting = findMatchingSettings(item)
+            if (matchingSetting != null) {
+                emitTransfer(matchingSetting, item)
+            }
+
             return true
         }
-
-        val matchingSetting = findMatchingSettings(item)
-        if (matchingSetting != null) {
-            emitTransfer(matchingSetting, item)
-        }
-
-        return true
     }
 
     private fun findMatchingSettings(item: StatementItem) = transferSettings.find {

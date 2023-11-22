@@ -9,6 +9,7 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement
 import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
@@ -24,6 +25,7 @@ private val log = KotlinLogging.logger {}
 @Scope(StatementProcessingScopeComponent::class)
 class LunchmoneyTransactionCreator(
     budgetBackend: BudgetBackend.Lunchmoney,
+    private val ctx: StatementProcessingContext,
     private val api: LunchmoneyApi
 ) : TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
@@ -63,24 +65,29 @@ class LunchmoneyTransactionCreator(
                 "Existing LunchmoneyTransaction: $existingTransaction"
         }
 
-        api.updateTransaction(
-            transactionId = existingTransaction.id,
-            transaction = LunchmoneyUpdateTransaction(
-                status = LunchmoneyTransactionStatus.CLEARED,
-                categoryId = transferCategoryId
+        ctx.execIfNotSet("transactionUpdated") {
+            api.updateTransaction(
+                transactionId = existingTransaction.id,
+                transaction = LunchmoneyUpdateTransaction(
+                    status = LunchmoneyTransactionStatus.CLEARED,
+                    categoryId = transferCategoryId
+                )
             )
-        )
-            .awaitSingle()
+                .awaitSingle()
+        }
 
         val newTransaction = processSingle(statement, true)
 
-        val groupId = api.createTransactionGroup(
-            date = newTransaction.date,
-            payee = TRANSFER_PAYEE,
-            transactions = listOf(existingTransaction, newTransaction).map { it.id },
-            categoryId = transferCategoryId
-        )
-            .awaitSingle()
+        val groupId =
+            ctx.getOrPut("transactionGroupId") {
+                api.createTransactionGroup(
+                    date = newTransaction.date,
+                    payee = TRANSFER_PAYEE,
+                    transactions = listOf(existingTransaction, newTransaction).map { it.id },
+                    categoryId = transferCategoryId
+                )
+                    .awaitSingle()
+            }
 
         log.debug { "Created new Lunchmoney transaction group id=$groupId" }
 
@@ -104,17 +111,21 @@ class LunchmoneyTransactionCreator(
                     it
                 }
             }
+
         val createdId =
-            api.insertTransactions(
-                transactions = listOf(newTransaction),
-                applyRules = true,
-                checkForRecurring = true,
-                debitAsNegative = true
-            )
-                .awaitSingle().first()
-        return api
-            .getSingleTransaction(createdId)
-            .awaitSingle()
+            ctx.getOrPut("transactionCreatedId") {
+                api.insertTransactions(
+                    transactions = listOf(newTransaction),
+                    applyRules = true,
+                    checkForRecurring = true,
+                    debitAsNegative = true
+                ).awaitSingle()
+                    .first()
+            }
+        return ctx.getOrPut("transaction") {
+            api.getSingleTransaction(createdId)
+                .awaitSingle()
+        }
     }
 
     companion object {

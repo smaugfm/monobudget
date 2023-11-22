@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.mono
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
-import io.github.smaugfm.monobudget.common.model.financial.StatementItem
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
 import io.github.smaugfm.monobudget.common.statement.StatementService
@@ -56,8 +56,8 @@ class MonoWebhookListener(
         return true
     }
 
-    override suspend fun statements(): Flow<StatementItem> {
-        val flow = MutableSharedFlow<StatementItem>()
+    override suspend fun statements(): Flow<StatementProcessingContext> {
+        val flow = MutableSharedFlow<StatementProcessingContext>()
         val server = scope.embeddedServer(Netty, port = webhookPort) {
             install(ContentNegotiation) {
                 serialization(ContentType.Application.Json, json)
@@ -80,7 +80,11 @@ class MonoWebhookListener(
                                     "because this account is not configured: $response"
                             }
                         } else {
-                            flow.emit(MonobankWebhookResponseStatementItem(response.data, account.currency))
+                            flow.emit(
+                                StatementProcessingContext(
+                                    MonobankWebhookResponseStatementItem(response.data, account.currency)
+                                )
+                            )
                         }
                     } finally {
                         call.respond(HttpStatusCode.OK, "OK")

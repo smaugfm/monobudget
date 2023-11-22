@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.misc.ConcurrentExpiringMap
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
@@ -15,10 +16,10 @@ import kotlin.time.Duration.Companion.minutes
 @Scope(StatementProcessingScopeComponent::class)
 class YnabMonoTransferBetweenAccountsDetector(
     bankAccounts: BankAccountService,
-    statementItem: StatementItem
+    ctx: StatementProcessingContext
 ) : TransferBetweenAccountsDetector<YnabTransactionDetail>(
     bankAccounts,
-    statementItem,
+    ctx,
     cache
 ) {
     companion object {

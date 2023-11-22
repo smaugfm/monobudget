@@ -3,7 +3,6 @@ package io.github.smaugfm.monobudget.common.lifecycle
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
-import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
@@ -12,7 +11,7 @@ import io.github.smaugfm.monobudget.common.util.pp
 private val log = KotlinLogging.logger {}
 
 abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
-    private val statementItem: StatementItem,
+    private val ctx: StatementProcessingContext,
     private val transactionFactory: TransactionFactory<TTransaction, TNewTransaction>,
     private val bankAccounts: BankAccountService,
     private val transferDetector: TransferBetweenAccountsDetector<TTransaction>,
@@ -32,12 +31,12 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
         val transaction = transactionFactory.create(maybeTransfer)
         val message = messageFormatter.format(transaction)
 
-        telegramMessageSender.send(statementItem.accountId, message)
+        telegramMessageSender.send(ctx.item.accountId, message)
     }
 
     private suspend fun logStatement() {
-        val alias = bankAccounts.getAccountAlias(statementItem.accountId)
-        with(statementItem) {
+        val alias = bankAccounts.getAccountAlias(ctx.item.accountId)
+        with(ctx.item) {
             log.info {
                 "Incoming transaction from $alias's account.\n" +
                     if (log.isTraceEnabled()) {

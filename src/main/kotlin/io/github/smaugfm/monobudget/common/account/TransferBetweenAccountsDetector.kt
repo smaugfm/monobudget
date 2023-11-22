@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.common.account
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.misc.ConcurrentExpiringMap
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import kotlinx.coroutines.CompletableDeferred
@@ -10,31 +11,31 @@ private val log = KotlinLogging.logger {}
 
 abstract class TransferBetweenAccountsDetector<TTransaction>(
     private val bankAccounts: BankAccountService,
-    private val statementItem: StatementItem,
+    private val ctx: StatementProcessingContext,
     private val cache: ConcurrentExpiringMap<StatementItem, Deferred<TTransaction>>
 ) {
-    suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> {
+    suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> = ctx.getOrPut("transfer") {
         val existingTransfer = cache.entries.firstOrNull { (recentStatementItem) ->
             checkIsTransferTransactions(recentStatementItem)
         }?.value?.await()
 
-        return if (existingTransfer != null) {
+        if (existingTransfer != null) {
             log.debug {
                 "Found matching transfer transaction.\n" +
-                    "Current: $statementItem\n" +
+                    "Current: ${ctx.item}\n" +
                     "Recent transfer: $existingTransfer"
             }
-            MaybeTransferStatement.Transfer(statementItem, existingTransfer)
+            MaybeTransferStatement.Transfer(ctx.item, existingTransfer)
         } else {
             val deferred = CompletableDeferred<TTransaction>()
-            cache.add(statementItem, deferred)
+            cache.add(ctx.item, deferred)
 
-            MaybeTransferStatement.NotTransfer(statementItem, deferred)
+            MaybeTransferStatement.NotTransfer(ctx.item, deferred)
         }
     }
 
     private suspend fun checkIsTransferTransactions(existing: StatementItem): Boolean {
-        val new = statementItem
+        val new = ctx.item
 
         val amountMatch = amountMatch(new, existing)
         val currencyMatch = currencyMatch(new, existing)
