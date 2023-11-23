@@ -14,5 +14,5 @@ data class OtherBankStatementItem(
     override val mcc: Int,
     override val amount: Amount,
     override val operationAmount: Amount,
-    override val currency: Currency
+    override val currency: Currency,
 ) : StatementItem

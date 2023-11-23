@@ -21,12 +21,12 @@ class YnabStatementItemProcessor(
     bankAccounts: BankAccountService,
     transferDetector: TransferBetweenAccountsDetector<YnabTransactionDetail>,
     messageFormatter: TransactionMessageFormatter<YnabTransactionDetail>,
-    telegramMessageSender: TelegramMessageSender
+    telegramMessageSender: TelegramMessageSender,
 ) : StatementItemProcessor<YnabTransactionDetail, YnabSaveTransaction>(
-    ctx,
-    transactionFactory,
-    bankAccounts,
-    transferDetector,
-    messageFormatter,
-    telegramMessageSender
-)
+        ctx,
+        transactionFactory,
+        bankAccounts,
+        transferDetector,
+        messageFormatter,
+        telegramMessageSender,
+    )

@@ -7,7 +7,10 @@ data class StatementProcessingContext(
     private val map: MutableMap<String, Any> = mutableMapOf(),
     val attempt: Int = 0,
 ) {
-    suspend fun execIfNotSet(key: String, block: suspend () -> Unit) {
+    suspend fun execIfNotSet(
+        key: String,
+        block: suspend () -> Unit,
+    ) {
         val flag = map[key] as Boolean?
         if (flag == null || !flag) {
             block().also {
@@ -16,11 +19,13 @@ data class StatementProcessingContext(
         }
     }
 
-    suspend fun <T> getOrPut(key: String, lazyValue: suspend () -> T): T {
+    suspend fun <T> getOrPut(
+        key: String,
+        lazyValue: suspend () -> T,
+    ): T {
         @Suppress("UNCHECKED_CAST")
         return map.getOrPut(key) { lazyValue() as Any } as T
     }
 
-    fun retryCopy(): StatementProcessingContext =
-        StatementProcessingContext(item, map, attempt + 1)
+    fun retryCopy(): StatementProcessingContext = StatementProcessingContext(item, map, attempt + 1)
 }

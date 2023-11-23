@@ -14,7 +14,10 @@ class RegexAsStringSerializer : KSerializer<Regex> {
         return Regex(regexStr)
     }
 
-    override fun serialize(encoder: Encoder, value: Regex) {
+    override fun serialize(
+        encoder: Encoder,
+        value: Regex,
+    ) {
         encoder.encodeString(value.pattern)
     }
 }

@@ -3,9 +3,8 @@ package io.github.smaugfm.monobudget.mono
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
-import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
 import io.github.smaugfm.monobudget.common.statement.StatementSource
+import io.github.smaugfm.monobudget.common.util.injectAll
 import io.github.smaugfm.monobudget.common.util.makeJson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -27,25 +26,29 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
 private val log = KotlinLogging.logger {}
 
 @Suppress("ExtractKtorModule")
 @Single
-class MonoWebhookListener(
-    private val scope: CoroutineScope,
-    private val monoAccountsService: MonoAccountsService,
-    private val settings: MonoWebhookSettings,
-    private val monoSettings: MultipleAccountSettings,
-) : StatementSource {
+class MonoWebhookListener : StatementSource, KoinComponent {
+    private val scope: CoroutineScope by inject()
+    private val monoAccountsService: MonoAccountsService by inject()
+    private val settings: MonoWebhookSettings by inject()
+    private val monoApis by injectAll<MonoApi>()
 
     private val json = makeJson()
 
     override suspend fun prepare() {
         if (settings.setWebhook) {
             log.info { "Setting up mono webhooks." }
-            if (!setupWebhook()) {
-                throw RuntimeException("Error settings up webhooks. Exiting application...")
+            try {
+                monoApis.forEach { it.setupWebhook(settings.monoWebhookUrl, settings.webhookPort) }
+            } catch (e: Throwable) {
+                log.error(e) {}
+                error("Error settings up webhooks. Exiting application...")
             }
         } else {
             log.info { "Skipping mono webhook setup." }
@@ -56,40 +59,42 @@ class MonoWebhookListener(
         val (_, monoWebhookUrl, webhookPort) = settings
 
         val flow = MutableSharedFlow<StatementProcessingContext>()
-        val server = scope.embeddedServer(Netty, port = webhookPort) {
-            install(ContentNegotiation) {
-                serialization(ContentType.Application.Json, json)
-            }
-            routing {
-                post(monoWebhookUrl.path) {
-                    log.info {
-                        "Webhook queried. " +
-                            "Host: ${call.request.origin.remoteHost} " +
-                            "Uri: ${call.request.uri}"
-                    }
-                    val response = call.receive<MonoWebhookResponse>()
-                    try {
-                        val account =
-                            monoAccountsService.getAccounts().firstOrNull { it.id == response.data.account }
-                        if (account == null) {
-                            log.error {
-                                "Skipping transaction from Monobank " +
-                                    "accountId=${response.data.account} " +
-                                    "because this account is not configured: $response"
-                            }
-                        } else {
-                            flow.emit(
-                                StatementProcessingContext(
-                                    MonobankWebhookResponseStatementItem(response.data, account.currency)
-                                )
-                            )
+        val server =
+            scope.embeddedServer(Netty, port = webhookPort) {
+                install(ContentNegotiation) {
+                    serialization(ContentType.Application.Json, json)
+                }
+                routing {
+                    post(monoWebhookUrl.path) {
+                        log.info {
+                            "Webhook queried. " +
+                                "Host: ${call.request.origin.remoteHost} " +
+                                "Uri: ${call.request.uri}"
                         }
-                    } finally {
-                        call.respond(HttpStatusCode.OK, "OK")
+                        val response = call.receive<MonoWebhookResponse>()
+                        try {
+                            val account =
+                                monoAccountsService.getAccounts()
+                                    .firstOrNull { it.id == response.data.account }
+                            if (account == null) {
+                                log.error {
+                                    "Skipping transaction from Monobank " +
+                                        "accountId=${response.data.account} " +
+                                        "because this account is not configured: $response"
+                                }
+                            } else {
+                                flow.emit(
+                                    StatementProcessingContext(
+                                        MonobankWebhookResponseStatementItem(response.data, account.currency),
+                                    ),
+                                )
+                            }
+                        } finally {
+                            call.respond(HttpStatusCode.OK, "OK")
+                        }
                     }
                 }
             }
-        }
 
         scope.launch(context = Dispatchers.IO) {
             server.start(true)
@@ -97,11 +102,4 @@ class MonoWebhookListener(
 
         return flow
     }
-
-    private suspend fun setupWebhook() =
-        monoSettings
-            .settings
-            .filterIsInstance<MonoAccountSettings>()
-            .map { MonoApi(it.token, it.accountId) }
-            .all { it.setupWebhook(settings.monoWebhookUrl, settings.webhookPort) }
 }

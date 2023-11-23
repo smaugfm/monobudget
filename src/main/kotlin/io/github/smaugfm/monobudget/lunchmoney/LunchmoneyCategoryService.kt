@@ -13,45 +13,31 @@ import java.util.Currency
 @Single(createdAtStart = true)
 class LunchmoneyCategoryService(
     periodicFetcherFactory: PeriodicFetcherFactory,
-    private val api: LunchmoneyApi
+    private val api: LunchmoneyApi,
 ) : CategoryService() {
+    private val categoriesFetcher =
+        periodicFetcherFactory.create("Lunchmoney categories") {
+            api.getAllCategories().awaitSingle()
+        }
 
-    private val categoriesFetcher = periodicFetcherFactory.create("Lunchmoney categories") {
-        api.getAllCategories().awaitSingle()
-    }
-
-    override suspend fun categoryIdByName(categoryName: String): String? = categoriesFetcher.getData()
-        .firstOrNull { it.name == categoryName }
-        ?.id
-        ?.toString()
+    override suspend fun categoryIdByName(categoryName: String): String? =
+        categoriesFetcher.fetched()
+            .firstOrNull { it.name == categoryName }
+            ?.id
+            ?.toString()
 
     override suspend fun categoryIdToNameList(): List<Pair<String, String>> =
-        categoriesFetcher.getData().map {
+        categoriesFetcher.fetched().map {
             it.id.toString() to it.name
         }
 
     override suspend fun budgetedCategoryByIdInternal(categoryId: String): BudgetedCategory? {
         val categoryIdLong = categoryId.toLong()
-        val categoryName = categoriesFetcher.getData().find { it.id == categoryIdLong }?.name ?: return null
+        val categoryName = categoriesFetcher.fetched().find { it.id == categoryIdLong }?.name ?: return null
 
         val budget = getCategoryBudget(categoryIdLong)
 
         return BudgetedCategory(categoryName, budget)
-    }
-
-    private suspend fun fetchCurrentBudget(categoryId: Long): LunchmoneyBudget? {
-        val now = LocalDate.now()
-        val startOfMonth = now.withDayOfMonth(1)
-        val endOfMonth = now.withDayOfMonth(
-            now.month.length(now.isLeapYear)
-        )
-        val budgets = api.getBudgetSummary(
-            startOfMonth,
-            endOfMonth,
-            null
-        ).awaitSingle()
-
-        return budgets.firstOrNull { it.categoryId != null && it.categoryId == categoryId }
     }
 
     private suspend fun getCategoryBudget(categoryIdLong: Long): BudgetedCategory.CategoryBudget? =
@@ -66,9 +52,29 @@ class LunchmoneyCategoryService(
                 toCategoryBudget(budgeted, spending, currency)
             }
 
-    private fun toCategoryBudget(budget: Double, spending: Double, currency: Currency) =
-        BudgetedCategory.CategoryBudget(
-            Amount.fromLunchmoneyAmount(budget - spending, currency),
-            Amount.fromLunchmoneyAmount(budget, currency)
-        )
+    private suspend fun fetchCurrentBudget(categoryId: Long): LunchmoneyBudget? {
+        val now = LocalDate.now()
+        val startOfMonth = now.withDayOfMonth(1)
+        val endOfMonth =
+            now.withDayOfMonth(
+                now.month.length(now.isLeapYear),
+            )
+        val budgets =
+            api.getBudgetSummary(
+                startOfMonth,
+                endOfMonth,
+                null,
+            ).awaitSingle()
+
+        return budgets.firstOrNull { it.categoryId != null && it.categoryId == categoryId }
+    }
+
+    private fun toCategoryBudget(
+        budget: Double,
+        spending: Double,
+        currency: Currency,
+    ) = BudgetedCategory.CategoryBudget(
+        Amount.fromLunchmoneyAmount(budget - spending, currency),
+        Amount.fromLunchmoneyAmount(budget, currency),
+    )
 }

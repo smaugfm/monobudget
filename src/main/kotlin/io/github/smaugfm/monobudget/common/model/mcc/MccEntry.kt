@@ -7,5 +7,5 @@ data class MccEntry(
     val mcc: Int,
     val group: MccGroup,
     val shortDescription: String,
-    val fullDescription: String
+    val fullDescription: String,
 )

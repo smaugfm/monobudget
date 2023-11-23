@@ -21,12 +21,12 @@ class LunchmoneyStatementItemProcessor(
     bankAccounts: BankAccountService,
     transferDetector: TransferBetweenAccountsDetector<LunchmoneyTransaction>,
     messageFormatter: TransactionMessageFormatter<LunchmoneyTransaction>,
-    telegramMessageSender: TelegramMessageSender
+    telegramMessageSender: TelegramMessageSender,
 ) : StatementItemProcessor<LunchmoneyTransaction, LunchmoneyInsertTransaction>(
-    ctx,
-    transactionFactory,
-    bankAccounts,
-    transferDetector,
-    messageFormatter,
-    telegramMessageSender
-)
+        ctx,
+        transactionFactory,
+        bankAccounts,
+        transferDetector,
+        messageFormatter,
+        telegramMessageSender,
+    )

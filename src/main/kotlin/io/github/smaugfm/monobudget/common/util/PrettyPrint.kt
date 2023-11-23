@@ -22,9 +22,9 @@ private val gson =
                 override fun serialize(
                     src: Currency,
                     typeOfSrc: Type,
-                    context: JsonSerializationContext
+                    context: JsonSerializationContext,
                 ): JsonElement = context.serialize(src.currencyCode)
-            }
+            },
         )
         .registerTypeAdapter(
             Instant::class.java,
@@ -32,10 +32,10 @@ private val gson =
                 override fun serialize(
                     src: Instant,
                     typeOfSrc: Type,
-                    context: JsonSerializationContext
+                    context: JsonSerializationContext,
                 ): JsonElement =
                     context.serialize(src.toLocalDateTime(TimeZone.currentSystemDefault()).toString())
-            }
+            },
         )
         .registerTypeAdapter(
             LocalDate::class.java,
@@ -43,8 +43,8 @@ private val gson =
                 override fun serialize(
                     src: LocalDate,
                     typeOfSrc: Type,
-                    context: JsonSerializationContext
+                    context: JsonSerializationContext,
                 ): JsonElement = context.serialize(src.toString())
-            }
+            },
         )
         .create()

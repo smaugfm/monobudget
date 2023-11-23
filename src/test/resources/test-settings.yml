@@ -31,16 +31,29 @@ accounts:
       alias: Example UAH
       budgetAccountId: 66067
       telegramChatId: 55555555
+      currency: UAH
     - !<mono>
       accountId: MONO-EXAMPLE-USD
       token: ""
       alias: Example USD
       budgetAccountId: 66068
       telegramChatId: 55555556
+      currency: USD
+retry:
+  interval: 1s
 mcc:
   mccGroupToCategoryName:
     HR: Розваги
     ES: Розваги
   mccToCategoryName:
     '4011': Транспорт
-    '5947': Розваги
+    '4111': Транспорт
+    '4112': Транспорт
+    '4121': Транспорт
+    '4131': Транспорт
+    '4214': Транспорт
+    '7523': Авто
+    '7542': Авто
+    '9222': Авто
+    '5533': Авто
+    '5541': Авто

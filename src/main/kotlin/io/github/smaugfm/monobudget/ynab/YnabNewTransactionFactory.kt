@@ -16,9 +16,8 @@ private val log = KotlinLogging.logger {}
 class YnabNewTransactionFactory(
     periodicFetcherFactory: PeriodicFetcherFactory,
     private val payeeSuggestingService: StringSimilarityPayeeSuggestionService,
-    private val ynabApi: YnabApi
+    private val ynabApi: YnabApi,
 ) : NewTransactionFactory<YnabSaveTransaction>() {
-
     private val payeesFetcher = periodicFetcherFactory.create("YNAB payees") { ynabApi.getPayees() }
 
     override suspend fun create(statement: StatementItem): YnabSaveTransaction {
@@ -27,7 +26,7 @@ class YnabNewTransactionFactory(
         val suggestedPayee =
             payeeSuggestingService.suggest(
                 statement.description ?: "",
-                payeesFetcher.getData().map { it.name }
+                payeesFetcher.fetched().map { it.name },
             ).firstOrNull()
 
         return with(statement) {
@@ -43,7 +42,7 @@ class YnabNewTransactionFactory(
                 approved = true,
                 flagColor = null,
                 importId = null,
-                subtransactions = emptyList()
+                subtransactions = emptyList(),
             )
         }
     }

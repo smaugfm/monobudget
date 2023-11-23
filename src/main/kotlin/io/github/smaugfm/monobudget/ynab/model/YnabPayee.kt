@@ -7,5 +7,5 @@ data class YnabPayee(
     val id: String,
     val name: String,
     val transferAccountId: String?,
-    val deleted: Boolean
+    val deleted: Boolean,
 )

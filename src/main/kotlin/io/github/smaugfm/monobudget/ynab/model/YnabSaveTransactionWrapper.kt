@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class YnabSaveTransactionWrapper(
-    val transaction: YnabSaveTransaction
+    val transaction: YnabSaveTransaction,
 )

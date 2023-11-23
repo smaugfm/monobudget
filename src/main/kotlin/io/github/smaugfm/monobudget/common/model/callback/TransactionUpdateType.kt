@@ -18,13 +18,17 @@ sealed class TransactionUpdateType : CallbackType() {
 
     data class UpdateCategory(
         override val transactionId: String,
-        val categoryId: String
+        val categoryId: String,
     ) : TransactionUpdateType() {
         companion object {
             private const val DELIMITER = "#"
-            fun button(categoryId: String, categoryName: String) = InlineKeyboardButton(
+
+            fun button(
+                categoryId: String,
+                categoryName: String,
+            ) = InlineKeyboardButton(
                 categoryName,
-                callbackData = "${UpdateCategory::class.simpleName}$DELIMITER$categoryId"
+                callbackData = "${UpdateCategory::class.simpleName}$DELIMITER$categoryId",
             )
 
             fun extractCategoryIdFromCallbackData(callbackData: String) = callbackData.split(DELIMITER)[1]

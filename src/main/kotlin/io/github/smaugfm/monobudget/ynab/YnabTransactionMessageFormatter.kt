@@ -19,12 +19,11 @@ import java.util.Currency
 @Scope(StatementProcessingScopeComponent::class)
 class YnabTransactionMessageFormatter(
     private val categoryService: CategoryService,
-    statementItem: StatementItem
+    statementItem: StatementItem,
 ) : TransactionMessageFormatter<YnabTransactionDetail>(statementItem) {
-
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        transaction: YnabTransactionDetail
+        transaction: YnabTransactionDetail,
     ): String {
         with(statementItem) {
             val category = categoryService.budgetedCategoryById(transaction.categoryId)
@@ -36,7 +35,7 @@ class YnabTransactionMessageFormatter(
                 "$amount${(if (accountCurrency != currency) " ($operationAmount)" else "")}",
                 category,
                 transaction.payeeName ?: "",
-                transaction.id
+                transaction.id,
             )
         }
     }
@@ -46,7 +45,7 @@ class YnabTransactionMessageFormatter(
 
     override fun getReplyKeyboardPressedButtons(
         transaction: YnabTransactionDetail,
-        callbackType: TransactionUpdateType?
+        callbackType: TransactionUpdateType?,
     ): PressedButtons {
         val pressed = PressedButtons(callbackType)
 
@@ -60,13 +59,14 @@ class YnabTransactionMessageFormatter(
         return pressed
     }
 
-    override fun getReplyKeyboard(pressed: PressedButtons) = InlineKeyboardMarkup(
-        listOf(
+    override fun getReplyKeyboard(pressed: PressedButtons) =
+        InlineKeyboardMarkup(
             listOf(
-                TransactionUpdateType.Unapprove.button(pressed),
-                TransactionUpdateType.Uncategorize.button(pressed),
-                TransactionUpdateType.MakePayee.button(pressed)
-            )
+                listOf(
+                    TransactionUpdateType.Unapprove.button(pressed),
+                    TransactionUpdateType.Uncategorize.button(pressed),
+                    TransactionUpdateType.MakePayee.button(pressed),
+                ),
+            ),
         )
-    )
 }

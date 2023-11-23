@@ -27,7 +27,7 @@ private val log = KotlinLogging.logger {}
 class Application<TTransaction, TNewTransaction> :
     KoinComponent {
     private val telegramApi by inject<TelegramApi>()
-    private val statementServices by injectAll<StatementSource>()
+    private val statementSources by injectAll<StatementSource>()
     private val startupVerifiers by injectAll<ApplicationStartupVerifier>()
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val statementEvents by inject<StatementProcessingEventDelivery>()
@@ -35,10 +35,12 @@ class Application<TTransaction, TNewTransaction> :
     suspend fun run() {
         runStartupChecks()
 
-        statementServices.forEach { it.prepare() }
+        statementSources.forEach { it.prepare() }
 
-        val telegramJob = telegramApi.start(telegramCallbackHandler::handle)
-        statementServices.asFlow()
+        telegramApi.start(telegramCallbackHandler::handle)
+        log.info { "Started application" }
+
+        statementSources.asFlow()
             .flatMapMerge { it.statements() }
             .filter(statementEvents::onNewStatement)
             .map(::StatementProcessingScopeComponent)
@@ -58,8 +60,6 @@ class Application<TTransaction, TNewTransaction> :
                 }
             }
             .collect()
-        log.info { "Started application" }
-        telegramJob.join()
     }
 
     private suspend fun runStartupChecks() {

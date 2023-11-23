@@ -43,7 +43,7 @@ class Playground : KoinTest {
                         single { settings.mcc }
                         single { LunchmoneyApi(settings.budgetBackend.token) }
                         single { LunchmoneyCategoryService(get(), get()) }
-                    }
+                    },
                 )
             }
         }
@@ -53,28 +53,35 @@ class Playground : KoinTest {
     @Disabled
     fun test() {
         runBlocking {
-            val csv = Csv {
-                hasHeaderRecord = true
-            }
+            val csv =
+                Csv {
+                    hasHeaderRecord = true
+                }
 
             println()
             println()
             println()
 
-            val output = csv.decodeFromString<List<CsvMonoItem>>(
-                Paths.get("/Users/smaugfm/Downloads/report_26-03-2023_11-30-38.csv").toFile().readText()
-            ).map {
-                CsvOutputItem(
-                    it.time,
-                    categorySuggestion.inferCategoryNameByMcc(it.mcc.toInt()) ?: "",
-                    it.details,
-                    if (it.currency == "UAH") it.amount + it.currency else it.operationAmount + it.currency,
-                    "${it.mcc} " + MCC.map[it.mcc.toInt()]?.fullDescription
-                )
-            }
+            val output =
+                csv.decodeFromString<List<CsvMonoItem>>(
+                    Paths.get("/Users/smaugfm/Downloads/report_26-03-2023_11-30-38.csv")
+                        .toFile().readText(),
+                ).map {
+                    CsvOutputItem(
+                        it.time,
+                        categorySuggestion.inferCategoryNameByMcc(it.mcc.toInt()) ?: "",
+                        it.details,
+                        if (it.currency == "UAH") {
+                            it.amount + it.currency
+                        } else {
+                            it.operationAmount + it.currency
+                        },
+                        "${it.mcc} " + MCC.map[it.mcc.toInt()]?.fullDescription,
+                    )
+                }
 
             Paths.get("/Users/smaugfm/Downloads/output.csv").toFile().writeText(
-                csv.encodeToString(output)
+                csv.encodeToString(output),
             )
         }
     }
@@ -83,50 +90,37 @@ class Playground : KoinTest {
     data class CsvOutputItem(
         @SerialName("Дата i час операції")
         val time: String,
-
         @SerialName("Запропонована категорія")
         val suggestedCategory: String,
-
         @SerialName("Деталі операції")
         val details: String,
-
         @SerialName("Сума операції")
         val amount: String,
-
         @SerialName("MCC деталі")
-        val mcc: String
+        val mcc: String,
     )
 
     @Serializable
     data class CsvMonoItem(
         @SerialName("Дата i час операції")
         val time: String,
-
         @SerialName("Деталі операції")
         val details: String,
-
         @SerialName("MCC")
         val mcc: String,
-
         @SerialName("Сума в валюті картки (UAH)")
         val amount: String,
-
         @SerialName("Сума в валюті операції")
         val operationAmount: String,
-
         @SerialName("Валюта")
         val currency: String,
-
         @SerialName("Курс")
         val exchangeRate: String,
-
         @SerialName("Сума комісій (UAH)")
         val commissionAmount: String,
-
         @SerialName("Сума кешбеку (UAH)")
         val cashbackAmount: String,
-
         @SerialName("Залишок після операції")
-        val balance: String
+        val balance: String,
     )
 }

@@ -21,9 +21,8 @@ private val log = KotlinLogging.logger {}
 @Single
 class TelegramApi(
     botSettings: TelegramBotSettings,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
 ) : KoinComponent {
-
     private val bot: Bot =
         Bot.createPolling(botSettings.token, botSettings.username)
 
@@ -32,7 +31,7 @@ class TelegramApi(
         text: String,
         parseMode: ParseMode? = null,
         disableNotification: Boolean? = null,
-        replyMarkup: ReplyKeyboard? = null
+        replyMarkup: ReplyKeyboard? = null,
     ) {
         bot.sendMessage(
             chatId = chatId,
@@ -45,18 +44,22 @@ class TelegramApi(
             protectContent = null,
             replyToMessageId = null,
             allowSendingWithoutReply = null,
-            replyMarkup = replyMarkup
+            replyMarkup = replyMarkup,
         ).also {
             log.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup?.pp()}" }
         }
     }
 
-    suspend fun editKeyboard(chatId: ChatId, messageId: Long, replyMarkup: InlineKeyboardMarkup) {
+    suspend fun editKeyboard(
+        chatId: ChatId,
+        messageId: Long,
+        replyMarkup: InlineKeyboardMarkup,
+    ) {
         bot.editMessageReplyMarkup(
             chatId,
             messageId,
             null,
-            replyMarkup
+            replyMarkup,
         )
     }
 
@@ -65,7 +68,7 @@ class TelegramApi(
         messageId: Long,
         text: String,
         parseMode: ParseMode?,
-        replyMarkup: InlineKeyboardMarkup
+        replyMarkup: InlineKeyboardMarkup,
     ) {
         log.debug { "Updating message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup.pp()}" }
         bot.editMessageText(
@@ -76,7 +79,7 @@ class TelegramApi(
             parseMode,
             null,
             true,
-            replyMarkup
+            replyMarkup,
         )
     }
 

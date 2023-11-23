@@ -14,9 +14,8 @@ private val log = KotlinLogging.logger { }
 @Single
 class BudgetSettingsVerifier(
     private val budgetBackend: BudgetBackend,
-    private val accountSettings: MultipleAccountSettings
+    private val accountSettings: MultipleAccountSettings,
 ) : ApplicationStartupVerifier, KoinComponent {
-
     override suspend fun verify() {
         when (budgetBackend) {
             is BudgetBackend.Lunchmoney -> {
@@ -27,7 +26,7 @@ class BudgetSettingsVerifier(
                             .awaitSingle()
                             .any {
                                 it.id.toString() == settings.budgetAccountId
-                            }
+                            },
                     ) {
                         "Failed to find Lunchmoney account with id=${settings.budgetAccountId}"
                     }

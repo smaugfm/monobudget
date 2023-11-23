@@ -14,15 +14,19 @@ import org.koin.core.annotation.Single
 class TelegramErrorHandlerEventListener(
     private val monoSettings: MultipleAccountSettings,
     private val bankAccounts: BankAccountService,
-    private val telegramApi: TelegramApi
+    private val telegramApi: TelegramApi,
 ) : StatementProcessingEventListener.Error,
     StatementProcessingEventListener.CallbackError,
     StatementProcessingEventListener.Retry {
-    override suspend fun handleStatementError(ctx: StatementProcessingContext, e: Throwable): Boolean {
+    override suspend fun handleStatementError(
+        ctx: StatementProcessingContext,
+        e: Throwable,
+    ): Boolean {
         val chatIds = chatIdsFromContext(ctx)
         if (e is BudgetBackendError) {
-            val header = "Виникла помилка при створенні транзакції. " +
-                "Будь ласка створи цю транзакцію вручну. "
+            val header =
+                "Виникла помилка при створенні транзакції. " +
+                    "Будь ласка створи цю транзакцію вручну. "
             onBudgetBackendError(header, chatIds, e)
         } else {
             onUnknownError(chatIds)
@@ -33,22 +37,24 @@ class TelegramErrorHandlerEventListener(
     override suspend fun handleCallbackError(
         query: CallbackQuery,
         callbackType: CallbackType?,
-        e: Throwable
+        e: Throwable,
     ) {
         onUnknownError(listOf(query.from.id))
     }
 
     override suspend fun handleRetry(
         ctx: StatementProcessingContext,
-        e: BudgetBackendError
+        e: BudgetBackendError,
     ) {
         // Send retry message only on first retry
-        if (ctx.attempt != 1)
+        if (ctx.attempt != 1) {
             return
+        }
 
         val chatIds = chatIdsFromContext(ctx)
-        val header = "Виникла помилка при створенні транзакції. " +
-            "Я буду далі пробувати створити цю транзакцію автоматично. "
+        val header =
+            "Виникла помилка при створенні транзакції. " +
+                "Я буду далі пробувати створити цю транзакцію автоматично. "
         onBudgetBackendError(header, chatIds, e)
     }
 
@@ -57,7 +63,7 @@ class TelegramErrorHandlerEventListener(
             .forEach { chatId ->
                 telegramApi.sendMessage(
                     chatId = ChatId.IntegerId(chatId),
-                    text = TelegramApi.UNKNOWN_ERROR_MSG
+                    text = TelegramApi.UNKNOWN_ERROR_MSG,
                 )
             }
     }
@@ -70,13 +76,13 @@ class TelegramErrorHandlerEventListener(
     private suspend fun onBudgetBackendError(
         header: String,
         chatIds: List<Long>,
-        budgetBackendError: BudgetBackendError
+        budgetBackendError: BudgetBackendError,
     ) {
         chatIds
             .forEach { chatId ->
                 telegramApi.sendMessage(
                     chatId = ChatId.IntegerId(chatId),
-                    text = header + budgetBackendError.userMessage
+                    text = header + budgetBackendError.userMessage,
                 )
             }
     }

@@ -44,53 +44,65 @@ class YnabApi(backend: YNAB) {
     private val budgetId = backend.ynabBudgetId
 
     private val json = makeJson(true)
-    private val httpClient = HttpClient {
-        install(ContentNegotiation) {
-            json(json)
+    private val httpClient =
+        HttpClient {
+            install(ContentNegotiation) {
+                json(json)
+            }
         }
-    }
 
-    private fun buildUrl(vararg path: String): String = url {
-        protocol = URLProtocol.HTTPS
-        host = "api.youneedabudget.com"
-        parameters.append("access_token", token)
-        path("v1", *path)
-    }
+    private fun buildUrl(vararg path: String): String =
+        url {
+            protocol = URLProtocol.HTTPS
+            host = "api.youneedabudget.com"
+            parameters.append("access_token", token)
+            path("v1", *path)
+        }
 
-    private inline fun <reified T : Any> catching(method: KFunction<Any>, block: () -> T): T =
+    private inline fun <reified T : Any> catching(
+        method: KFunction<Any>,
+        block: () -> T,
+    ): T =
         logError("YNAB", log, method.name, block) {
             if (it.response.status.value == HttpStatusCode.TooManyRequests.value) {
                 throw YnabRateLimitException()
             }
         }
 
-    private inline fun <reified T : Any> catchingNoLogging(method: KFunction<Any>, block: () -> T): T =
+    private inline fun <reified T : Any> catchingNoLogging(
+        method: KFunction<Any>,
+        block: () -> T,
+    ): T =
         logError("YNAB", null, method.name, block) {
             if (it.response.status.value == HttpStatusCode.TooManyRequests.value) {
                 throw YnabRateLimitException()
             }
         }
 
-    suspend fun getBudget(budgetId: String): YnabBudgetDetailShort = catching(this::getBudget) {
-        httpClient.get(buildUrl("budgets", budgetId))
-            .body<YnabBudgetDetailResponseShort>()
-    }.data
+    suspend fun getBudget(budgetId: String): YnabBudgetDetailShort =
+        catching(this::getBudget) {
+            httpClient.get(buildUrl("budgets", budgetId))
+                .body<YnabBudgetDetailResponseShort>()
+        }.data
 
-    suspend fun getAccount(accountId: String): YnabAccount = catching(this::getAccount) {
-        httpClient.get(buildUrl("budgets", budgetId, "accounts", accountId))
-            .body<YnabAccountResponse>()
-    }.data.account
+    suspend fun getAccount(accountId: String): YnabAccount =
+        catching(this::getAccount) {
+            httpClient.get(buildUrl("budgets", budgetId, "accounts", accountId))
+                .body<YnabAccountResponse>()
+        }.data.account
 
     @Suppress("MemberVisibilityCanBePrivate", "unused")
-    suspend fun getAccounts(): List<YnabAccount> = catching(this::getAccounts) {
-        httpClient.get(buildUrl("budgets", budgetId, "accounts"))
-            .body<YnabAccountsResponse>()
-    }.data.accounts
+    suspend fun getAccounts(): List<YnabAccount> =
+        catching(this::getAccounts) {
+            httpClient.get(buildUrl("budgets", budgetId, "accounts"))
+                .body<YnabAccountsResponse>()
+        }.data.accounts
 
-    suspend fun getPayees(): List<YnabPayee> = catchingNoLogging(this::getPayees) {
-        httpClient.get(buildUrl("budgets", budgetId, "payees"))
-            .body<YnabPayeesResponse>()
-    }.data.payees
+    suspend fun getPayees(): List<YnabPayee> =
+        catchingNoLogging(this::getPayees) {
+            httpClient.get(buildUrl("budgets", budgetId, "payees"))
+                .body<YnabPayeesResponse>()
+        }.data.payees
 
     suspend fun getCategoryGroups(): List<YnabCategoryGroupWithCategories> =
         catching(this::getCategoryGroups) {
@@ -108,20 +120,21 @@ class YnabApi(backend: YNAB) {
 
     suspend fun updateTransaction(
         transactionId: String,
-        transaction: YnabSaveTransaction
-    ): YnabTransactionDetail = catching(this::updateTransaction) {
-        httpClient.put(
-            buildUrl(
-                "budgets",
-                budgetId,
-                "transactions",
-                transactionId
-            )
-        ) {
-            contentType(ContentType.Application.Json)
-            setBody(YnabSaveTransactionWrapper(transaction))
-        }.body<YnabTransactionResponse>()
-    }.data.transaction
+        transaction: YnabSaveTransaction,
+    ): YnabTransactionDetail =
+        catching(this::updateTransaction) {
+            httpClient.put(
+                buildUrl(
+                    "budgets",
+                    budgetId,
+                    "transactions",
+                    transactionId,
+                ),
+            ) {
+                contentType(ContentType.Application.Json)
+                setBody(YnabSaveTransactionWrapper(transaction))
+            }.body<YnabTransactionResponse>()
+        }.data.transaction
 
     suspend fun getTransaction(transactionId: String): YnabTransactionDetail =
         catching(this::getTransaction) {
@@ -130,8 +143,8 @@ class YnabApi(backend: YNAB) {
                     "budgets",
                     budgetId,
                     "transactions",
-                    transactionId
-                )
+                    transactionId,
+                ),
             ).body<YnabTransactionResponse>()
         }.data.transaction
 }

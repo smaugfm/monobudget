@@ -40,17 +40,22 @@ class Amount(val value: Long, val currency: Currency) {
      */
     fun toYnabAmountLong() = value * (YNAB_MILLI_MILTIPLIER / currency.defaultFractionDigits)
 
-    fun toLunchmoneyAmountBigDecimal() = value.toBigDecimal().setScale(currency.defaultFractionDigits) /
-        multiplier.toBigDecimal()
+    fun toLunchmoneyAmountBigDecimal() =
+        value.toBigDecimal().setScale(currency.defaultFractionDigits) /
+            multiplier.toBigDecimal()
 
     companion object {
+        fun fromYnabAmount(
+            ynabAmount: Long,
+            currency: Currency,
+        ) = Amount(ynabAmount / (YNAB_MILLI_MILTIPLIER / currency.defaultFractionDigits), currency)
 
-        fun fromYnabAmount(ynabAmount: Long, currency: Currency) =
-            Amount(ynabAmount / (YNAB_MILLI_MILTIPLIER / currency.defaultFractionDigits), currency)
-
-        fun fromLunchmoneyAmount(lunchmoneyAmount: Double, currency: Currency) = Amount(
+        fun fromLunchmoneyAmount(
+            lunchmoneyAmount: Double,
+            currency: Currency,
+        ) = Amount(
             (lunchmoneyAmount * (BigDecimal.TEN.pow(currency.defaultFractionDigits)).toLong()).roundToLong(),
-            currency
+            currency,
         )
 
         private const val YNAB_MILLI_MILTIPLIER = 1000

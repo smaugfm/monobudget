@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MccGroup(
     val type: MccGroupType,
-    val description: String
+    val description: String,
 )

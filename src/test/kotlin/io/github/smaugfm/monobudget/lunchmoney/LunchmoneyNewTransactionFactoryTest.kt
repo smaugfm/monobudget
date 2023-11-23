@@ -8,11 +8,10 @@ import java.math.BigDecimal
 import java.util.Currency
 
 class LunchmoneyNewTransactionFactoryTest {
-
     @Test
     fun lunchmoneyAmountTest() {
         assertThat(
-            Amount(499, Currency.getInstance("USD")).toLunchmoneyAmountBigDecimal()
+            Amount(499, Currency.getInstance("USD")).toLunchmoneyAmountBigDecimal(),
         ).isEqualTo(BigDecimal("4.99"))
     }
 }

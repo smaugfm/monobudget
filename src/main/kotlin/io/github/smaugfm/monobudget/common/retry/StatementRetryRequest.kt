@@ -8,12 +8,12 @@ import kotlin.time.Duration
 data class StatementRetryRequest(
     val id: RetryRequestId,
     val ctx: StatementProcessingContext,
-    val retryAt: Instant
+    val retryAt: Instant,
 ) {
     constructor(id: RetryRequestId, ctx: StatementProcessingContext, retryIn: Duration) : this(
         id,
         ctx,
-        Clock.System.now() + retryIn
+        Clock.System.now() + retryIn,
     )
 
     val retryIn get() = (retryAt - Clock.System.now()).coerceAtLeast(Duration.ZERO)

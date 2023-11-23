@@ -11,5 +11,5 @@ data class YnabCurrencyFormat(
     val symbolFirst: Boolean,
     val groupSeparator: String,
     val currencySymbol: String,
-    val displaySymbol: String
+    val displaySymbol: String,
 )

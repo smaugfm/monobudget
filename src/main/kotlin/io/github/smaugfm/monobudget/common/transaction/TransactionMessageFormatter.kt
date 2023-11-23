@@ -18,22 +18,23 @@ import kotlin.math.roundToLong
 private val log = KotlinLogging.logger {}
 
 abstract class TransactionMessageFormatter<TTransaction>(
-    protected val statementItem: StatementItem
+    protected val statementItem: StatementItem,
 ) : KoinComponent {
     private val bankAccounts: BankAccountService by inject()
 
     suspend fun format(transaction: TTransaction): MessageWithReplyKeyboard {
-        val msg = formatHTMLStatementMessage(
-            bankAccounts.getAccountCurrency(statementItem.accountId)!!,
-            transaction
-        )
+        val msg =
+            formatHTMLStatementMessage(
+                bankAccounts.getAccountCurrency(statementItem.accountId)!!,
+                transaction,
+            )
         val markup = getReplyKeyboard(transaction)
         val notify = shouldNotify(transaction)
 
         return MessageWithReplyKeyboard(
             msg,
             markup,
-            notify
+            notify,
         )
     }
 
@@ -46,14 +47,14 @@ abstract class TransactionMessageFormatter<TTransaction>(
 
     abstract fun getReplyKeyboardPressedButtons(
         transaction: TTransaction,
-        callbackType: TransactionUpdateType? = null
+        callbackType: TransactionUpdateType? = null,
     ): PressedButtons
 
     protected abstract fun getReplyKeyboard(pressed: PressedButtons): InlineKeyboardMarkup
 
     protected abstract suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        transaction: TTransaction
+        transaction: TTransaction,
     ): String
 
     companion object {
@@ -67,7 +68,7 @@ abstract class TransactionMessageFormatter<TTransaction>(
             category: CategoryService.BudgetedCategory?,
             payee: String,
             id: String,
-            idLink: String? = null
+            idLink: String? = null,
         ): String {
             log.trace {
                 "Formatting message:" +
@@ -99,7 +100,10 @@ abstract class TransactionMessageFormatter<TTransaction>(
         }
 
         @Suppress("MagicNumber")
-        fun formatBudget(budget: CategoryService.BudgetedCategory.CategoryBudget, builder: StringBuilder) {
+        fun formatBudget(
+            budget: CategoryService.BudgetedCategory.CategoryBudget,
+            builder: StringBuilder,
+        ) {
             val left = budget.left.formatShort()
             val budgeted = budget.budgetedThisMonth.formatShort()
             val percent =
@@ -114,8 +118,9 @@ abstract class TransactionMessageFormatter<TTransaction>(
         fun extractFromOldMessage(message: Message): OldMessageEntities {
             val text = message.text!!
             val textLines = text.split("\n").filter { it.isNotBlank() }
-            val description = message.entities.find { it.type == MessageEntity.Type.BOLD }
-                ?.run { text.substring(offset, offset + length) }!!
+            val description =
+                message.entities.find { it.type == MessageEntity.Type.BOLD }
+                    ?.run { text.substring(offset, offset + length) }!!
 
             val mcc = textLines[2].trim()
             val currencyText = textLines[3].trim()
@@ -123,13 +128,14 @@ abstract class TransactionMessageFormatter<TTransaction>(
             return OldMessageEntities(
                 description,
                 mcc,
-                currencyText
+                currencyText,
             )
         }
 
-        fun extractTransactionId(message: Message): String = message.text!!.let {
-            it.substring(it.lastIndexOf('\n')).trim()
-        }
+        fun extractTransactionId(message: Message): String =
+            message.text!!.let {
+                it.substring(it.lastIndexOf('\n')).trim()
+            }
 
         fun extractPayee(message: Message): String? {
             val text = message.text!!
@@ -144,7 +150,7 @@ abstract class TransactionMessageFormatter<TTransaction>(
         data class OldMessageEntities(
             val description: String,
             val mcc: String,
-            val currency: String
+            val currency: String,
         )
     }
 }

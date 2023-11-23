@@ -13,10 +13,12 @@ private val log = KotlinLogging.logger {}
 @Single
 class TelegramMessageSender(
     private val bankAccounts: BankAccountService,
-    private val telegramApi: TelegramApi
+    private val telegramApi: TelegramApi,
 ) {
-
-    suspend fun send(accountId: BankAccountId, newMessage: MessageWithReplyKeyboard) {
+    suspend fun send(
+        accountId: BankAccountId,
+        newMessage: MessageWithReplyKeyboard,
+    ) {
         val chatId = bankAccounts.getTelegramChatIdByAccountId(accountId)
         if (chatId == null) {
             log.error { "Failed to map Monobank account to telegram chat id. Account: $accountId" }
@@ -29,7 +31,7 @@ class TelegramMessageSender(
             text = newMessage.message,
             parseMode = ParseMode.Html,
             disableNotification = !newMessage.notifyTelegramApp,
-            replyMarkup = newMessage.markup
+            replyMarkup = newMessage.markup,
         )
     }
 }

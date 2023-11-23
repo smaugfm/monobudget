@@ -9,5 +9,5 @@ data class OtherBanksTransferSettings(
     val descriptionRegex: Regex,
     val transferDescription: String,
     val transferAccountId: String,
-    val mcc: Int
+    val mcc: Int,
 )

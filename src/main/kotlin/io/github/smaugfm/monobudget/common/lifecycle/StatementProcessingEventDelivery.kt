@@ -23,9 +23,10 @@ class StatementProcessingEventDelivery : KoinComponent {
     private val retryScheduledEventListeners
         by injectAll<StatementProcessingEventListener.Retry>()
 
-    suspend fun onNewStatement(ctx: StatementProcessingContext): Boolean = newStatementListeners.all { l ->
-        l.handleNewStatement(ctx)
-    }
+    suspend fun onNewStatement(ctx: StatementProcessingContext): Boolean =
+        newStatementListeners.all { l ->
+            l.handleNewStatement(ctx)
+        }
 
     suspend fun onStatementEnd(ctx: StatementProcessingContext) {
         statementEndListeners.forEach { l ->
@@ -33,21 +34,31 @@ class StatementProcessingEventDelivery : KoinComponent {
         }
     }
 
-    suspend fun onStatementError(ctx: StatementProcessingContext, e: Throwable) {
+    suspend fun onStatementError(
+        ctx: StatementProcessingContext,
+        e: Throwable,
+    ) {
         log.error(e) {}
         statementErrorListeners.all { l ->
             l.handleStatementError(ctx, e)
         }
     }
 
-    suspend fun onCallbackError(query: CallbackQuery, callbackType: CallbackType?, e: Throwable) {
+    suspend fun onCallbackError(
+        query: CallbackQuery,
+        callbackType: CallbackType?,
+        e: Throwable,
+    ) {
         log.error(e) {}
         callbackErrorListeners.forEach { l ->
             l.handleCallbackError(query, callbackType, e)
         }
     }
 
-    suspend fun onStatementRetry(ctx: StatementProcessingContext, e: BudgetBackendError) {
+    suspend fun onStatementRetry(
+        ctx: StatementProcessingContext,
+        e: BudgetBackendError,
+    ) {
         retryScheduledEventListeners.forEach { l ->
             l.handleRetry(ctx, e)
         }

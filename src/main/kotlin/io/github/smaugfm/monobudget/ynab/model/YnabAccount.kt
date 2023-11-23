@@ -16,5 +16,5 @@ data class YnabAccount(
     val transferPayeeId: String,
     val directImportLinked: Boolean,
     val directImportInError: Boolean,
-    val deleted: Boolean
+    val deleted: Boolean,
 )

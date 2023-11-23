@@ -15,7 +15,10 @@ class CurrencyAsStringSerializer : KSerializer<Currency> {
         return Currency.getInstance(currencyCode)
     }
 
-    override fun serialize(encoder: Encoder, value: Currency) {
+    override fun serialize(
+        encoder: Encoder,
+        value: Currency,
+    ) {
         encoder.encodeString(value.currencyCode)
     }
 }

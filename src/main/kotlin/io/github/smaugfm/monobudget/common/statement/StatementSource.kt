@@ -5,5 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface StatementSource {
     suspend fun prepare() {}
+
     suspend fun statements(): Flow<StatementProcessingContext>
 }

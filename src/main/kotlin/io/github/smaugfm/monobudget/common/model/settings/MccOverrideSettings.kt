@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MccOverrideSettings(
     val mccGroupToCategoryName: Map<MccGroupType, String> = emptyMap(),
-    val mccToCategoryName: Map<Int, String> = emptyMap()
+    val mccToCategoryName: Map<Int, String> = emptyMap(),
 )

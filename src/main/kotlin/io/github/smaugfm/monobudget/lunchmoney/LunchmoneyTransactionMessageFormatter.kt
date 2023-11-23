@@ -24,19 +24,18 @@ import java.util.Currency
 @Scope(StatementProcessingScopeComponent::class)
 class LunchmoneyTransactionMessageFormatter(
     private val categoryService: CategoryService,
-    private val ctx: StatementProcessingContext
+    private val ctx: StatementProcessingContext,
 ) : TransactionMessageFormatter<LunchmoneyTransaction>(ctx.item) {
-
-    private val shouldNotifyStatuses = setOf(
-        LunchmoneyTransactionStatus.UNCLEARED,
-        LunchmoneyTransactionStatus.RECURRING_SUGGESTED,
-        LunchmoneyTransactionStatus.PENDING
-
-    )
+    private val shouldNotifyStatuses =
+        setOf(
+            LunchmoneyTransactionStatus.UNCLEARED,
+            LunchmoneyTransactionStatus.RECURRING_SUGGESTED,
+            LunchmoneyTransactionStatus.PENDING,
+        )
 
     override suspend fun formatHTMLStatementMessage(
         accountCurrency: Currency,
-        transaction: LunchmoneyTransaction
+        transaction: LunchmoneyTransaction,
     ): String {
         with(statementItem) {
             val category = categoryService.budgetedCategoryById(transaction.categoryId?.toString())
@@ -49,7 +48,7 @@ class LunchmoneyTransactionMessageFormatter(
                 category,
                 transaction.payee,
                 transaction.id.toString(),
-                constructTransactionsQuickUrl()
+                constructTransactionsQuickUrl(),
             )
         }
     }
@@ -59,7 +58,7 @@ class LunchmoneyTransactionMessageFormatter(
 
     override fun getReplyKeyboardPressedButtons(
         transaction: LunchmoneyTransaction,
-        callbackType: TransactionUpdateType?
+        callbackType: TransactionUpdateType?,
     ): PressedButtons {
         val pressed = PressedButtons(callbackType)
 
@@ -73,18 +72,19 @@ class LunchmoneyTransactionMessageFormatter(
         return pressed
     }
 
-    override fun getReplyKeyboard(pressed: PressedButtons) = InlineKeyboardMarkup(
-        listOf(
+    override fun getReplyKeyboard(pressed: PressedButtons) =
+        InlineKeyboardMarkup(
             listOf(
-                TransactionUpdateType.Unapprove.button(pressed),
-                ActionCallbackType.ChooseCategory.button(pressed)
-            )
+                listOf(
+                    TransactionUpdateType.Unapprove.button(pressed),
+                    ActionCallbackType.ChooseCategory.button(pressed),
+                ),
+            ),
         )
-    )
 
     companion object {
         fun constructTransactionsQuickUrl(
-            date: LocalDate = Clock.System.now().toLocalDateTime().date
+            date: LocalDate = Clock.System.now().toLocalDateTime().date,
         ): String {
             val monthNumber = date.month.value.formatW()
             return "https://my.lunchmoney.app/transactions/${date.year}/$monthNumber"

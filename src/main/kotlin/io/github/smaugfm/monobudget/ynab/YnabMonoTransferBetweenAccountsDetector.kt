@@ -16,12 +16,12 @@ import kotlin.time.Duration.Companion.minutes
 @Scope(StatementProcessingScopeComponent::class)
 class YnabMonoTransferBetweenAccountsDetector(
     bankAccounts: BankAccountService,
-    ctx: StatementProcessingContext
+    ctx: StatementProcessingContext,
 ) : TransferBetweenAccountsDetector<YnabTransactionDetail>(
-    bankAccounts,
-    ctx,
-    cache
-) {
+        bankAccounts,
+        ctx,
+        cache,
+    ) {
     companion object {
         private val cache =
             ConcurrentExpiringMap<StatementItem, Deferred<YnabTransactionDetail>>(1.minutes)

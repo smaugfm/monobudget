@@ -22,5 +22,5 @@ enum class YnabFlagColor {
     Blue,
 
     @SerialName("purple")
-    Purple
+    Purple,
 }

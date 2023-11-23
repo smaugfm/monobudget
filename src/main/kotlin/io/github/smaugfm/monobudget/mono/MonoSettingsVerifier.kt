@@ -7,13 +7,12 @@ import org.koin.core.annotation.Single
 @Single
 class MonoSettingsVerifier(
     private val monoSettings: MultipleAccountSettings,
-    private val accounts: MonoAccountsService
+    private val accounts: MonoAccountsService,
 ) : ApplicationStartupVerifier {
-
     override suspend fun verify() {
         check(
             monoSettings.accountIds.toSet()
-                .containsAll(accounts.getAccounts().map { it.id })
+                .containsAll(accounts.getAccounts().map { it.id }),
         ) {
             "Not all Monobank accounts exist"
         }

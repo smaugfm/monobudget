@@ -6,10 +6,11 @@ class PayeeSuggestorTest {
     @Test
     fun payeeSuggestorSimpleTest() {
         val suggestor = StringSimilarityPayeeSuggestionService()
-        val result = suggestor.twoPass(
-            "Intellij Idea Ultimate",
-            listOf("intellij idea ultimate", "Intellij Idea", "idea", "ultimate")
-        )
+        val result =
+            suggestor.twoPass(
+                "Intellij Idea Ultimate",
+                listOf("intellij idea ultimate", "Intellij Idea", "idea", "ultimate"),
+            )
         println(result)
     }
 }

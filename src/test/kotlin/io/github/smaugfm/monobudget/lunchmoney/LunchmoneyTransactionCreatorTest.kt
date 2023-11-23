@@ -29,7 +29,6 @@ import java.time.LocalDate
 import java.util.Currency
 
 class LunchmoneyTransactionCreatorTest : TestBase() {
-
     override fun KoinApplication.testKoinApplication() {
         modules(
             module {
@@ -38,26 +37,28 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
                         LunchmoneyTransactionCreator(get(), get(), get())
                     }
                 }
-            }
+            },
         )
     }
 
     private val expectedTransactionGroupId = 2L
     private val expectedTransactionCreatedId = 1L
-    private val expectedTransaction = LunchmoneyTransaction(
-        1,
-        LocalDate.MIN,
-        "payee",
-        BigDecimal.TEN,
-        Currency.getInstance("UAH"),
-        1.0,
-        isGroup = false,
-        status = LunchmoneyTransactionStatus.CLEARED
-    )
-    private val insertTransaction = LunchmoneyInsertTransaction(
-        LocalDate.MIN,
-        BigDecimal.TEN
-    )
+    private val expectedTransaction =
+        LunchmoneyTransaction(
+            1,
+            LocalDate.MIN,
+            "payee",
+            BigDecimal.TEN,
+            Currency.getInstance("UAH"),
+            1.0,
+            isGroup = false,
+            status = LunchmoneyTransactionStatus.CLEARED,
+        )
+    private val insertTransaction =
+        LunchmoneyInsertTransaction(
+            LocalDate.MIN,
+            BigDecimal.TEN,
+        )
 
     @BeforeEach()
     fun mocks() {
@@ -85,9 +86,9 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
                 creator.create(
                     MaybeTransferStatement.Transfer(
                         sc.ctx.item,
-                        expectedTransaction
-                    )
-                )
+                        expectedTransaction,
+                    ),
+                ),
             ).isEqualTo(expectedTransaction)
         }
     }
@@ -95,9 +96,10 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
     @Test
     fun onlyNecessaryApiCallsWhenContextPartiallyPopulated() {
         declareMock<LunchmoneyApi> {
-            every { createTransactionGroup(any(), any(), any(), any(), any()) } returns Mono.just(
-                expectedTransactionGroupId
-            )
+            every { createTransactionGroup(any(), any(), any(), any(), any()) } returns
+                Mono.just(
+                    expectedTransactionGroupId,
+                )
         }
         runBlocking {
             val map = mutableMapOf<String, Any>()
@@ -111,9 +113,9 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
                 creator.create(
                     MaybeTransferStatement.Transfer(
                         sc.ctx.item,
-                        expectedTransaction
-                    )
-                )
+                        expectedTransaction,
+                    ),
+                ),
             ).isEqualTo(expectedTransaction)
             assertThat(map["transactionGroupId"]).isEqualTo(expectedTransactionGroupId)
         }
@@ -122,18 +124,21 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
     @Test
     fun contextGetsPopulated() {
         declareMock<LunchmoneyApi> {
-            every { updateTransaction(any(), any(), any()) } returns Mono.just(
-                mockkClass(LunchmoneyUpdateTransactionResponse::class)
-            )
-            every { insertTransactions(any(), any(), any(), any(), any(), any()) } returns Mono.just(
-                listOf(
-                    expectedTransactionCreatedId
+            every { updateTransaction(any(), any(), any()) } returns
+                Mono.just(
+                    mockkClass(LunchmoneyUpdateTransactionResponse::class),
                 )
-            )
+            every { insertTransactions(any(), any(), any(), any(), any(), any()) } returns
+                Mono.just(
+                    listOf(
+                        expectedTransactionCreatedId,
+                    ),
+                )
             every { getSingleTransaction(any(), any()) } returns Mono.just(expectedTransaction)
-            every { createTransactionGroup(any(), any(), any(), any(), any()) } returns Mono.just(
-                expectedTransactionGroupId
-            )
+            every { createTransactionGroup(any(), any(), any(), any(), any()) } returns
+                Mono.just(
+                    expectedTransactionGroupId,
+                )
         }
         runBlocking {
             val map = mutableMapOf<String, Any>()
@@ -143,15 +148,15 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
                 creator.create(
                     MaybeTransferStatement.Transfer(
                         sc.ctx.item,
-                        expectedTransaction
-                    )
-                )
+                        expectedTransaction,
+                    ),
+                ),
             ).isEqualTo(expectedTransaction)
             assertThat(map["transactionUpdated"]).isEqualTo(true)
             assertThat(map["transactionGroupId"]).isEqualTo(expectedTransactionGroupId)
             assertThat(map["transactionCreatedId"]).isEqualTo(expectedTransactionCreatedId)
             assertThat(map["transaction"]).isEqualTo(
-                expectedTransaction
+                expectedTransaction,
             )
         }
     }

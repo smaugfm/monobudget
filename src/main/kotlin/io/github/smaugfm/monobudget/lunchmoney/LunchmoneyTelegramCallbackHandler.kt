@@ -20,32 +20,34 @@ private val log = KotlinLogging.logger {}
 
 @Single
 class LunchmoneyTelegramCallbackHandler(
-    private val api: LunchmoneyApi
+    private val api: LunchmoneyApi,
 ) : TelegramCallbackHandler<LunchmoneyTransaction>() {
-
     override suspend fun updateTransaction(callbackType: TransactionUpdateType): LunchmoneyTransaction {
         val txId = callbackType.transactionId.toLong()
 
-        val updateTransaction = when (callbackType) {
-            is TransactionUpdateType.MakePayee -> error("Not supported for Lunchmoney")
-            is TransactionUpdateType.Unapprove -> LunchmoneyUpdateTransaction(
-                status = LunchmoneyTransactionStatus.UNCLEARED
-            )
+        val updateTransaction =
+            when (callbackType) {
+                is TransactionUpdateType.MakePayee -> error("Not supported for Lunchmoney")
+                is TransactionUpdateType.Unapprove ->
+                    LunchmoneyUpdateTransaction(
+                        status = LunchmoneyTransactionStatus.UNCLEARED,
+                    )
 
-            is TransactionUpdateType.Uncategorize ->
-                LunchmoneyUpdateTransaction(categoryId = null)
+                is TransactionUpdateType.Uncategorize ->
+                    LunchmoneyUpdateTransaction(categoryId = null)
 
-            is TransactionUpdateType.UpdateCategory -> LunchmoneyUpdateTransaction(
-                categoryId = callbackType.categoryId.toLong(),
-                status = LunchmoneyTransactionStatus.CLEARED
-            )
-        }
+                is TransactionUpdateType.UpdateCategory ->
+                    LunchmoneyUpdateTransaction(
+                        categoryId = callbackType.categoryId.toLong(),
+                        status = LunchmoneyTransactionStatus.CLEARED,
+                    )
+            }
 
         api.updateTransaction(
             transactionId = txId,
             transaction = updateTransaction,
             debitAsNegative = true,
-            skipBalanceUpdate = false
+            skipBalanceUpdate = false,
         ).awaitSingle()
 
         return readTransaction(txId).also {
@@ -55,13 +57,14 @@ class LunchmoneyTelegramCallbackHandler(
         }
     }
 
-    private suspend fun readTransaction(txId: Long) = api
-        .getSingleTransaction(txId, debitAsNegative = true)
-        .awaitSingle()
+    private suspend fun readTransaction(txId: Long) =
+        api
+            .getSingleTransaction(txId, debitAsNegative = true)
+            .awaitSingle()
 
     override suspend fun updateHTMLStatementMessage(
         updatedTransaction: LunchmoneyTransaction,
-        oldMessage: Message
+        oldMessage: Message,
     ): String {
         val (description, mcc, currency) = extractFromOldMessage(oldMessage)
         val category = getBudgetedCategory(updatedTransaction)
@@ -74,12 +77,12 @@ class LunchmoneyTelegramCallbackHandler(
             category = category,
             payee = updatedTransaction.payee,
             id = updatedTransaction.id.toString(),
-            idLink = constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate())
+            idLink = constructTransactionsQuickUrl(updatedTransaction.date.toKotlinLocalDate()),
         )
     }
 
     private suspend fun getBudgetedCategory(
-        updatedTransaction: LunchmoneyTransaction
+        updatedTransaction: LunchmoneyTransaction,
     ): CategoryService.BudgetedCategory? {
         val categoryId = updatedTransaction.categoryId?.toString()
         val assetId = updatedTransaction.assetId?.toString()

@@ -47,11 +47,11 @@ abstract class CategoryService : KoinComponent {
 
     data class BudgetedCategory(
         val categoryName: String,
-        val budget: CategoryBudget?
+        val budget: CategoryBudget?,
     ) {
         data class CategoryBudget(
             val left: Amount,
-            val budgetedThisMonth: Amount
+            val budgetedThisMonth: Amount,
         )
     }
 }

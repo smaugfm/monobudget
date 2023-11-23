@@ -24,20 +24,24 @@ class MonoApi(token: String, val accountId: BankAccountId) {
 
     val api = MonobankPersonalApi(token)
 
-    suspend fun setupWebhook(url: URI, port: Int): Boolean {
+    suspend fun setupWebhook(
+        url: URI,
+        port: Int,
+    ) {
         require(url.toASCIIString() == url.toString())
 
         val waitForWebhook = CompletableDeferred<Unit>()
-        val tempServer = embeddedServer(Netty, port = port) {
-            routing {
-                get(url.path) {
-                    call.response.status(HttpStatusCode.OK)
-                    call.respondText("OK\n", ContentType.Text.Plain)
-                    log.info { "Webhook setup successful: $url" }
-                    waitForWebhook.complete(Unit)
+        val tempServer =
+            embeddedServer(Netty, port = port) {
+                routing {
+                    get(url.path) {
+                        call.response.status(HttpStatusCode.OK)
+                        call.respondText("OK\n", ContentType.Text.Plain)
+                        log.info { "Webhook setup successful: $url" }
+                        waitForWebhook.complete(Unit)
+                    }
                 }
             }
-        }
         log.info { "Starting temporary webhook setup server..." }
         tempServer.start(wait = false)
 
@@ -45,14 +49,9 @@ class MonoApi(token: String, val accountId: BankAccountId) {
             api.setClientWebhook(url.toString()).awaitSingleOrNull()
             waitForWebhook.await()
             log.info { "Webhook setup completed. Stopping temporary server..." }
-        } catch (e: Throwable) {
-            log.error(e) {}
-            return false
         } finally {
             tempServer.stop(SERVER_STOP_GRACE_PERIOD, SERVER_STOP_GRACE_PERIOD)
         }
-
-        return true
     }
 
     companion object {

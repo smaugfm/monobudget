@@ -11,10 +11,12 @@ class InMemoryStatementRetryRepositoryImpl : StatementRetryRepository {
 
     override suspend fun addRetryRequest(
         ctx: StatementProcessingContext,
-        retryWaitDuration: Duration
+        retryWaitDuration: Duration,
     ): StatementRetryRequest =
         StatementRetryRequest(
-            UUID.randomUUID().toString(), ctx, retryWaitDuration
+            UUID.randomUUID().toString(),
+            ctx,
+            retryWaitDuration,
         ).also {
             map[it.id] = it
         }
@@ -23,6 +25,5 @@ class InMemoryStatementRetryRepositoryImpl : StatementRetryRepository {
         map.remove(id)
     }
 
-    override suspend fun getAllRequests() =
-        map.values.toList()
+    override suspend fun getAllRequests() = map.values.toList()
 }

@@ -8,5 +8,5 @@ data class YnabCategoryGroupWithCategories(
     val name: String,
     val hidden: Boolean,
     val deleted: Boolean,
-    val categories: List<YnabCategory>
+    val categories: List<YnabCategory>,
 )

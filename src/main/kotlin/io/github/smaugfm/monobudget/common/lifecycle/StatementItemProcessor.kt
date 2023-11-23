@@ -16,9 +16,8 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
     private val bankAccounts: BankAccountService,
     private val transferDetector: TransferBetweenAccountsDetector<TTransaction>,
     private val messageFormatter: TransactionMessageFormatter<TTransaction>,
-    private val telegramMessageSender: TelegramMessageSender
+    private val telegramMessageSender: TelegramMessageSender,
 ) {
-
     suspend fun process() {
         logStatement()
         processStatement()

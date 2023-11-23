@@ -25,7 +25,7 @@ data class YnabTransactionDetail(
     val accountName: String,
     val payeeName: String?,
     val categoryName: String?,
-    val subtransactions: List<YnabSubTransaction>
+    val subtransactions: List<YnabSubTransaction>,
 ) {
     fun toSaveTransaction(): YnabSaveTransaction {
         val t = this
@@ -47,9 +47,9 @@ data class YnabTransactionDetail(
                     it.payeeId,
                     it.payeeName,
                     it.categoryId,
-                    it.memo
+                    it.memo,
                 )
-            }
+            },
         )
     }
 }

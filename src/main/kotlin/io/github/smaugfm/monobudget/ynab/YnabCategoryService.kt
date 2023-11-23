@@ -11,42 +11,44 @@ import java.util.Currency
 class YnabCategoryService(
     periodicFetcherFactory: PeriodicFetcherFactory,
     private val api: YnabApi,
-    private val ynab: BudgetBackend.YNAB
+    private val ynab: BudgetBackend.YNAB,
 ) : CategoryService() {
-
-    private val categoriesFetcher = periodicFetcherFactory.create("YNAB categories") {
-        api.getCategoryGroups().flatMap {
-            it.categories
+    private val categoriesFetcher =
+        periodicFetcherFactory.create("YNAB categories") {
+            api.getCategoryGroups().flatMap {
+                it.categories
+            }
         }
-    }
 
-    private val budgetCurrencyFetcher = periodicFetcherFactory.create("YNAB budget summary") {
-        Currency.getInstance(api.getBudget(ynab.ynabBudgetId).currencyFormat.isoCode)
-    }
+    private val budgetCurrencyFetcher =
+        periodicFetcherFactory.create("YNAB budget summary") {
+            Currency.getInstance(api.getBudget(ynab.ynabBudgetId).currencyFormat.isoCode)
+        }
 
     override suspend fun categoryIdToNameList(): List<Pair<String, String>> =
-        categoriesFetcher.getData().map {
+        categoriesFetcher.fetched().map {
             it.id to it.name
         }
 
     override suspend fun budgetedCategoryByIdInternal(categoryId: String): BudgetedCategory? {
-        val category = categoriesFetcher.getData().find { it.id == categoryId } ?: return null
-        val currency = budgetCurrencyFetcher.getData()
+        val category = categoriesFetcher.fetched().find { it.id == categoryId } ?: return null
+        val currency = budgetCurrencyFetcher.fetched()
 
         return BudgetedCategory(
             category.name,
             if (category.budgeted > 0) {
                 BudgetedCategory.CategoryBudget(
                     Amount.fromYnabAmount(category.balance, currency),
-                    Amount.fromYnabAmount(category.budgeted, currency)
+                    Amount.fromYnabAmount(category.budgeted, currency),
                 )
             } else {
                 null
-            }
+            },
         )
     }
 
-    override suspend fun categoryIdByName(categoryName: String): String? = categoriesFetcher.getData()
-        .firstOrNull { it.name == categoryName }
-        ?.id
+    override suspend fun categoryIdByName(categoryName: String): String? =
+        categoriesFetcher.fetched()
+            .firstOrNull { it.name == categoryName }
+            ?.id
 }

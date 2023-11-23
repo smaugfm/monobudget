@@ -26,5 +26,5 @@ enum class MccGroupType {
     PFS,
     MO,
     GS,
-    NC
+    NC,
 }

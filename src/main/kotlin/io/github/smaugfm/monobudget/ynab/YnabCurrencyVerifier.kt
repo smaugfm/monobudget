@@ -10,15 +10,15 @@ import java.util.Currency
 class YnabCurrencyVerifier(
     private val budgetBackend: BudgetBackend.YNAB,
     private val bankAccounts: BankAccountService,
-    private val ynabApi: YnabApi
+    private val ynabApi: YnabApi,
 ) : ApplicationStartupVerifier {
-
     override suspend fun verify() {
-        val budgetCurrency = ynabApi
-            .getBudget(budgetBackend.ynabBudgetId)
-            .currencyFormat
-            .isoCode
-            .let(Currency::getInstance)
+        val budgetCurrency =
+            ynabApi
+                .getBudget(budgetBackend.ynabBudgetId)
+                .currencyFormat
+                .isoCode
+                .let(Currency::getInstance)
         check(bankAccounts.getAccounts().all { budgetCurrency == it.currency })
     }
 }

@@ -14,17 +14,24 @@ sealed interface StatementProcessingEventListener {
     }
 
     interface Error : StatementProcessingEventListener {
-        suspend fun handleStatementError(ctx: StatementProcessingContext, e: Throwable): Boolean
+        suspend fun handleStatementError(
+            ctx: StatementProcessingContext,
+            e: Throwable,
+        ): Boolean
     }
 
     interface Retry : StatementProcessingEventListener {
         suspend fun handleRetry(
             ctx: StatementProcessingContext,
-            e: BudgetBackendError
+            e: BudgetBackendError,
         )
     }
 
     interface CallbackError : StatementProcessingEventListener {
-        suspend fun handleCallbackError(query: CallbackQuery, callbackType: CallbackType?, e: Throwable)
+        suspend fun handleCallbackError(
+            query: CallbackQuery,
+            callbackType: CallbackType?,
+            e: Throwable,
+        )
     }
 }

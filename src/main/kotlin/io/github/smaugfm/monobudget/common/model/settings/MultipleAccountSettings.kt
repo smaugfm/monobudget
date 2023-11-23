@@ -5,7 +5,7 @@ import kotlinx.serialization.Transient
 
 @Serializable
 data class MultipleAccountSettings(
-    val settings: List<AccountSettings>
+    val settings: List<AccountSettings>,
 ) {
     @Transient
     val byId = settings.associateBy { it.accountId }

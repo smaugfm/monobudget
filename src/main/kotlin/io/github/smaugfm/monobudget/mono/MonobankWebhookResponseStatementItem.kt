@@ -7,7 +7,7 @@ import java.util.Currency
 
 data class MonobankWebhookResponseStatementItem(
     val d: MonoWebhookResponseData,
-    val accountCurrency: Currency
+    val accountCurrency: Currency,
 ) : StatementItem {
     override val id = d.statementItem.id
     override val accountId = d.account

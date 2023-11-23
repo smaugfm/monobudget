@@ -13,7 +13,6 @@ import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
-import io.github.smaugfm.monobudget.common.model.settings.OtherAccountSettings
 import io.github.smaugfm.monobudget.common.model.settings.Settings
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
 import io.github.smaugfm.monobudget.mono.MonoApi
@@ -66,7 +65,7 @@ fun main() {
 fun KoinApplication.setupKoinModules(
     coroutineScope: CoroutineScope,
     settings: Settings,
-    webhookSettings: MonoWebhookSettings
+    webhookSettings: MonoWebhookSettings,
 ) {
     printLogger(Level.ERROR)
     modules(runtimeModule(coroutineScope, settings, webhookSettings))
@@ -76,18 +75,17 @@ fun KoinApplication.setupKoinModules(
         when (settings.budgetBackend) {
             is Lunchmoney -> lunchmoneyModule(settings.budgetBackend)
             is YNAB -> ynabModule()
-        }
+        },
     )
 }
 
 private fun runtimeModule(
     coroutineScope: CoroutineScope,
     settings: Settings,
-    webhookSettings: MonoWebhookSettings
+    webhookSettings: MonoWebhookSettings,
 ) = module {
     when (settings.budgetBackend) {
-        is Lunchmoney ->
-            single { settings.budgetBackend }
+        is Lunchmoney -> single { settings.budgetBackend }
 
         is YNAB -> single { settings.budgetBackend }
     } bind BudgetBackend::class
@@ -96,19 +94,10 @@ private fun runtimeModule(
     single { settings.mcc }
     single { settings.bot }
     single { settings.accounts }
+    single { settings.retry }
     single { apiRetry() }
-    settings.accounts.settings
-        .forEach { accountSettings ->
-            single {
-                when (accountSettings) {
-                    is MonoAccountSettings ->
-                        MonoApi(accountSettings.token, accountSettings.accountId)
-
-                    is OtherAccountSettings ->
-                        accountSettings
-                }
-            }
-        }
+    settings.accounts.settings.filterIsInstance<MonoAccountSettings>()
+        .forEach { s -> single { MonoApi(s.token, s.accountId) } }
     settings.transfer.forEach { s ->
         single(qualifier = StringQualifier(s.descriptionRegex.pattern)) { s }
     }
@@ -116,27 +105,29 @@ private fun runtimeModule(
 }
 
 @Suppress("MagicNumber")
-private fun apiRetry(): Retry = Retry.of(
-    "apiRetry",
-    RetryConfig {
-        maxAttempts(3)
-        failAfterMaxAttempts(true)
-        intervalFunction(
-            IntervalFunction.ofExponentialBackoff(
-                Duration.ofSeconds(1),
-                2.0
+private fun apiRetry(): Retry =
+    Retry.of(
+        "apiRetry",
+        RetryConfig {
+            maxAttempts(3)
+            failAfterMaxAttempts(true)
+            intervalFunction(
+                IntervalFunction.ofExponentialBackoff(
+                    Duration.ofSeconds(1),
+                    2.0,
+                ),
             )
-        )
-    }
-)
+        },
+    )
 
-private fun lunchmoneyModule(budgetBackend: Lunchmoney) = module {
-    single {
-        LunchmoneyApi(
-            budgetBackend.token,
-            requestTransformer = RetryOperator.of(get())
-        )
-    }
-} + LunchmoneyModule().module
+private fun lunchmoneyModule(budgetBackend: Lunchmoney) =
+    module {
+        single {
+            LunchmoneyApi(
+                budgetBackend.token,
+                requestTransformer = RetryOperator.of(get()),
+            )
+        }
+    } + LunchmoneyModule().module
 
 private fun ynabModule() = listOf(YnabModule().module)

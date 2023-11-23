@@ -13,24 +13,23 @@ import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(DelicateCoroutinesApi::class)
 class PeriodicFetcherFactoryTest {
-
-    private val factory = PeriodicFetcherFactory(GlobalScope)
-
     private val values = generateSequence(0) { it + 1 }.iterator()
 
     @RepeatedTest(100)
     fun test() {
         val def = CompletableDeferred(Unit)
-        val fetcher = factory.PeriodicFetcher("TestFetcher", 10.milliseconds) {
-            def.await()
-            values.next()
-        }
+
+        val fetcher =
+            PeriodicFetcherFactory.PeriodicFetcher("TestFetcher", 10.milliseconds, GlobalScope) {
+                def.await()
+                values.next()
+            }
 
         runBlocking {
             def.complete(Unit)
-            assertThat(fetcher.getData()).isEqualTo(0)
+            assertThat(fetcher.fetched()).isEqualTo(0)
             delay(30.milliseconds)
-            assertThat(fetcher.getData()).isGreaterThan(0)
+            assertThat(fetcher.fetched()).isGreaterThan(0)
         }
     }
 }

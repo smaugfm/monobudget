@@ -8,5 +8,5 @@ data class YnabSaveSubTransaction(
     val payeeId: String?,
     val payeeName: String?,
     val categoryId: String?,
-    val memo: String?
+    val memo: String?,
 )

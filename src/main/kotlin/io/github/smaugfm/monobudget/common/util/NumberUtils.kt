@@ -4,6 +4,7 @@ import java.text.StringCharacterIterator
 import java.util.Locale
 
 fun Int.isEven() = this % 2 == 0
+
 fun Int.isOdd() = !isEven()
 
 @Suppress("MagicNumber")

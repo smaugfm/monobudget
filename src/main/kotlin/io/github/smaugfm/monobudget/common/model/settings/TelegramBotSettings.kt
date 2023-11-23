@@ -5,5 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TelegramBotSettings(
     val token: String,
-    val username: String
+    val username: String,
 )

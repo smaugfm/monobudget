@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class YnabBudgetDetailShort(
     val id: String,
     val name: String,
-    val currencyFormat: YnabCurrencyFormat
+    val currencyFormat: YnabCurrencyFormat,
 )

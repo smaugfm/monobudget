@@ -26,36 +26,37 @@ private val log = KotlinLogging.logger {}
 class LunchmoneyTransactionCreator(
     budgetBackend: BudgetBackend.Lunchmoney,
     private val ctx: StatementProcessingContext,
-    private val api: LunchmoneyApi
+    private val api: LunchmoneyApi,
 ) : TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
-    override suspend fun create(maybeTransfer: MaybeTransferStatement<LunchmoneyTransaction>) = try {
-        when (maybeTransfer) {
-            is MaybeTransferStatement.Transfer ->
-                processTransfer(maybeTransfer.statement, maybeTransfer.processed())
+    override suspend fun create(maybeTransfer: MaybeTransferStatement<LunchmoneyTransaction>) =
+        try {
+            when (maybeTransfer) {
+                is MaybeTransferStatement.Transfer ->
+                    processTransfer(maybeTransfer.statement, maybeTransfer.processed())
 
-            is MaybeTransferStatement.NotTransfer ->
-                maybeTransfer.consume(::processSingle)
+                is MaybeTransferStatement.NotTransfer ->
+                    maybeTransfer.consume(::processSingle)
+            }
+        } catch (e: LunchmoneyApiResponseException) {
+            val template = "Текст помилки: "
+            if (e.cause is SerializationException) {
+                throw BudgetBackendError(
+                    e,
+                    template + (e.message?.substringBefore("JSON input:") + "HTTP Body:\n" + e.body),
+                )
+            } else {
+                throw BudgetBackendError(
+                    e,
+                    template + e.message,
+                )
+            }
         }
-    } catch (e: LunchmoneyApiResponseException) {
-        val template = "Текст помилки: "
-        if (e.cause is SerializationException) {
-            throw BudgetBackendError(
-                e,
-                template + (e.message?.substringBefore("JSON input:") + "HTTP Body:\n" + e.body)
-            )
-        } else {
-            throw BudgetBackendError(
-                e,
-                template + e.message
-            )
-        }
-    }
 
     private suspend fun processTransfer(
         statement: StatementItem,
-        existingTransaction: LunchmoneyTransaction
+        existingTransaction: LunchmoneyTransaction,
     ): LunchmoneyTransaction {
         log.debug {
             "Processed transfer transaction: $statement. " +
@@ -65,10 +66,11 @@ class LunchmoneyTransactionCreator(
         ctx.execIfNotSet("transactionUpdated") {
             api.updateTransaction(
                 transactionId = existingTransaction.id,
-                transaction = LunchmoneyUpdateTransaction(
-                    status = LunchmoneyTransactionStatus.CLEARED,
-                    categoryId = transferCategoryId
-                )
+                transaction =
+                    LunchmoneyUpdateTransaction(
+                        status = LunchmoneyTransactionStatus.CLEARED,
+                        categoryId = transferCategoryId,
+                    ),
             )
                 .awaitSingle()
         }
@@ -81,7 +83,7 @@ class LunchmoneyTransactionCreator(
                     date = newTransaction.date,
                     payee = TRANSFER_PAYEE,
                     transactions = listOf(existingTransaction, newTransaction).map { it.id },
-                    categoryId = transferCategoryId
+                    categoryId = transferCategoryId,
                 )
                     .awaitSingle()
             }
@@ -93,7 +95,7 @@ class LunchmoneyTransactionCreator(
 
     private suspend fun processSingle(
         statement: StatementItem,
-        partOfTransfer: Boolean = false
+        partOfTransfer: Boolean = false,
     ): LunchmoneyTransaction {
         log.debug { "Processing transaction: $statement" }
 
@@ -102,7 +104,7 @@ class LunchmoneyTransactionCreator(
                 if (partOfTransfer) {
                     it.copy(
                         status = LunchmoneyTransactionStatus.CLEARED,
-                        categoryId = transferCategoryId
+                        categoryId = transferCategoryId,
                     )
                 } else {
                     it
@@ -115,7 +117,7 @@ class LunchmoneyTransactionCreator(
                     transactions = listOf(newTransaction),
                     applyRules = true,
                     checkForRecurring = true,
-                    debitAsNegative = true
+                    debitAsNegative = true,
                 ).awaitSingle()
                     .first()
             }

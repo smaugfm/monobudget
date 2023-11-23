@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class YnabPayeesResponse(
-    val data: YnabPayeesWrapper
+    val data: YnabPayeesWrapper,
 )

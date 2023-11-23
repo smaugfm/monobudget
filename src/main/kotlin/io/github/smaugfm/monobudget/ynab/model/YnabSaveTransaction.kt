@@ -18,5 +18,5 @@ data class YnabSaveTransaction(
     val approved: Boolean,
     val flagColor: YnabFlagColor?,
     val importId: String?,
-    val subtransactions: List<YnabSaveSubTransaction>
+    val subtransactions: List<YnabSaveSubTransaction>,
 )

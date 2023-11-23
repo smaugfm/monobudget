@@ -10,12 +10,17 @@ fun Number.formatW(): String {
 fun String.replaceNewLines(): String = replace("\n", " ").replace("\r", "")
 
 @Suppress("ComplexMethod", "MagicNumber", "LoopWithTooManyJumpStatements", "ReturnCount")
-fun jaroSimilarity(s1: String, s2: String): Double {
+fun jaroSimilarity(
+    s1: String,
+    s2: String,
+): Double {
     if (s1.isEmpty() && s2.isEmpty()) {
         return 1.0
     } else if (s1.isEmpty() || s2.isEmpty()) {
         return 0.0
-    } else if (s1.length == 1 && s2.length == 1) return if (s1[0] == s2[0]) 1.0 else 0.0
+    } else if (s1.length == 1 && s2.length == 1) {
+        return if (s1[0] == s2[0]) 1.0 else 0.0
+    }
 
     val searchRange: Int = max(s1.length, s2.length) / 2 - 1
     val s2Consumed = BooleanArray(s2.length)
@@ -39,16 +44,21 @@ fun jaroSimilarity(s1: String, s2: String): Double {
 
     return when (matches) {
         0.0 -> 0.0
-        else -> (
-            matches / s1.length +
-                matches / s2.length +
-                (matches - transpositions) / matches
+        else ->
+            (
+                matches / s1.length +
+                    matches / s2.length +
+                    (matches - transpositions) / matches
             ) / 3.0
     }
 }
 
 @Suppress("MagicNumber")
-fun jaroWinklerSimilarity(s1: String, s2: String, ignoreCase: Boolean): Double {
+fun jaroWinklerSimilarity(
+    s1: String,
+    s2: String,
+    ignoreCase: Boolean,
+): Double {
     // Unlike classic Jaro-Winkler, we don't set a limit on the prefix length
     val prefixLength = s1.commonPrefixWith(s2, ignoreCase).length
     val case = { s: String -> if (ignoreCase) s.lowercase() else s }

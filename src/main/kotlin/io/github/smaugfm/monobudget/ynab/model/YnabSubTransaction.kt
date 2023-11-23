@@ -14,5 +14,5 @@ data class YnabSubTransaction(
     val categoryName: String?,
     val transferAccountId: String?,
     val transferTransactionId: String?,
-    val delete: Boolean = false
+    val delete: Boolean = false,
 )

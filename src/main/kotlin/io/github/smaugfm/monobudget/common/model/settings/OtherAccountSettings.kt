@@ -13,5 +13,5 @@ data class OtherAccountSettings(
     override val budgetAccountId: String,
     override val telegramChatId: Long,
     @Serializable(CurrencyAsStringSerializer::class)
-    val currency: Currency
+    override val currency: Currency,
 ) : AccountSettings

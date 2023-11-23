@@ -11,13 +11,13 @@ sealed class BudgetBackend {
     @SerialName("ynab")
     data class YNAB(
         override val token: String,
-        val ynabBudgetId: String
+        val ynabBudgetId: String,
     ) : BudgetBackend()
 
     @Serializable
     @SerialName("lunchmoney")
     data class Lunchmoney(
         override val token: String,
-        val transferCategoryId: String
+        val transferCategoryId: String,
     ) : BudgetBackend()
 }

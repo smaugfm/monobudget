@@ -18,5 +18,5 @@ data class YnabCategory(
     val goalTarget: Long?,
     val goalTargetMonth: String?,
     val goalPercentageComplete: Int?,
-    val deleted: Boolean
+    val deleted: Boolean,
 )

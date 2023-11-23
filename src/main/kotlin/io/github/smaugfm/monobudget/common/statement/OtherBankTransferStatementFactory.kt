@@ -10,9 +10,8 @@ import org.koin.core.annotation.Single
 @Single
 class OtherBankTransferStatementFactory(
     private val transferSettings: List<OtherBanksTransferSettings>,
-    private val otherBanksStatementService: OtherBankTransferStatementSource
+    private val otherBanksStatementService: OtherBankTransferStatementSource,
 ) : StatementProcessingEventListener.New {
-
     override suspend fun handleNewStatement(ctx: StatementProcessingContext): Boolean {
         with(ctx) {
             if (item is OtherBankStatementItem) {
@@ -28,11 +27,15 @@ class OtherBankTransferStatementFactory(
         }
     }
 
-    private fun findMatchingSettings(item: StatementItem) = transferSettings.find {
-        it.mcc == item.mcc && it.descriptionRegex.matches(item.description ?: "")
-    }
+    private fun findMatchingSettings(item: StatementItem) =
+        transferSettings.find {
+            it.mcc == item.mcc && it.descriptionRegex.matches(item.description ?: "")
+        }
 
-    private suspend fun emitTransfer(matchingSetting: OtherBanksTransferSettings, item: StatementItem) {
+    private suspend fun emitTransfer(
+        matchingSetting: OtherBanksTransferSettings,
+        item: StatementItem,
+    ) {
         otherBanksStatementService.emit(
             OtherBankStatementItem(
                 accountId = matchingSetting.transferAccountId,
@@ -40,8 +43,8 @@ class OtherBankTransferStatementFactory(
                 mcc = item.mcc,
                 amount = -item.amount,
                 operationAmount = -item.operationAmount,
-                currency = item.currency
-            )
+                currency = item.currency,
+            ),
         )
     }
 }

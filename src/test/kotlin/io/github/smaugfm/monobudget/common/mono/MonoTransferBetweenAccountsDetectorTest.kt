@@ -30,26 +30,27 @@ import kotlin.time.Duration.Companion.minutes
 private val log = KotlinLogging.logger { }
 
 class MonoTransferBetweenAccountsDetectorTest : TestBase() {
-
     companion object {
         private val cache = ConcurrentExpiringMap<StatementItem, Deferred<Any>>(1.minutes)
     }
 
     class TestDetector(
         bankAccounts: BankAccountService,
-        ctx: StatementProcessingContext
+        ctx: StatementProcessingContext,
     ) : TransferBetweenAccountsDetector<Any>(
         bankAccounts,
         ctx,
-        cache
+        cache,
     )
 
     override fun KoinApplication.testKoinApplication() {
-        modules(module {
-            scope<StatementProcessingScopeComponent> {
-                scoped { TestDetector(get(), get()) }
-            }
-        })
+        modules(
+            module {
+                scope<StatementProcessingScopeComponent> {
+                    scoped { TestDetector(get(), get()) }
+                }
+            },
+        )
     }
 
     @Timeout(2, unit = TimeUnit.SECONDS)
@@ -64,27 +65,29 @@ class MonoTransferBetweenAccountsDetectorTest : TestBase() {
         }
         runBlocking {
             val waitForNotTransfer = CompletableDeferred<Any>()
-            val job1 = launch {
-                val sc = StatementProcessingScopeComponent(ctx1)
-                val detector = sc.scope.get<TestDetector>()
-                assertThat(detector.checkTransfer()).isInstanceOf(NotTransfer::class)
-                val notTransfer = detector.checkTransfer() as NotTransfer
-                waitForNotTransfer.complete(Any())
-                notTransfer.consume {
-                    log.info { "Started consuming transaction 1..." }
-                    delay(100)
-                    log.info { "Finished consuming transaction 1" }
+            val job1 =
+                launch {
+                    val sc = StatementProcessingScopeComponent(ctx1)
+                    val detector = sc.scope.get<TestDetector>()
+                    assertThat(detector.checkTransfer()).isInstanceOf(NotTransfer::class)
+                    val notTransfer = detector.checkTransfer() as NotTransfer
+                    waitForNotTransfer.complete(Any())
+                    notTransfer.consume {
+                        log.info { "Started consuming transaction 1..." }
+                        delay(100)
+                        log.info { "Finished consuming transaction 1" }
+                    }
+                    sc.scope.close()
                 }
-                sc.scope.close()
-            }
 
             waitForNotTransfer.await()
-            val job2 = launch {
-                val sc = StatementProcessingScopeComponent(ctx2)
-                val detector = sc.scope.get<TestDetector>()
-                assertThat(detector.checkTransfer()).isInstanceOf(Transfer::class)
-                sc.scope.close()
-            }
+            val job2 =
+                launch {
+                    val sc = StatementProcessingScopeComponent(ctx2)
+                    val detector = sc.scope.get<TestDetector>()
+                    assertThat(detector.checkTransfer()).isInstanceOf(Transfer::class)
+                    sc.scope.close()
+                }
             job1.join()
             job2.join()
         }

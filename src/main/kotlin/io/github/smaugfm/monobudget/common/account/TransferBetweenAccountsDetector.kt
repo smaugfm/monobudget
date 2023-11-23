@@ -12,13 +12,14 @@ private val log = KotlinLogging.logger {}
 abstract class TransferBetweenAccountsDetector<TTransaction>(
     private val bankAccounts: BankAccountService,
     private val ctx: StatementProcessingContext,
-    private val cache: ConcurrentExpiringMap<StatementItem, Deferred<TTransaction>>
+    private val cache: ConcurrentExpiringMap<StatementItem, Deferred<TTransaction>>,
 ) {
     suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> =
         ctx.getOrPut("transfer") {
-            val existingTransfer = cache.entries.firstOrNull { (recentStatementItem) ->
-                checkIsTransferTransactions(recentStatementItem)
-            }?.value?.await()
+            val existingTransfer =
+                cache.entries.firstOrNull { (recentStatementItem) ->
+                    checkIsTransferTransactions(recentStatementItem)
+                }?.value?.await()
 
             if (existingTransfer != null) {
                 log.debug {
@@ -53,7 +54,10 @@ abstract class TransferBetweenAccountsDetector<TTransaction>(
         }
     }
 
-    private suspend fun currencyMatch(new: StatementItem, existing: StatementItem): Boolean {
+    private suspend fun currencyMatch(
+        new: StatementItem,
+        existing: StatementItem,
+    ): Boolean {
         val newTransactionAccountCurrency = bankAccounts.getAccountCurrency(new.accountId)
         val existingTransactionAccountCurrency = bankAccounts.getAccountCurrency(existing.accountId)
         return new.currency == existing.currency ||
@@ -61,7 +65,10 @@ abstract class TransferBetweenAccountsDetector<TTransaction>(
             existingTransactionAccountCurrency == new.currency
     }
 
-    private fun amountMatch(new: StatementItem, existing: StatementItem): Boolean {
+    private fun amountMatch(
+        new: StatementItem,
+        existing: StatementItem,
+    ): Boolean {
         val a1 = new.amount
         val a2 = existing.amount
         val oa1 = new.operationAmount
@@ -74,5 +81,8 @@ abstract class TransferBetweenAccountsDetector<TTransaction>(
         return a1.equalsInverted(oa2) || oa1.equalsInverted(a2)
     }
 
-    private fun mccMatch(new: StatementItem, existing: StatementItem) = new.mcc == existing.mcc
+    private fun mccMatch(
+        new: StatementItem,
+        existing: StatementItem,
+    ) = new.mcc == existing.mcc
 }

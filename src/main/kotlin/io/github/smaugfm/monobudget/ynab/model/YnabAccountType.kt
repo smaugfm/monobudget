@@ -37,5 +37,5 @@ enum class YnabAccountType {
     InvestmentAccount,
 
     @SerialName("mortgage")
-    Mortgage
+    Mortgage,
 }

@@ -13,5 +13,5 @@ enum class YnabCleared {
     Uncleared,
 
     @SerialName("reconciled")
-    Reconciled
+    Reconciled,
 }

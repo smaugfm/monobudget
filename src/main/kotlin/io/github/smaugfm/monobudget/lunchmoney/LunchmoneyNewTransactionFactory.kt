@@ -14,7 +14,6 @@ private val log = KotlinLogging.logger {}
 
 @Single
 class LunchmoneyNewTransactionFactory : NewTransactionFactory<LunchmoneyInsertTransaction>() {
-
     override suspend fun create(statement: StatementItem): LunchmoneyInsertTransaction {
         log.debug { "Transforming Monobank statement to Lunchmoney transaction." }
 
@@ -32,16 +31,17 @@ class LunchmoneyNewTransactionFactory : NewTransactionFactory<LunchmoneyInsertTr
                 notes = getNotes(amount.currency),
                 status = getStatus(categoryId),
                 externalId = id,
-                tags = null
+                tags = null,
             )
         }
     }
 
-    private fun getStatus(categoryId: Long?) = if (categoryId != null) {
-        LunchmoneyTransactionStatus.CLEARED
-    } else {
-        LunchmoneyTransactionStatus.UNCLEARED
-    }
+    private fun getStatus(categoryId: Long?) =
+        if (categoryId != null) {
+            LunchmoneyTransactionStatus.CLEARED
+        } else {
+            LunchmoneyTransactionStatus.UNCLEARED
+        }
 
     private fun StatementItem.getNotes(accountCurrency: Currency): String {
         val desc = "$mcc " + formatDescription()

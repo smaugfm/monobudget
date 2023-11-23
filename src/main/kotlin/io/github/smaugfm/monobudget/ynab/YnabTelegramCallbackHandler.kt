@@ -10,36 +10,38 @@ import org.koin.core.annotation.Single
 
 @Single
 class YnabTelegramCallbackHandler(
-    private val api: YnabApi
+    private val api: YnabApi,
 ) : TelegramCallbackHandler<YnabTransactionDetail>() {
-
     override suspend fun updateTransaction(callbackType: TransactionUpdateType): YnabTransactionDetail {
         val transactionDetail = api.getTransaction(callbackType.transactionId)
         val saveTransaction = transactionDetail.toSaveTransaction()
 
-        val newTransaction = when (callbackType) {
-            is TransactionUpdateType.Uncategorize ->
-                saveTransaction.copy(categoryId = null, payeeName = null, payeeId = null)
+        val newTransaction =
+            when (callbackType) {
+                is TransactionUpdateType.Uncategorize ->
+                    saveTransaction.copy(categoryId = null, payeeName = null, payeeId = null)
 
-            is TransactionUpdateType.Unapprove ->
-                saveTransaction.copy(approved = false)
+                is TransactionUpdateType.Unapprove ->
+                    saveTransaction.copy(approved = false)
 
-            is TransactionUpdateType.MakePayee -> saveTransaction.copy(
-                payeeId = null,
-                payeeName = callbackType.payee
-            )
+                is TransactionUpdateType.MakePayee ->
+                    saveTransaction.copy(
+                        payeeId = null,
+                        payeeName = callbackType.payee,
+                    )
 
-            is TransactionUpdateType.UpdateCategory -> saveTransaction.copy(
-                categoryId = callbackType.categoryId
-            )
-        }
+                is TransactionUpdateType.UpdateCategory ->
+                    saveTransaction.copy(
+                        categoryId = callbackType.categoryId,
+                    )
+            }
 
         return api.updateTransaction(transactionDetail.id, newTransaction)
     }
 
     override suspend fun updateHTMLStatementMessage(
         updatedTransaction: YnabTransactionDetail,
-        oldMessage: Message
+        oldMessage: Message,
     ): String {
         val (description, mcc, currency) = extractFromOldMessage(oldMessage)
 
@@ -51,7 +53,7 @@ class YnabTelegramCallbackHandler(
             currency,
             category,
             updatedTransaction.payeeName ?: "",
-            updatedTransaction.id
+            updatedTransaction.id,
         )
     }
 }

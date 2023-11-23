@@ -19,9 +19,9 @@ class TransactionMessageFormatterTest {
         TransactionMessageFormatter.formatBudget(
             CategoryService.BudgetedCategory.CategoryBudget(
                 Amount(637400, Currency.getInstance("UAH")),
-                Amount(1500000, Currency.getInstance("UAH"))
+                Amount(1500000, Currency.getInstance("UAH")),
             ),
-            builder
+            builder,
         )
         assertThat(builder.toString()).isEqualTo("Залишок: <code>₴6.4k із ₴15k</code> (<b>$percent</b>)")
     }

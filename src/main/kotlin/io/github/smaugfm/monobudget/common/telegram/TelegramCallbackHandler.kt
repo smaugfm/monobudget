@@ -70,29 +70,34 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         }
     }
 
-    private suspend fun handleAction(callbackType: ActionCallbackType, message: Message) {
+    private suspend fun handleAction(
+        callbackType: ActionCallbackType,
+        message: Message,
+    ) {
         when (callbackType) {
             is ChooseCategory ->
                 telegram.editKeyboard(
                     ChatId.IntegerId(message.chat.id),
                     message.messageId,
                     categoriesInlineKeyboard(
-                        categoryService.categoryIdToNameList()
-                    )
+                        categoryService.categoryIdToNameList(),
+                    ),
                 )
         }
     }
 
     private fun categoriesInlineKeyboard(
-        categoryIdToNameList: List<Pair<String, String>>
+        categoryIdToNameList: List<Pair<String, String>>,
     ): InlineKeyboardMarkup {
-        val buttons = categoryIdToNameList
-            .map { (id, name) -> UpdateCategory.button(id, name) }
-        val rows = buttons
-            .zipWithNext()
-            .map { it.toList() }
-            .filterIndexed { i, _ -> i.isEven() }
-            .toMutableList()
+        val buttons =
+            categoryIdToNameList
+                .map { (id, name) -> UpdateCategory.button(id, name) }
+        val rows =
+            buttons
+                .zipWithNext()
+                .map { it.toList() }
+                .filterIndexed { i, _ -> i.isEven() }
+                .toMutableList()
         if (buttons.size.isOdd()) {
             rows.add(listOf(buttons.last()))
         }
@@ -100,7 +105,10 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
         return InlineKeyboardMarkup(rows.toList())
     }
 
-    private suspend fun handleUpdate(callbackType: TransactionUpdateType, message: Message) {
+    private suspend fun handleUpdate(
+        callbackType: TransactionUpdateType,
+        message: Message,
+    ) {
         val updatedTransaction = updateTransaction(callbackType)
         val updatedText = updateHTMLStatementMessage(updatedTransaction, message)
 
@@ -117,7 +125,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     private suspend fun TelegramCallbackHandler<TTransaction>.editMessage(
         message: Message,
         updatedText: String,
-        updatedMarkup: InlineKeyboardMarkup
+        updatedMarkup: InlineKeyboardMarkup,
     ) {
         with(message) {
             try {
@@ -126,7 +134,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
                     messageId,
                     updatedText,
                     ParseMode.Html,
-                    updatedMarkup
+                    updatedMarkup,
                 )
             } catch (e: TelegramApiError) {
                 if (e.description.contains("message is not modified")) {
@@ -137,9 +145,10 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     }
 
     protected abstract suspend fun updateTransaction(callbackType: TransactionUpdateType): TTransaction
+
     protected abstract suspend fun updateHTMLStatementMessage(
         updatedTransaction: TTransaction,
-        oldMessage: Message
+        oldMessage: Message,
     ): String
 
     private fun parseCallbackQuery(callbackQuery: CallbackQuery): TransactionUpdateCallbackQueryWrapper? {
@@ -175,11 +184,14 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
 
     private data class TransactionUpdateCallbackQueryWrapper(
         val updateType: CallbackType,
-        val message: Message
+        val message: Message,
     )
 
     companion object {
-        private fun deserializeCallbackType(callbackData: String, message: Message): CallbackType? {
+        private fun deserializeCallbackType(
+            callbackData: String,
+            message: Message,
+        ): CallbackType? {
             val cls =
                 CallbackType.classFromCallbackData(callbackData)
 
@@ -203,11 +215,11 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
                     UpdateCategory(
                         transactionId,
                         UpdateCategory
-                            .extractCategoryIdFromCallbackData(callbackData)
+                            .extractCategoryIdFromCallbackData(callbackData),
                     )
 
                 else -> throw IllegalArgumentException(
-                    "Unknown class CallbackType: ${cls?.simpleName}"
+                    "Unknown class CallbackType: ${cls?.simpleName}",
                 )
             }
         }

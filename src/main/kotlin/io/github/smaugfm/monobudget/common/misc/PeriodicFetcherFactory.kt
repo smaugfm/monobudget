@@ -16,38 +16,44 @@ private val log = KotlinLogging.logger {}
 
 @Single
 class PeriodicFetcherFactory(private val scope: CoroutineScope) {
-    fun <T> create(name: String, fetch: suspend () -> T) = PeriodicFetcher(name, 1.hours, fetch)
+    fun <T> create(
+        name: String,
+        fetch: suspend () -> T,
+    ) = PeriodicFetcher(name, 1.hours, scope, fetch)
 
-    inner class PeriodicFetcher<T>(
+    class PeriodicFetcher<T>(
         name: String,
         interval: Duration,
-        fetch: suspend () -> T
+        scope: CoroutineScope,
+        fetch: suspend () -> T,
     ) {
         private val initial = CompletableDeferred<T>()
 
         @Volatile
-        private var data: Deferred<T> = initial
+        private var fetched: Deferred<T> = initial
 
-        suspend fun getData() = withTimeout(5.seconds) {
-            data.await()
-        }
+        suspend fun fetched() =
+            withTimeout(5.seconds) {
+                fetched.await()
+            }
 
         init {
             log.info { "Launching periodic fetcher for $name" }
             scope.launch {
                 while (true) {
                     log.trace { "$name fetching..." }
-                    val result = try {
-                        fetch()
-                    } catch (e: Throwable) {
-                        log.error(e) { "Error fetching $name: " }
-                        delay(interval)
-                        continue
-                    }
-                    if (data === initial) {
+                    val result =
+                        try {
+                            fetch()
+                        } catch (e: Throwable) {
+                            log.error(e) { "Error fetching $name: " }
+                            delay(interval)
+                            continue
+                        }
+                    if (fetched === initial) {
                         initial.complete(result)
                     }
-                    data = CompletableDeferred(result)
+                    fetched = CompletableDeferred(result)
                     log.trace { "$name fetched: $result" }
                     delay(interval)
                 }

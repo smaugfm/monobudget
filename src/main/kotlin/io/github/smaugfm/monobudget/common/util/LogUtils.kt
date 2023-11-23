@@ -9,7 +9,7 @@ inline fun <reified T : Any> logError(
     logger: KLogger?,
     methodName: String,
     block: () -> T,
-    error: (ResponseException) -> Unit
+    error: (ResponseException) -> Unit,
 ) = catchAndLog(
     logger,
     methodName,
@@ -17,7 +17,7 @@ inline fun <reified T : Any> logError(
         exception
             .also(error)
             .toString()
-    }
+    },
 ) {
     logger?.debug { "Performing $serviceName request $methodName" }
     block().also {
@@ -29,11 +29,12 @@ inline fun <reified T> catchAndLog(
     logger: KLogger?,
     methodName: String,
     errorHandler: (ResponseException) -> String,
-    block: () -> T
-): T = try {
-    block()
-} catch (e: ResponseException) {
-    val error = errorHandler(e)
-    logger?.error { "Request failed $methodName. Error response:\n\t$error" }
-    throw e
-}
+    block: () -> T,
+): T =
+    try {
+        block()
+    } catch (e: ResponseException) {
+        val error = errorHandler(e)
+        logger?.error { "Request failed $methodName. Error response:\n\t$error" }
+        throw e
+    }

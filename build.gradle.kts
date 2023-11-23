@@ -3,7 +3,6 @@ import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import org.codehaus.plexus.util.Os
 import org.jetbrains.kotlin.gradle.dsl.KotlinCommonCompilerOptions
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
-import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
@@ -27,6 +26,7 @@ val koin = "3.5.0"
 val koinKsp = "1.3.0"
 val resilience4jVersion = "1.7.0"
 val kotlinxCoroutines = "1.7.3"
+val sealedEnum = "0.7.0"
 
 val githubToken: String? by project
 
@@ -43,6 +43,8 @@ dependencies {
     implementation("io.github.smaugfm:lunchmoney:1.0.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlinxCoroutines")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutines")
+    implementation("com.github.livefront.sealed-enum:runtime:$sealedEnum")
+    ksp("com.github.livefront.sealed-enum:ksp:$sealedEnum")
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
     implementation("com.github.elbekD:kt-telegram-bot:2.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
@@ -68,8 +70,10 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktor")
     implementation("io.ktor:ktor-server-content-negotiation:$ktor")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktor")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junit")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junit")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junit")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("ch.qos.logback:logback-core:$logback")
     implementation("ch.qos.logback:logback-classic:$logback")
 
@@ -78,11 +82,8 @@ dependencies {
     }
 }
 
-configurations.all {
-    resolutionStrategy.cacheChangingModulesFor(1, TimeUnit.SECONDS)
-}
-
-configure<KtlintExtension> {
+ktlint {
+    version.set("1.0.1")
     enableExperimentalRules.set(true)
     filter {
         exclude("**/generated/**")
@@ -138,7 +139,7 @@ tasks {
 
     fun <T : KotlinCommonCompilerOptions> KotlinCompilationTask<T>.optIn() {
         compilerOptions.freeCompilerArgs.add(
-            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi"
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
         )
     }
 

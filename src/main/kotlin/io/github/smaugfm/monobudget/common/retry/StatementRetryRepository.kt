@@ -10,6 +10,7 @@ interface StatementRetryRepository {
     ): StatementRetryRequest
 
     suspend fun removeRetryRequest(id: RetryRequestId)
+
     suspend fun getAllRequests(): List<StatementRetryRequest>
 }
 

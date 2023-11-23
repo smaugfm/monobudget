@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.minutes
 @Scope(StatementProcessingScopeComponent::class)
 class LunchmoneyMonoTransferBetweenAccountsDetector(
     bankAccounts: BankAccountService,
-    ctx: StatementProcessingContext
+    ctx: StatementProcessingContext,
 ) : TransferBetweenAccountsDetector<LunchmoneyTransaction>(bankAccounts, ctx, cache) {
     companion object {
         private val cache =

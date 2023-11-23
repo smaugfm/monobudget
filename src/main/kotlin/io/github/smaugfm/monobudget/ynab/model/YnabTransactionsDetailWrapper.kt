@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class YnabTransactionsDetailWrapper(
-    val transactions: List<YnabTransactionDetail>
+    val transactions: List<YnabTransactionDetail>,
 )

@@ -16,23 +16,23 @@ private val log = KotlinLogging.logger {}
 @Single
 class YnabTransactionFactory(
     private val api: YnabApi,
-    private val bankAccounts: BankAccountService
+    private val bankAccounts: BankAccountService,
 ) : TransactionFactory<YnabTransactionDetail, YnabSaveTransaction>() {
-
     private val transferPayeeIdsCache = ConcurrentHashMap<String, String>()
 
     override suspend fun create(maybeTransfer: MaybeTransferStatement<YnabTransactionDetail>) =
         when (maybeTransfer) {
-            is MaybeTransferStatement.Transfer -> processTransfer(
-                maybeTransfer.statement,
-                maybeTransfer.processed()
-            )
+            is MaybeTransferStatement.Transfer ->
+                processTransfer(
+                    maybeTransfer.statement,
+                    maybeTransfer.processed(),
+                )
             is MaybeTransferStatement.NotTransfer -> maybeTransfer.consume(::processSingle)
         }
 
     private suspend fun processTransfer(
         statement: StatementItem,
-        existingTransaction: YnabTransactionDetail
+        existingTransaction: YnabTransactionDetail,
     ): YnabTransactionDetail {
         log.debug {
             "Processing transfer transaction: $statement. " +
@@ -44,19 +44,20 @@ class YnabTransactionFactory(
                 api.getAccount(statement.accountId).transferPayeeId
             }
 
-        val existingTransactionUpdated = api
-            .updateTransaction(
-                existingTransaction.id,
-                existingTransaction
-                    .toSaveTransaction()
-                    .copy(payeeId = transferPayeeId, memo = "Переказ між рахунками")
-            )
+        val existingTransactionUpdated =
+            api
+                .updateTransaction(
+                    existingTransaction.id,
+                    existingTransaction
+                        .toSaveTransaction()
+                        .copy(payeeId = transferPayeeId, memo = "Переказ між рахунками"),
+                )
 
         val transfer = api.getTransaction(existingTransactionUpdated.transferTransactionId!!)
 
         return api.updateTransaction(
             transfer.id,
-            transfer.toSaveTransaction().copy(cleared = YnabCleared.Cleared)
+            transfer.toSaveTransaction().copy(cleared = YnabCleared.Cleared),
         )
     }
 
