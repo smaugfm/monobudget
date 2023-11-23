@@ -8,6 +8,7 @@ import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.ParseMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.category.CategoryService
+import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventDelivery
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
@@ -33,26 +34,31 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     private val formatter: TransactionMessageFormatter<TTransaction> by inject()
     private val monoSettings: MultipleAccountSettings by inject()
     private val telegramChatIds = monoSettings.telegramChatIds
+    private val statementEvents by inject<StatementProcessingEventDelivery>()
 
     suspend fun handle(callbackQuery: CallbackQuery) {
+        var callbackType: CallbackType? = null
         try {
             if (callbackQuery.from.id !in telegramChatIds) {
                 log.warn { "Received Telegram callbackQuery from unknown chatId: ${callbackQuery.from.id}" }
                 return
             }
 
-            val (callbackType, message) =
+            val res =
                 parseCallbackQuery(callbackQuery) ?: return
+            callbackType = res.updateType
 
             log.debug { "Parsed callback query id=${callbackQuery.id}of callbackType: $callbackType" }
 
             when (callbackType) {
                 is ActionCallbackType ->
-                    handleAction(callbackType, message)
+                    handleAction(callbackType, res.message)
 
                 is TransactionUpdateType ->
-                    handleUpdate(callbackType, message)
+                    handleUpdate(callbackType, res.message)
             }
+        } catch (e: Throwable) {
+            statementEvents.onCallbackError(callbackQuery, callbackType, e)
         } finally {
             try {
                 telegram.answerCallbackQuery(callbackQuery.id)

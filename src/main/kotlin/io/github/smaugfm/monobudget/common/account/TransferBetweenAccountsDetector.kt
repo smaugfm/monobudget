@@ -14,25 +14,26 @@ abstract class TransferBetweenAccountsDetector<TTransaction>(
     private val ctx: StatementProcessingContext,
     private val cache: ConcurrentExpiringMap<StatementItem, Deferred<TTransaction>>
 ) {
-    suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> = ctx.getOrPut("transfer") {
-        val existingTransfer = cache.entries.firstOrNull { (recentStatementItem) ->
-            checkIsTransferTransactions(recentStatementItem)
-        }?.value?.await()
+    suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> =
+        ctx.getOrPut("transfer") {
+            val existingTransfer = cache.entries.firstOrNull { (recentStatementItem) ->
+                checkIsTransferTransactions(recentStatementItem)
+            }?.value?.await()
 
-        if (existingTransfer != null) {
-            log.debug {
-                "Found matching transfer transaction.\n" +
-                    "Current: ${ctx.item}\n" +
-                    "Recent transfer: $existingTransfer"
+            if (existingTransfer != null) {
+                log.debug {
+                    "Found matching transfer transaction.\n" +
+                        "Current: ${ctx.item}\n" +
+                        "Recent transfer: $existingTransfer"
+                }
+                MaybeTransferStatement.Transfer(ctx.item, existingTransfer)
+            } else {
+                val deferred = CompletableDeferred<TTransaction>()
+                cache.add(ctx.item, deferred)
+
+                MaybeTransferStatement.NotTransfer(ctx.item, deferred)
             }
-            MaybeTransferStatement.Transfer(ctx.item, existingTransfer)
-        } else {
-            val deferred = CompletableDeferred<TTransaction>()
-            cache.add(ctx.item, deferred)
-
-            MaybeTransferStatement.NotTransfer(ctx.item, deferred)
         }
-    }
 
     private suspend fun checkIsTransferTransactions(existing: StatementItem): Boolean {
         val new = ctx.item

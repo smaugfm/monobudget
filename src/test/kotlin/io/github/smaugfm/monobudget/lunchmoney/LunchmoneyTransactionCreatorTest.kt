@@ -12,7 +12,6 @@ import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
-import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.mockk.coEvery
 import io.mockk.every
@@ -31,12 +30,16 @@ import java.util.Currency
 
 class LunchmoneyTransactionCreatorTest : TestBase() {
 
-    override fun KoinApplication.createTestModule() = module {
-        scope<StatementProcessingScopeComponent> {
-            scoped {
-                LunchmoneyTransactionCreator(get(), get(), get())
+    override fun KoinApplication.testKoinApplication() {
+        modules(
+            module {
+                scope<StatementProcessingScopeComponent> {
+                    scoped {
+                        LunchmoneyTransactionCreator(get(), get(), get())
+                    }
+                }
             }
-        }
+        )
     }
 
     private val expectedTransactionGroupId = 2L
@@ -56,17 +59,6 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
         BigDecimal.TEN
     )
 
-    class TestContext(item: StatementItem) : StatementProcessingContext(item) {
-        operator fun <T> set(key: String, value: T) {
-            map[key] = value as Any
-        }
-
-        operator fun <T> get(key: String): T {
-            @Suppress("UNCHECKED_CAST")
-            return map[key] as T
-        }
-    }
-
     @BeforeEach()
     fun mocks() {
         declareMock<BudgetBackend.Lunchmoney> {
@@ -81,11 +73,12 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
     fun noApiCallsWhenContextPresent() {
         declareMock<LunchmoneyApi> {}
         runBlocking {
-            val ctx = TestContext(statementItem1())
-            ctx["transactionUpdated"] = true
-            ctx["transactionCreatedId"] = expectedTransactionCreatedId
-            ctx["transaction"] = expectedTransaction
-            ctx["transactionGroupId"] = expectedTransactionGroupId
+            val map = mutableMapOf<String, Any>()
+            val ctx = StatementProcessingContext(statementItem1(), map)
+            map["transactionUpdated"] = true
+            map["transactionCreatedId"] = expectedTransactionCreatedId
+            map["transaction"] = expectedTransaction
+            map["transactionGroupId"] = expectedTransactionGroupId
             val sc = StatementProcessingScopeComponent(ctx)
             val creator = sc.get<LunchmoneyTransactionCreator>()
             assertThat(
@@ -107,10 +100,11 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
             )
         }
         runBlocking {
-            val ctx = TestContext(statementItem1())
-            ctx["transactionUpdated"] = true
-            ctx["transactionCreatedId"] = expectedTransactionCreatedId
-            ctx["transaction"] = expectedTransaction
+            val map = mutableMapOf<String, Any>()
+            val ctx = StatementProcessingContext(statementItem1(), map)
+            map["transactionUpdated"] = true
+            map["transactionCreatedId"] = expectedTransactionCreatedId
+            map["transaction"] = expectedTransaction
             val sc = StatementProcessingScopeComponent(ctx)
             val creator = sc.get<LunchmoneyTransactionCreator>()
             assertThat(
@@ -121,7 +115,7 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
                     )
                 )
             ).isEqualTo(expectedTransaction)
-            assertThat(ctx.get<Long>("transactionGroupId")).isEqualTo(expectedTransactionGroupId)
+            assertThat(map["transactionGroupId"]).isEqualTo(expectedTransactionGroupId)
         }
     }
 
@@ -142,7 +136,8 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
             )
         }
         runBlocking {
-            val sc = StatementProcessingScopeComponent(TestContext(statementItem1()))
+            val map = mutableMapOf<String, Any>()
+            val sc = StatementProcessingScopeComponent(StatementProcessingContext(statementItem1(), map))
             val creator = sc.get<LunchmoneyTransactionCreator>()
             assertThat(
                 creator.create(
@@ -152,11 +147,10 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
                     )
                 )
             ).isEqualTo(expectedTransaction)
-            val ctx = sc.ctx as TestContext
-            assertThat(ctx.get<Boolean>("transactionUpdated")).isEqualTo(true)
-            assertThat(ctx.get<Long>("transactionGroupId")).isEqualTo(expectedTransactionGroupId)
-            assertThat(ctx.get<Long>("transactionCreatedId")).isEqualTo(expectedTransactionCreatedId)
-            assertThat(ctx.get<LunchmoneyTransaction>("transaction")).isEqualTo(
+            assertThat(map["transactionUpdated"]).isEqualTo(true)
+            assertThat(map["transactionGroupId"]).isEqualTo(expectedTransactionGroupId)
+            assertThat(map["transactionCreatedId"]).isEqualTo(expectedTransactionCreatedId)
+            assertThat(map["transaction"]).isEqualTo(
                 expectedTransaction
             )
         }

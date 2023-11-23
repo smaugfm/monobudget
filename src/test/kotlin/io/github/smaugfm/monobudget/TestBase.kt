@@ -8,7 +8,6 @@ import kotlinx.datetime.Instant
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.extension.RegisterExtension
 import org.koin.core.KoinApplication
-import org.koin.dsl.module
 import org.koin.test.KoinTest
 import org.koin.test.junit5.KoinTestExtension
 import org.koin.test.mock.MockProvider
@@ -16,13 +15,15 @@ import java.util.Currency
 
 open class TestBase : KoinTest {
 
-    open fun KoinApplication.createTestModule() = module {}
+    open fun KoinApplication.testKoinApplication() {
+
+    }
 
     @Suppress("unused")
     @JvmField
     @RegisterExtension
     val koinTestExtension = KoinTestExtension.create {
-        modules(createTestModule())
+        testKoinApplication()
     }
 
     @BeforeEach

@@ -2,16 +2,11 @@ package io.github.smaugfm.monobudget.common.lifecycle
 
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 
-open class StatementProcessingContext(val item: StatementItem) {
-    protected val map: MutableMap<String, Any> = mutableMapOf()
-
-    var isCompleted: Boolean = false
-        private set
-
-    fun markCompleted() {
-        isCompleted = true
-    }
-
+data class StatementProcessingContext(
+    val item: StatementItem,
+    private val map: MutableMap<String, Any> = mutableMapOf(),
+    val attempt: Int = 0,
+) {
     suspend fun execIfNotSet(key: String, block: suspend () -> Unit) {
         val flag = map[key] as Boolean?
         if (flag == null || !flag) {
@@ -25,4 +20,7 @@ open class StatementProcessingContext(val item: StatementItem) {
         @Suppress("UNCHECKED_CAST")
         return map.getOrPut(key) { lazyValue() as Any } as T
     }
+
+    fun retryCopy(): StatementProcessingContext =
+        StatementProcessingContext(item, map, attempt + 1)
 }

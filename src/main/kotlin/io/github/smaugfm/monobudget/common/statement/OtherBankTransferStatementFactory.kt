@@ -10,7 +10,7 @@ import org.koin.core.annotation.Single
 @Single
 class OtherBankTransferStatementFactory(
     private val transferSettings: List<OtherBanksTransferSettings>,
-    private val otherBanksStatementService: OtherBankStatementService
+    private val otherBanksStatementService: OtherBankTransferStatementSource
 ) : StatementProcessingEventListener.New {
 
     override suspend fun handleNewStatement(ctx: StatementProcessingContext): Boolean {

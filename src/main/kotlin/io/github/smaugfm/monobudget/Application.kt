@@ -1,10 +1,11 @@
 package io.github.smaugfm.monobudget
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
 import io.github.smaugfm.monobudget.common.lifecycle.StatementItemProcessor
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventDelivery
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
-import io.github.smaugfm.monobudget.common.statement.StatementService
+import io.github.smaugfm.monobudget.common.statement.StatementSource
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.common.util.injectAll
@@ -26,7 +27,7 @@ private val log = KotlinLogging.logger {}
 class Application<TTransaction, TNewTransaction> :
     KoinComponent {
     private val telegramApi by inject<TelegramApi>()
-    private val statementServices by injectAll<StatementService>()
+    private val statementServices by injectAll<StatementSource>()
     private val startupVerifiers by injectAll<ApplicationStartupVerifier>()
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
     private val statementEvents by inject<StatementProcessingEventDelivery>()
@@ -34,9 +35,7 @@ class Application<TTransaction, TNewTransaction> :
     suspend fun run() {
         runStartupChecks()
 
-        if (statementServices.any { !it.prepare() }) {
-            return
-        }
+        statementServices.forEach { it.prepare() }
 
         val telegramJob = telegramApi.start(telegramCallbackHandler::handle)
         statementServices.asFlow()
@@ -49,6 +48,8 @@ class Application<TTransaction, TNewTransaction> :
                         scope.get<StatementItemProcessor<TTransaction, TNewTransaction>>()
                             .process()
                         statementEvents.onStatementEnd(ctx)
+                    } catch (e: BudgetBackendError) {
+                        statementEvents.onStatementRetry(ctx, e)
                     } catch (e: Throwable) {
                         statementEvents.onStatementError(ctx, e)
                     } finally {

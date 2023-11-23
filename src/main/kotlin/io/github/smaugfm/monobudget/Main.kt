@@ -13,10 +13,9 @@ import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.common.model.settings.Settings
-import io.github.smaugfm.monobudget.common.statement.StatementService
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
 import io.github.smaugfm.monobudget.mono.MonoModule
-import io.github.smaugfm.monobudget.mono.MonoWebhookListener
+import io.github.smaugfm.monobudget.mono.MonoWebhookSettings
 import io.github.smaugfm.monobudget.ynab.YnabModule
 import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
@@ -43,14 +42,15 @@ fun main() {
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
     val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.yml"))
     val budgetBackend = settings.budgetBackend
+    val webhookSettings = MonoWebhookSettings(setWebhook, monoWebhookUrl, webhookPort)
 
     log.debug { "Startup options: " }
-    log.debug { "\tsetWebhook: $setWebhook" }
-    log.debug { "\tmonoWebhookUrl: $monoWebhookUrl" }
-    log.debug { "\twebhookPort: $webhookPort" }
+    log.debug { "\twebhookSettings: $webhookSettings" }
 
     runBlocking {
-        setupKoin(settings, setWebhook, monoWebhookUrl, webhookPort)
+        startKoin {
+            setupKoinModules(this@runBlocking, settings, webhookSettings)
+        }
 
         when (budgetBackend) {
             is Lunchmoney -> Application<LunchmoneyTransaction, LunchmoneyInsertTransaction>()
@@ -59,29 +59,15 @@ fun main() {
     }
 }
 
-private fun CoroutineScope.setupKoin(
+fun setupKoinModules(
+    coroutineScope: CoroutineScope,
     settings: Settings,
-    setWebhook: Boolean,
-    monoWebhookUrl: URI,
-    webhookPort: Int
+    webhookSettings: MonoWebhookSettings
 ) {
     startKoin {
         printLogger(Level.ERROR)
-        modules(runtimeModule(settings, this@setupKoin))
-        modules(
-            MonoModule().module + module {
-                single {
-                    MonoWebhookListener(
-                        setWebhook,
-                        monoWebhookUrl,
-                        webhookPort,
-                        get(),
-                        get(),
-                        get()
-                    )
-                } bind StatementService::class
-            }
-        )
+        modules(runtimeModule(coroutineScope, settings, webhookSettings))
+        modules(MonoModule().module)
         modules(CommonModule().module)
         modules(
             when (settings.budgetBackend) {
@@ -92,7 +78,11 @@ private fun CoroutineScope.setupKoin(
     }
 }
 
-private fun runtimeModule(settings: Settings, coroutineScope: CoroutineScope) = module {
+private fun runtimeModule(
+    coroutineScope: CoroutineScope,
+    settings: Settings,
+    webhookSettings: MonoWebhookSettings
+) = module {
     when (settings.budgetBackend) {
         is Lunchmoney ->
             single { settings.budgetBackend }
@@ -100,6 +90,7 @@ private fun runtimeModule(settings: Settings, coroutineScope: CoroutineScope) = 
         is YNAB -> single { settings.budgetBackend }
     } bind BudgetBackend::class
 
+    single { webhookSettings }
     single { settings.mcc }
     single { settings.bot }
     single { settings.accounts }

@@ -39,18 +39,15 @@ class LunchmoneyTransactionCreator(
                 maybeTransfer.consume(::processSingle)
         }
     } catch (e: LunchmoneyApiResponseException) {
-        val template = "Виникла помилка при створенні транзакції. " +
-            "Будь ласка створи цю транзакцію вручну. Текст помилки: "
+        val template = "Текст помилки: "
         if (e.cause is SerializationException) {
             throw BudgetBackendError(
                 e,
-                maybeTransfer.statement.accountId,
                 template + (e.message?.substringBefore("JSON input:") + "HTTP Body:\n" + e.body)
             )
         } else {
             throw BudgetBackendError(
                 e,
-                maybeTransfer.statement.accountId,
                 template + e.message
             )
         }

@@ -6,10 +6,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.core.annotation.Single
 
 @Single
-class OtherBankStatementService : StatementService {
+class OtherBankTransferStatementSource : StatementSource {
     private val flow = MutableSharedFlow<StatementProcessingContext>()
-
-    override suspend fun prepare() = true
     override suspend fun statements() = flow
 
     suspend fun emit(otherBankStatementItem: OtherBankStatementItem) {

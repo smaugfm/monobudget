@@ -21,9 +21,10 @@ data class Settings(
     companion object {
         fun load(path: Path): Settings = load(File(path.toString()).readText())
 
-        internal fun load(content: String) = Yaml.default.decodeFromString<Settings>(content)
-            .also {
-                log.debug { "Loaded settings: $it" }
-            }
+        internal fun load(content: String) =
+            Yaml.default.decodeFromString<Settings>(content)
+                .also {
+                    log.debug { "Loaded settings: $it" }
+                }
     }
 }

@@ -44,10 +44,12 @@ class MonoTransferBetweenAccountsDetectorTest : TestBase() {
         cache
     )
 
-    override fun KoinApplication.createTestModule() = module {
-        scope<StatementProcessingScopeComponent> {
-            scoped { TestDetector(get(), get()) }
-        }
+    override fun KoinApplication.testKoinApplication() {
+        modules(module {
+            scope<StatementProcessingScopeComponent> {
+                scoped { TestDetector(get(), get()) }
+            }
+        })
     }
 
     @Timeout(2, unit = TimeUnit.SECONDS)

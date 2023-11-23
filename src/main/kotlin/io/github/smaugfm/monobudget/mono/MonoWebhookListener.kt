@@ -5,7 +5,7 @@ import io.github.smaugfm.monobank.model.MonoWebhookResponse
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
-import io.github.smaugfm.monobudget.common.statement.StatementService
+import io.github.smaugfm.monobudget.common.statement.StatementSource
 import io.github.smaugfm.monobudget.common.util.makeJson
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
@@ -26,37 +26,35 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import java.net.URI
+import org.koin.core.annotation.Single
 
 private val log = KotlinLogging.logger {}
 
 @Suppress("ExtractKtorModule")
+@Single
 class MonoWebhookListener(
-    private val setWebhook: Boolean,
-    private val monoWebhookUrl: URI,
-    private val webhookPort: Int,
     private val scope: CoroutineScope,
+    private val monoAccountsService: MonoAccountsService,
+    private val settings: MonoWebhookSettings,
     private val monoSettings: MultipleAccountSettings,
-    private val monoAccountsService: MonoAccountsService
-) : StatementService {
+) : StatementSource {
 
     private val json = makeJson()
 
-    override suspend fun prepare(): Boolean {
-        if (setWebhook) {
+    override suspend fun prepare() {
+        if (settings.setWebhook) {
             log.info { "Setting up mono webhooks." }
-            if (!setupWebhook(monoWebhookUrl, webhookPort)) {
-                log.error { "Error settings up webhooks. Exiting application..." }
-                return false
+            if (!setupWebhook()) {
+                throw RuntimeException("Error settings up webhooks. Exiting application...")
             }
         } else {
             log.info { "Skipping mono webhook setup." }
         }
-
-        return true
     }
 
     override suspend fun statements(): Flow<StatementProcessingContext> {
+        val (_, monoWebhookUrl, webhookPort) = settings
+
         val flow = MutableSharedFlow<StatementProcessingContext>()
         val server = scope.embeddedServer(Netty, port = webhookPort) {
             install(ContentNegotiation) {
@@ -100,9 +98,11 @@ class MonoWebhookListener(
         return flow
     }
 
-    private suspend fun setupWebhook(monoWebhookUrl: URI, webhookPort: Int) = monoSettings.settings
-        .filterIsInstance<MonoAccountSettings>()
-        .map { it.token }.map(::MonoApi).all {
-            it.setupWebhook(monoWebhookUrl, webhookPort)
-        }
+    private suspend fun setupWebhook() =
+        monoSettings
+            .settings
+            .filterIsInstance<MonoAccountSettings>()
+            .map { it.token }
+            .map(::MonoApi)
+            .all { it.setupWebhook(settings.monoWebhookUrl, settings.webhookPort) }
 }
