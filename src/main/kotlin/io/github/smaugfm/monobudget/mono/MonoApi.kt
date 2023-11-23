@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.mono
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobank.MonobankPersonalApi
+import io.github.smaugfm.monobudget.common.model.financial.BankAccountId
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
@@ -16,7 +17,7 @@ import java.net.URI
 
 private val log = KotlinLogging.logger {}
 
-class MonoApi(token: String) {
+class MonoApi(token: String, val accountId: BankAccountId) {
     init {
         require(token.isNotBlank())
     }

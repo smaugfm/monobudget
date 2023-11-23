@@ -102,7 +102,6 @@ class MonoWebhookListener(
         monoSettings
             .settings
             .filterIsInstance<MonoAccountSettings>()
-            .map { it.token }
-            .map(::MonoApi)
+            .map { MonoApi(it.token, it.accountId) }
             .all { it.setupWebhook(settings.monoWebhookUrl, settings.webhookPort) }
 }

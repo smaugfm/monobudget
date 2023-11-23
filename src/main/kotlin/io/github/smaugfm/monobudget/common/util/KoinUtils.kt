@@ -10,6 +10,15 @@ inline fun <reified T : Any> KoinComponent.injectAll(
     if (this is KoinScopeComponent) {
         scope.getAll<T>(T::class).let(postProcess)
     } else {
-        getKoin().getAll<T>()
+        getKoin().getAll<T>().let(postProcess)
+    }
+}
+inline fun <reified T : Any, K> KoinComponent.injectAllMap(
+    crossinline mapper: (T) -> K
+): Lazy<List<K>> = lazy(KoinPlatformTools.defaultLazyMode()) {
+    if (this is KoinScopeComponent) {
+        scope.getAll<T>(T::class).map(mapper)
+    } else {
+        getKoin().getAll<T>().map(mapper)
     }
 }

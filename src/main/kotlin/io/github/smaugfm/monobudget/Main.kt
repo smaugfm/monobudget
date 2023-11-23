@@ -12,8 +12,11 @@ import io.github.smaugfm.monobudget.common.CommonModule
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
+import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
+import io.github.smaugfm.monobudget.common.model.settings.OtherAccountSettings
 import io.github.smaugfm.monobudget.common.model.settings.Settings
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
+import io.github.smaugfm.monobudget.mono.MonoApi
 import io.github.smaugfm.monobudget.mono.MonoModule
 import io.github.smaugfm.monobudget.mono.MonoWebhookSettings
 import io.github.smaugfm.monobudget.ynab.YnabModule
@@ -21,6 +24,7 @@ import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
+import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 import org.koin.core.qualifier.StringQualifier
@@ -59,23 +63,21 @@ fun main() {
     }
 }
 
-fun setupKoinModules(
+fun KoinApplication.setupKoinModules(
     coroutineScope: CoroutineScope,
     settings: Settings,
     webhookSettings: MonoWebhookSettings
 ) {
-    startKoin {
-        printLogger(Level.ERROR)
-        modules(runtimeModule(coroutineScope, settings, webhookSettings))
-        modules(MonoModule().module)
-        modules(CommonModule().module)
-        modules(
-            when (settings.budgetBackend) {
-                is Lunchmoney -> lunchmoneyModule(settings.budgetBackend)
-                is YNAB -> ynabModule()
-            }
-        )
-    }
+    printLogger(Level.ERROR)
+    modules(runtimeModule(coroutineScope, settings, webhookSettings))
+    modules(MonoModule().module)
+    modules(CommonModule().module)
+    modules(
+        when (settings.budgetBackend) {
+            is Lunchmoney -> lunchmoneyModule(settings.budgetBackend)
+            is YNAB -> ynabModule()
+        }
+    )
 }
 
 private fun runtimeModule(
@@ -95,6 +97,18 @@ private fun runtimeModule(
     single { settings.bot }
     single { settings.accounts }
     single { apiRetry() }
+    settings.accounts.settings
+        .forEach { accountSettings ->
+            single {
+                when (accountSettings) {
+                    is MonoAccountSettings ->
+                        MonoApi(accountSettings.token, accountSettings.accountId)
+
+                    is OtherAccountSettings ->
+                        accountSettings
+                }
+            }
+        }
     settings.transfer.forEach { s ->
         single(qualifier = StringQualifier(s.descriptionRegex.pattern)) { s }
     }
