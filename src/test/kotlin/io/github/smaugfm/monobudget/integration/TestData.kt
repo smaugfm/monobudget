@@ -2,8 +2,11 @@ package io.github.smaugfm.monobudget.integration
 
 import io.github.smaugfm.lunchmoney.model.LunchmoneyCategoryMultiple
 import java.time.Instant
+import java.util.Currency
 
 object TestData {
+    val UAH = Currency.getInstance("UAH")
+
     val categories =
         listOf(
             LunchmoneyCategoryMultiple(
