@@ -7,7 +7,7 @@ data class StatementProcessingContext(
     private val map: MutableMap<String, Any> = mutableMapOf(),
     val attempt: Int = 0,
 ) {
-    suspend fun execIfNotSet(
+    suspend fun execIfFirst(
         key: String,
         block: suspend () -> Unit,
     ) {

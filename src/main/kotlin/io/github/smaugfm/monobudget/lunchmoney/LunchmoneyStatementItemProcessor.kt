@@ -3,7 +3,7 @@ package io.github.smaugfm.monobudget.lunchmoney
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.monobudget.common.account.BankAccountService
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.account.TransferDetector
 import io.github.smaugfm.monobudget.common.lifecycle.StatementItemProcessor
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
@@ -19,7 +19,7 @@ class LunchmoneyStatementItemProcessor(
     ctx: StatementProcessingContext,
     transactionFactory: TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>,
     bankAccounts: BankAccountService,
-    transferDetector: TransferBetweenAccountsDetector<LunchmoneyTransaction>,
+    transferDetector: TransferDetector<LunchmoneyTransaction>,
     messageFormatter: TransactionMessageFormatter<LunchmoneyTransaction>,
     telegramMessageSender: TelegramMessageSender,
 ) : StatementItemProcessor<LunchmoneyTransaction, LunchmoneyInsertTransaction>(

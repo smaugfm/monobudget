@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.common.lifecycle
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.account.TransferDetector
 import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
@@ -14,7 +14,7 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
     private val ctx: StatementProcessingContext,
     private val transactionFactory: TransactionFactory<TTransaction, TNewTransaction>,
     private val bankAccounts: BankAccountService,
-    private val transferDetector: TransferBetweenAccountsDetector<TTransaction>,
+    private val transferDetector: TransferDetector<TTransaction>,
     private val messageFormatter: TransactionMessageFormatter<TTransaction>,
     private val telegramMessageSender: TelegramMessageSender,
 ) {

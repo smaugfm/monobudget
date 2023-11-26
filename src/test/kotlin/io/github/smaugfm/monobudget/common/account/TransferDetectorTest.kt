@@ -1,13 +1,11 @@
-package io.github.smaugfm.monobudget.common.mono
+package io.github.smaugfm.monobudget.common.account
 
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.TestBase
-import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement.NotTransfer
 import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement.Transfer
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.misc.ConcurrentExpiringMap
@@ -29,7 +27,7 @@ import kotlin.time.Duration.Companion.minutes
 
 private val log = KotlinLogging.logger { }
 
-class MonoTransferBetweenAccountsDetectorTest : TestBase() {
+class TransferDetectorTest : TestBase() {
     companion object {
         private val cache = ConcurrentExpiringMap<StatementItem, Deferred<Any>>(1.minutes)
     }
@@ -37,11 +35,11 @@ class MonoTransferBetweenAccountsDetectorTest : TestBase() {
     class TestDetector(
         bankAccounts: BankAccountService,
         ctx: StatementProcessingContext,
-    ) : TransferBetweenAccountsDetector<Any>(
-        bankAccounts,
-        ctx,
-        cache,
-    )
+    ) : TransferDetector<Any>(
+            bankAccounts,
+            ctx,
+            cache,
+        )
 
     override fun KoinApplication.testKoinApplication() {
         modules(
@@ -55,7 +53,7 @@ class MonoTransferBetweenAccountsDetectorTest : TestBase() {
 
     @Timeout(2, unit = TimeUnit.SECONDS)
     @Test
-    fun test() {
+    fun `Detects transfer`() {
         val ctx1 = StatementProcessingContext(statementItem1())
         val ctx2 = StatementProcessingContext(statementItem2())
 

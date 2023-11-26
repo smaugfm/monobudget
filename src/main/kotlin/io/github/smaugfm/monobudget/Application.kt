@@ -10,7 +10,6 @@ import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.common.util.injectAll
 import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
@@ -23,7 +22,6 @@ import kotlin.system.exitProcess
 
 private val log = KotlinLogging.logger {}
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class Application<TTransaction, TNewTransaction> :
     KoinComponent {
     private val telegramApi by inject<TelegramApi>()

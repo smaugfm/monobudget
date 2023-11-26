@@ -63,7 +63,7 @@ class LunchmoneyTransactionCreator(
                 "Existing LunchmoneyTransaction: $existingTransaction"
         }
 
-        ctx.execIfNotSet("transactionUpdated") {
+        ctx.execIfFirst("transactionUpdated") {
             api.updateTransaction(
                 transactionId = existingTransaction.id,
                 transaction =

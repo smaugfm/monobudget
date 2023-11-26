@@ -9,7 +9,7 @@ import kotlinx.coroutines.Deferred
 
 private val log = KotlinLogging.logger {}
 
-abstract class TransferBetweenAccountsDetector<TTransaction>(
+abstract class TransferDetector<TTransaction>(
     private val bankAccounts: BankAccountService,
     private val ctx: StatementProcessingContext,
     private val cache: ConcurrentExpiringMap<StatementItem, Deferred<TTransaction>>,

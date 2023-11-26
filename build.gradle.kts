@@ -138,8 +138,9 @@ tasks {
     }
 
     fun <T : KotlinCommonCompilerOptions> KotlinCompilationTask<T>.optIn() {
-        compilerOptions.freeCompilerArgs.add(
+        compilerOptions.freeCompilerArgs.addAll(
             "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+            "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
         )
     }
 

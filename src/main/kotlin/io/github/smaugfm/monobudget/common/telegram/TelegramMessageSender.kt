@@ -21,11 +21,11 @@ class TelegramMessageSender(
     ) {
         val chatId = bankAccounts.getTelegramChatIdByAccountId(accountId)
         if (chatId == null) {
-            log.error { "Failed to map Monobank account to telegram chat id. Account: $accountId" }
+            log.error { "Failed to map bank account id to telegram chat id. Account: $accountId" }
             return
         }
 
-        log.info { "Sending message to telegramChatId=$chatId. monoAccountId=$accountId)" }
+        log.info { "Sending message to telegramChatId=$chatId. bankAccountId=$accountId)" }
         telegramApi.sendMessage(
             chatId = ChatId.IntegerId(chatId),
             text = newMessage.message,

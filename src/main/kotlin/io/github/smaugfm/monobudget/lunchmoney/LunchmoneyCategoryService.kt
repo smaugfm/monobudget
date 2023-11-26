@@ -66,7 +66,7 @@ class LunchmoneyCategoryService(
                 null,
             ).awaitSingle()
 
-        return budgets.firstOrNull { it.categoryId != null && it.categoryId == categoryId }
+        return budgets.firstOrNull { categoryId == it.categoryId }
     }
 
     private fun toCategoryBudget(

@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.BankAccountService
-import io.github.smaugfm.monobudget.common.account.TransferBetweenAccountsDetector
+import io.github.smaugfm.monobudget.common.account.TransferDetector
 import io.github.smaugfm.monobudget.common.lifecycle.StatementItemProcessor
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
@@ -19,7 +19,7 @@ class YnabStatementItemProcessor(
     ctx: StatementProcessingContext,
     transactionFactory: TransactionFactory<YnabTransactionDetail, YnabSaveTransaction>,
     bankAccounts: BankAccountService,
-    transferDetector: TransferBetweenAccountsDetector<YnabTransactionDetail>,
+    transferDetector: TransferDetector<YnabTransactionDetail>,
     messageFormatter: TransactionMessageFormatter<YnabTransactionDetail>,
     telegramMessageSender: TelegramMessageSender,
 ) : StatementItemProcessor<YnabTransactionDetail, YnabSaveTransaction>(

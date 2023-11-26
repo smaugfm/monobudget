@@ -33,12 +33,12 @@ accounts:
       telegramChatId: 55555555
       currency: UAH
     - !<mono>
-      accountId: MONO-EXAMPLE-USD
+      accountId: MONO-EXAMPLE-UAH2
       token: ""
-      alias: Example USD
+      alias: Example UAH
       budgetAccountId: 66068
       telegramChatId: 55555556
-      currency: USD
+      currency: UAH
 retry:
   interval: 1s
 mcc:
