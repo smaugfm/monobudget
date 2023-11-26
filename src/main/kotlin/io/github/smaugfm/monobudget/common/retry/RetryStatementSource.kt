@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.common.retry
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventListener
@@ -12,6 +13,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.Single
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
+
+private val log = KotlinLogging.logger {}
 
 @Single
 class RetryStatementSource(
@@ -35,6 +38,7 @@ class RetryStatementSource(
                 ctx,
                 retrySettings.interval,
             )
+        log.warn(e) { "Error processing transaction. Will retry in ${retrySettings.interval}..." }
         scheduleRetry(request)
     }
 

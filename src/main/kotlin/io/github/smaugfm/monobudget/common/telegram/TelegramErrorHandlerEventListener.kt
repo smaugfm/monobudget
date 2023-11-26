@@ -46,8 +46,8 @@ class TelegramErrorHandlerEventListener(
         ctx: StatementProcessingContext,
         e: BudgetBackendError,
     ) {
-        // Send retry message only on first retry
-        if (ctx.attempt != 1) {
+        // Send retry message only on first attempt
+        if (ctx.attempt != 0) {
             return
         }
 
