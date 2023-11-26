@@ -27,6 +27,7 @@ val koinKsp = "1.3.0"
 val resilience4jVersion = "1.7.0"
 val kotlinxCoroutines = "1.7.3"
 val sealedEnum = "0.7.0"
+val jackson = "2.16.0"
 
 val githubToken: String? by project
 
@@ -48,6 +49,7 @@ dependencies {
     implementation("com.uchuhimo:kotlinx-bimap:1.2")
     implementation("com.github.elbekD:kt-telegram-bot:2.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson")
     implementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:2.0.0")
     implementation("com.charleskorn.kaml:kaml:0.55.0")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")

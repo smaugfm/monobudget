@@ -40,7 +40,7 @@ accounts:
       telegramChatId: 55555556
       currency: UAH
 retry:
-  interval: 500ms
+  interval: 100ms
 mcc:
   mccGroupToCategoryName:
     HR: Розваги

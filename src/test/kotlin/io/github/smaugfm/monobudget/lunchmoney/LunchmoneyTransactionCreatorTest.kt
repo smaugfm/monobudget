@@ -12,6 +12,8 @@ import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
+import io.github.smaugfm.monobudget.common.retry.InMemoryStatementRetryRepository
+import io.github.smaugfm.monobudget.common.retry.StatementRetryRepository
 import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.mockk.coEvery
 import io.mockk.every
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.KoinApplication
 import org.koin.core.component.get
+import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.koin.test.mock.declareMock
 import reactor.core.publisher.Mono
@@ -32,6 +35,7 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
     override fun KoinApplication.testKoinApplication() {
         modules(
             module {
+                single { InMemoryStatementRetryRepository() } bind StatementRetryRepository::class
                 scope<StatementProcessingScopeComponent> {
                     scoped {
                         LunchmoneyTransactionCreator(get(), get(), get())

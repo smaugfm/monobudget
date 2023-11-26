@@ -14,6 +14,8 @@ import io.github.smaugfm.monobudget.common.model.BudgetBackend.Lunchmoney
 import io.github.smaugfm.monobudget.common.model.BudgetBackend.YNAB
 import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
 import io.github.smaugfm.monobudget.common.model.settings.Settings
+import io.github.smaugfm.monobudget.common.retry.JacksonFileStatementRetryRepository
+import io.github.smaugfm.monobudget.common.retry.StatementRetryRepository
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
 import io.github.smaugfm.monobudget.mono.MonoApi
 import io.github.smaugfm.monobudget.mono.MonoModule
@@ -43,7 +45,10 @@ fun main() {
     val setWebhook = env["SET_WEBHOOK"]?.toBoolean() ?: false
     val monoWebhookUrl = URI(env["MONO_WEBHOOK_URL"]!!)
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
-    val settings = Settings.load(Paths.get(env["SETTINGS"] ?: "settings.yml"))
+    val settings = Settings.load(Paths.get(env["SETTINGS_FILE"] ?: "settings.yml"))
+    val jsonRetryRepository = JacksonFileStatementRetryRepository(
+        Paths.get(env["RETRIES_FILE"] ?: "retries.json")
+    )
     val budgetBackend = settings.budgetBackend
     val webhookSettings = MonoWebhookSettings(setWebhook, monoWebhookUrl, webhookPort)
 
@@ -52,7 +57,7 @@ fun main() {
 
     runBlocking {
         startKoin {
-            setupKoinModules(this@runBlocking, settings, webhookSettings)
+            setupKoinModules(this@runBlocking, jsonRetryRepository, settings, webhookSettings)
         }
 
         when (budgetBackend) {
@@ -64,11 +69,12 @@ fun main() {
 
 fun KoinApplication.setupKoinModules(
     coroutineScope: CoroutineScope,
+    retryRepository: StatementRetryRepository,
     settings: Settings,
     webhookSettings: MonoWebhookSettings,
 ) {
     printLogger(Level.ERROR)
-    modules(runtimeModule(coroutineScope, settings, webhookSettings))
+    modules(runtimeModule(coroutineScope, retryRepository, settings, webhookSettings))
     modules(MonoModule().module)
     modules(CommonModule().module)
     modules(
@@ -81,6 +87,7 @@ fun KoinApplication.setupKoinModules(
 
 private fun runtimeModule(
     coroutineScope: CoroutineScope,
+    retryRepository: StatementRetryRepository,
     settings: Settings,
     webhookSettings: MonoWebhookSettings,
 ) = module {
@@ -91,6 +98,7 @@ private fun runtimeModule(
     } bind BudgetBackend::class
 
     single { webhookSettings }
+    single { retryRepository }
     single { settings.mcc }
     single { settings.bot }
     single { settings.accounts }

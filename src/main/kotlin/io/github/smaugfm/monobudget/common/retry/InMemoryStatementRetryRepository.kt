@@ -1,12 +1,10 @@
 package io.github.smaugfm.monobudget.common.retry
 
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import org.koin.core.annotation.Single
 import java.util.UUID
 import kotlin.time.Duration
 
-@Single
-class InMemoryStatementRetryRepositoryImpl : StatementRetryRepository {
+class InMemoryStatementRetryRepository : StatementRetryRepository {
     private val map = mutableMapOf<RetryRequestId, StatementRetryRequest>()
 
     override suspend fun addRetryRequest(

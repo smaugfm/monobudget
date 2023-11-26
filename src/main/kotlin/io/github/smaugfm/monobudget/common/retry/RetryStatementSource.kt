@@ -35,7 +35,7 @@ class RetryStatementSource(
     ) {
         val request =
             repository.addRetryRequest(
-                ctx,
+                ctx.incrementAttempt(),
                 retrySettings.interval,
             )
         log.warn(e) { "Error processing transaction. Will retry in ${retrySettings.interval}..." }

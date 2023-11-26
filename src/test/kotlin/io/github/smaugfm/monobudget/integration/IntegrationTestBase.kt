@@ -11,6 +11,8 @@ import io.github.smaugfm.monobudget.TestBase
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.model.settings.Settings
+import io.github.smaugfm.monobudget.common.retry.InMemoryStatementRetryRepository
+import io.github.smaugfm.monobudget.common.retry.StatementRetryRepository
 import io.github.smaugfm.monobudget.common.statement.StatementSource
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
@@ -89,6 +91,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
 
         setupKoinModules(
             this@IntegrationTestBase,
+            InMemoryStatementRetryRepository(),
             Settings.load(
                 Paths.get(
                     TransactionsTest::class.java.classLoader.getResource("test-settings.yml")!!.path,
@@ -100,6 +103,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
             module {
                 single { lunchmoneyMock }
                 single { webhookListener } bind MonoWebhookListener::class bind StatementSource::class
+                single { InMemoryStatementRetryRepository() } bind StatementRetryRepository::class
                 single { tgMock }
                 single { budgetSettingsVerifier } bind ApplicationStartupVerifier::class
                 single { periodicFetcherFactory }
@@ -119,6 +123,8 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
         val newTransactionId = 1L
         val newTransactionId2 = 2L
         val trGroupId = 3L
+        val insertTracker =
+            FailTrackerTransformation<List<Long>>(fails.filterIsInstance<IntegrationFailConfig.Insert>())
         every { lunchmoneyMock.insertTransactions(any(), any(), any(), any(), any(), any()) } answers {
             val i = firstArg<List<LunchmoneyInsertTransaction>>()[0]
             val mono =
@@ -129,9 +135,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                     insertTransaction2 = i
                     Mono.just(listOf(newTransactionId2))
                 }
-            mono.transform(
-                FailTrackerTransformation(fails.filterIsInstance<IntegrationFailConfig.Insert>()),
-            )
+            mono.transformDeferred(insertTracker)
         }
         val singleTransform =
             FailTrackerTransformation<LunchmoneyTransaction>(
@@ -151,7 +155,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                     categoryId = insertTransaction?.categoryId,
                     status = insertTransaction!!.status!!,
                 ),
-            ).transform(singleTransform)
+            ).transformDeferred(singleTransform)
         }
         every { lunchmoneyMock.getSingleTransaction(newTransactionId2, any()) } answers {
             Mono.just(
@@ -167,24 +171,26 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                     categoryId = insertTransaction2?.categoryId,
                     status = insertTransaction2!!.status!!,
                 ),
-            ).transform(singleTransform)
+            ).transformDeferred(singleTransform)
         }
+        val updateTracker =
+            FailTrackerTransformation<LunchmoneyUpdateTransactionResponse>(
+                fails.filterIsInstance<IntegrationFailConfig.Update>()
+            )
         every {
             lunchmoneyMock.updateTransaction(any(), any(), any(), any(), any())
-        } returns
+        } answers {
             Mono.just(mockk<LunchmoneyUpdateTransactionResponse>())
-                .transform(
-                    FailTrackerTransformation(fails.filterIsInstance<IntegrationFailConfig.Update>()),
-                )
+                .transformDeferred(updateTracker)
+        }
+        val createTransactionGroupTracker =
+            FailTrackerTransformation<Long>(fails.filterIsInstance<IntegrationFailConfig.CreateTransactionGroup>())
         every {
             lunchmoneyMock.createTransactionGroup(any(), any(), any(), any(), any(), any())
-        } returns
+        } answers {
             Mono.just(trGroupId)
-                .transform(
-                    FailTrackerTransformation(
-                        fails.filterIsInstance<IntegrationFailConfig.CreateTransactionGroup>(),
-                    ),
-                )
+                .transformDeferred(createTransactionGroupTracker)
+        }
 
         return Pair(newTransactionId, newTransactionId2)
     }
@@ -208,11 +214,15 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
         var insertTransaction: LunchmoneyInsertTransaction? = null
         val newTransactionId = 1L
 
+        val insertTracker =
+            FailTrackerTransformation<List<Long>>(fails.filterIsInstance<IntegrationFailConfig.Insert>())
         every { lunchmoneyMock.insertTransactions(any(), any(), any(), any(), any(), any()) } answers {
             insertTransaction = firstArg<List<LunchmoneyInsertTransaction>>()[0]
             Mono.just(listOf(newTransactionId))
-                .transform(FailTrackerTransformation(fails.filterIsInstance<IntegrationFailConfig.Insert>()))
+                .transformDeferred(insertTracker)
         }
+        val singleTracker =
+            FailTrackerTransformation<LunchmoneyTransaction>(fails.filterIsInstance<IntegrationFailConfig.GetSingle>())
         every { lunchmoneyMock.getSingleTransaction(newTransactionId, any()) } answers {
             Mono.just(
                 LunchmoneyTransaction(
@@ -227,9 +237,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                     categoryId = insertTransaction?.categoryId,
                     status = insertTransaction!!.status!!,
                 ),
-            ).transform(
-                FailTrackerTransformation(fails.filterIsInstance<IntegrationFailConfig.GetSingle>()),
-            )
+            ).transformDeferred(singleTracker)
         }
         return newTransactionId
     }

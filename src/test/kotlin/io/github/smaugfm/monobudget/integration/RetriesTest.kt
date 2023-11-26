@@ -79,10 +79,10 @@ class RetriesTest : IntegrationTestBase() {
                 ),
             )
 
-            coVerify(timeout = 1000, exactly = 2) {
+            coVerify(timeout = 1000, exactly = 1) {
                 tgMock.sendMessage(
                     match {
-                        it is ChatId.IntegerId && it.id == 55555555L
+                        it is ChatId.IntegerId && it.id == 55555556L
                     },
                     any(),
                     any(),
@@ -90,10 +90,10 @@ class RetriesTest : IntegrationTestBase() {
                     any(),
                 )
             }
-            coVerify(timeout = 1000, exactly = 1) {
+            coVerify(timeout = 1000, exactly = 2) {
                 tgMock.sendMessage(
                     match {
-                        it is ChatId.IntegerId && it.id == 55555556L
+                        it is ChatId.IntegerId && it.id == 55555555L
                     },
                     any(),
                     any(),

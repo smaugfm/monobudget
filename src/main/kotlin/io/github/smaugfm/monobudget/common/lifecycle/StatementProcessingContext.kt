@@ -2,11 +2,13 @@ package io.github.smaugfm.monobudget.common.lifecycle
 
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 
-data class StatementProcessingContext(
+class StatementProcessingContext(
     val item: StatementItem,
     private val map: MutableMap<String, Any> = mutableMapOf(),
     val attempt: Int = 0,
 ) {
+    constructor(item: StatementItem) : this(item, mutableMapOf(), 0)
+
     suspend fun execIfFirst(
         key: String,
         block: suspend () -> Unit,
@@ -27,5 +29,6 @@ data class StatementProcessingContext(
         return map.getOrPut(key) { lazyValue() as Any } as T
     }
 
-    fun retryCopy(): StatementProcessingContext = StatementProcessingContext(item, map, attempt + 1)
+    fun incrementAttempt(): StatementProcessingContext =
+        StatementProcessingContext(item, map, attempt + 1)
 }
