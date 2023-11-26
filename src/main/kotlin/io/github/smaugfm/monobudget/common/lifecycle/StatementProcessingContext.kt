@@ -29,6 +29,5 @@ class StatementProcessingContext(
         return map.getOrPut(key) { lazyValue() as Any } as T
     }
 
-    fun incrementAttempt(): StatementProcessingContext =
-        StatementProcessingContext(item, map, attempt + 1)
+    fun incrementAttempt(): StatementProcessingContext = StatementProcessingContext(item, map, attempt + 1)
 }

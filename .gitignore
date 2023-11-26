@@ -7,4 +7,5 @@ out/
 
 settings*.json
 settings*.yml
+retries.json
 docker-compose.yml

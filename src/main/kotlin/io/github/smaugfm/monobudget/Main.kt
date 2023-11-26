@@ -46,9 +46,10 @@ fun main() {
     val monoWebhookUrl = URI(env["MONO_WEBHOOK_URL"]!!)
     val webhookPort = env["WEBHOOK_PORT"]?.toInt() ?: DEFAULT_HTTP_PORT
     val settings = Settings.load(Paths.get(env["SETTINGS_FILE"] ?: "settings.yml"))
-    val jsonRetryRepository = JacksonFileStatementRetryRepository(
-        Paths.get(env["RETRIES_FILE"] ?: "retries.json")
-    )
+    val jsonRetryRepository =
+        JacksonFileStatementRetryRepository(
+            Paths.get(env["RETRIES_FILE"] ?: "retries.json"),
+        )
     val budgetBackend = settings.budgetBackend
     val webhookSettings = MonoWebhookSettings(setWebhook, monoWebhookUrl, webhookPort)
 

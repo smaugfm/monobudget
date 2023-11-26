@@ -50,6 +50,7 @@ dependencies {
     implementation("com.github.elbekD:kt-telegram-bot:2.2.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jackson")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson")
     implementation("de.brudaswen.kotlinx.serialization:kotlinx-serialization-csv:2.0.0")
     implementation("com.charleskorn.kaml:kaml:0.55.0")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")

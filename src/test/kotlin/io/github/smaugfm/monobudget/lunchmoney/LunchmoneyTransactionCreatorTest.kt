@@ -32,8 +32,8 @@ import java.time.LocalDate
 import java.util.Currency
 
 class LunchmoneyTransactionCreatorTest : TestBase() {
-    override fun KoinApplication.testKoinApplication() {
-        modules(
+    override fun testKoinApplication(app: KoinApplication) {
+        app.modules(
             module {
                 single { InMemoryStatementRetryRepository() } bind StatementRetryRepository::class
                 scope<StatementProcessingScopeComponent> {

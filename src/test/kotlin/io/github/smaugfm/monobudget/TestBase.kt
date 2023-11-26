@@ -18,7 +18,7 @@ import java.util.Currency
 @ExtendWith(MockKExtension::class)
 @Suppress("MagicNumber")
 open class TestBase : KoinTest {
-    open fun KoinApplication.testKoinApplication() {
+    open fun testKoinApplication(app: KoinApplication) {
     }
 
     @Suppress("unused")
@@ -26,7 +26,7 @@ open class TestBase : KoinTest {
     @RegisterExtension
     val koinTestExtension =
         KoinTestExtension.create {
-            testKoinApplication()
+            testKoinApplication(this@create)
         }
 
     @BeforeEach

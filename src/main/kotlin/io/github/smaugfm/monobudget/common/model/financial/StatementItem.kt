@@ -1,8 +1,13 @@
 package io.github.smaugfm.monobudget.common.model.financial
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import kotlinx.datetime.Instant
 import java.util.Currency
 
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.MINIMAL_CLASS,
+    include = JsonTypeInfo.As.PROPERTY,
+)
 interface StatementItem {
     val id: String
     val accountId: BankAccountId

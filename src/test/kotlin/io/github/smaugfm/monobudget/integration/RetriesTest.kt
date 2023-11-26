@@ -15,9 +15,9 @@ import java.math.BigDecimal
 import java.util.UUID
 
 @Suppress("LongMethod")
-class RetriesTest : IntegrationTestBase() {
+open class RetriesTest : IntegrationTestBase() {
     @Test
-    fun `When lunchmoney fails and then recovers transfer transaction is processed correctly`() {
+    open fun `When lunchmoney fails and then recovers transfer transaction is processed correctly`() {
         val (newTransactionId, newTransactionId2) =
             setupTransferMocks(
                 listOf(
@@ -129,7 +129,7 @@ class RetriesTest : IntegrationTestBase() {
     }
 
     @Test
-    fun `When lunchmoney fails and then recovers successful method calls are not retried`() {
+    open fun `When lunchmoney fails and then recovers successful method calls are not retried`() {
         val newTransactionId =
             setupSingleTransactionMocks(
                 listOf(

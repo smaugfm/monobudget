@@ -41,8 +41,8 @@ class TransferDetectorTest : TestBase() {
             cache,
         )
 
-    override fun KoinApplication.testKoinApplication() {
-        modules(
+    override fun testKoinApplication(app: KoinApplication) {
+        app.modules(
             module {
                 scope<StatementProcessingScopeComponent> {
                     scoped { TestDetector(get(), get()) }

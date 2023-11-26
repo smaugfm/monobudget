@@ -68,7 +68,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
     @MockK
     lateinit var budgetSettingsVerifier: BudgetSettingsVerifier
 
-    override fun KoinApplication.testKoinApplication() {
+    override fun testKoinApplication(app: KoinApplication) {
         coEvery { webhookListener.prepare() } just runs
         coEvery { webhookListener.statements() } returns webhookStatementsFlow
 
@@ -89,7 +89,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
         } returns TestData.categories
         coEvery { budgetSettingsVerifier.verify() } just runs
 
-        setupKoinModules(
+        app.setupKoinModules(
             this@IntegrationTestBase,
             InMemoryStatementRetryRepository(),
             Settings.load(
@@ -99,7 +99,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
             ),
             MonoWebhookSettings(false, URI.create(""), 0),
         )
-        modules(
+        app.modules(
             module {
                 single { lunchmoneyMock }
                 single { webhookListener } bind MonoWebhookListener::class bind StatementSource::class
@@ -175,7 +175,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
         }
         val updateTracker =
             FailTrackerTransformation<LunchmoneyUpdateTransactionResponse>(
-                fails.filterIsInstance<IntegrationFailConfig.Update>()
+                fails.filterIsInstance<IntegrationFailConfig.Update>(),
             )
         every {
             lunchmoneyMock.updateTransaction(any(), any(), any(), any(), any())
@@ -184,7 +184,9 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                 .transformDeferred(updateTracker)
         }
         val createTransactionGroupTracker =
-            FailTrackerTransformation<Long>(fails.filterIsInstance<IntegrationFailConfig.CreateTransactionGroup>())
+            FailTrackerTransformation<Long>(
+                fails.filterIsInstance<IntegrationFailConfig.CreateTransactionGroup>(),
+            )
         every {
             lunchmoneyMock.createTransactionGroup(any(), any(), any(), any(), any(), any())
         } answers {
@@ -222,7 +224,9 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                 .transformDeferred(insertTracker)
         }
         val singleTracker =
-            FailTrackerTransformation<LunchmoneyTransaction>(fails.filterIsInstance<IntegrationFailConfig.GetSingle>())
+            FailTrackerTransformation<LunchmoneyTransaction>(
+                fails.filterIsInstance<IntegrationFailConfig.GetSingle>(),
+            )
         every { lunchmoneyMock.getSingleTransaction(newTransactionId, any()) } answers {
             Mono.just(
                 LunchmoneyTransaction(
