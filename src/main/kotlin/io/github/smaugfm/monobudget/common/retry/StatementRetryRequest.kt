@@ -1,5 +1,6 @@
 package io.github.smaugfm.monobudget.common.retry
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
@@ -16,5 +17,7 @@ data class StatementRetryRequest(
         Clock.System.now() + retryIn,
     )
 
-    val retryIn get() = (retryAt - Clock.System.now()).coerceAtLeast(Duration.ZERO)
+    val retryIn
+        @JsonIgnore
+        get() = (retryAt - Clock.System.now()).coerceAtLeast(Duration.ZERO)
 }

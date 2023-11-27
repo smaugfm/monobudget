@@ -4,28 +4,24 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.category.CategoryService
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
+import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.formatW
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDate
-import org.koin.core.annotation.Scope
-import org.koin.core.annotation.Scoped
+import org.koin.core.annotation.Single
 import java.util.Currency
 
-@Scoped
-@Scope(StatementProcessingScopeComponent::class)
+@Single
 class LunchmoneyTransactionMessageFormatter(
     private val categoryService: CategoryService,
-    private val ctx: StatementProcessingContext,
-) : TransactionMessageFormatter<LunchmoneyTransaction>(ctx.item) {
+) : TransactionMessageFormatter<LunchmoneyTransaction>() {
     private val shouldNotifyStatuses =
         setOf(
             LunchmoneyTransactionStatus.UNCLEARED,
@@ -34,6 +30,7 @@ class LunchmoneyTransactionMessageFormatter(
         )
 
     override suspend fun formatHTMLStatementMessage(
+        statementItem: StatementItem,
         accountCurrency: Currency,
         transaction: LunchmoneyTransaction,
     ): String {

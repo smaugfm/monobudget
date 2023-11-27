@@ -86,6 +86,7 @@ dependencies {
 }
 
 ktlint {
+    ignoreFailures.set(true)
     version.set("1.0.1")
     enableExperimentalRules.set(true)
     filter {

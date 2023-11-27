@@ -28,7 +28,7 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
             transferDetector.checkTransfer()
 
         val transaction = transactionFactory.create(maybeTransfer)
-        val message = messageFormatter.format(transaction)
+        val message = messageFormatter.format(ctx.item, transaction)
 
         telegramMessageSender.send(ctx.item.accountId, message)
     }
@@ -42,7 +42,7 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
                         this.pp()
                     } else {
                         "\tAmount: ${amount}\n" +
-                            "\tDescription: $description" +
+                            "\tDescription: $description\n" +
                             "\tMemo: $comment"
                     }
             }

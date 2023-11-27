@@ -106,7 +106,7 @@ private fun runtimeModule(
     single { settings.retry }
     single { apiRetry() }
     settings.accounts.settings.filterIsInstance<MonoAccountSettings>()
-        .forEach { s -> single { MonoApi(s.token, s.accountId) } }
+        .forEach { s -> single(StringQualifier(s.alias)) { MonoApi(s.token, s.accountId, s.alias) } }
     settings.transfer.forEach { s ->
         single(qualifier = StringQualifier(s.descriptionRegex.pattern)) { s }
     }

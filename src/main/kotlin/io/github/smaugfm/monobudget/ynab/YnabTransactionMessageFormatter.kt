@@ -2,7 +2,6 @@ package io.github.smaugfm.monobudget.ynab
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.monobudget.common.category.CategoryService
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
@@ -11,17 +10,15 @@ import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatt
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
 import io.github.smaugfm.monobudget.ynab.model.YnabCleared
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
-import org.koin.core.annotation.Scope
-import org.koin.core.annotation.Scoped
+import org.koin.core.annotation.Single
 import java.util.Currency
 
-@Scoped
-@Scope(StatementProcessingScopeComponent::class)
+@Single
 class YnabTransactionMessageFormatter(
     private val categoryService: CategoryService,
-    statementItem: StatementItem,
-) : TransactionMessageFormatter<YnabTransactionDetail>(statementItem) {
+) : TransactionMessageFormatter<YnabTransactionDetail>() {
     override suspend fun formatHTMLStatementMessage(
+        statementItem: StatementItem,
         accountCurrency: Currency,
         transaction: YnabTransactionDetail,
     ): String {

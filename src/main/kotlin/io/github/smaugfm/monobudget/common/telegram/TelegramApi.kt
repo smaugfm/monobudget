@@ -46,7 +46,7 @@ class TelegramApi(
             allowSendingWithoutReply = null,
             replyMarkup = replyMarkup,
         ).also {
-            log.debug { "Sending message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup?.pp()}" }
+            log.debug { "Sent message. \n\tTo: $chatId\n\ttext: $text\n\tkeyboard: ${replyMarkup?.pp()}" }
         }
     }
 
