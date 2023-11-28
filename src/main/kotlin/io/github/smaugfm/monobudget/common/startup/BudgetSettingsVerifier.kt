@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.verify
+package io.github.smaugfm.monobudget.common.startup
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi

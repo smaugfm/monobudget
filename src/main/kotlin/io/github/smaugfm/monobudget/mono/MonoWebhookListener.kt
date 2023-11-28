@@ -2,8 +2,8 @@ package io.github.smaugfm.monobudget.mono
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobank.model.MonoWebhookResponse
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.statement.StatementSource
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.util.injectAll
 import io.github.smaugfm.monobudget.common.util.makeJson
 import io.ktor.http.ContentType

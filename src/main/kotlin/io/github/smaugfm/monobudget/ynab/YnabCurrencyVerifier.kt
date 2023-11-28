@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
-import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
+import io.github.smaugfm.monobudget.common.startup.ApplicationStartupVerifier
 import org.koin.core.annotation.Single
 import java.util.Currency
 

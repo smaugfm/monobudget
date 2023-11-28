@@ -1,9 +1,9 @@
 package io.github.smaugfm.monobudget.common.category
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.financial.Amount
 import io.github.smaugfm.monobudget.common.model.settings.MccOverrideSettings
+import io.github.smaugfm.monobudget.common.util.MCCRegistry
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -33,7 +33,7 @@ abstract class CategoryService : KoinComponent {
         mccOverride.mccToCategoryName[mcc] ?: categoryNameByMccGroup(mcc)
 
     private fun categoryNameByMccGroup(mcc: Int): String? {
-        val mccObj = MCC.map[mcc]
+        val mccObj = MCCRegistry.map[mcc]
         if (mccObj == null) {
             log.warn { "Unknown MCC code $mcc" }
         } else {

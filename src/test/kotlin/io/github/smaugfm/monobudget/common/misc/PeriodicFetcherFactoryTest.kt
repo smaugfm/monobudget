@@ -3,6 +3,7 @@ package io.github.smaugfm.monobudget.common.misc
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThan
+import io.github.smaugfm.monobudget.common.util.misc.PeriodicFetcherFactory
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope

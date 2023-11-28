@@ -3,19 +3,23 @@ package io.github.smaugfm.monobudget.common.account
 import assertk.assertThat
 import assertk.assertions.isInstanceOf
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.smaugfm.monobank.model.MonoStatementItem
+import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.TestBase
-import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement.NotTransfer
-import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement.Transfer
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
-import io.github.smaugfm.monobudget.common.misc.ConcurrentExpiringMap
+import io.github.smaugfm.monobudget.common.account.MaybeTransfer.NotTransfer
+import io.github.smaugfm.monobudget.common.account.MaybeTransfer.Transfer
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
+import io.github.smaugfm.monobudget.common.util.misc.ConcurrentExpiringMap
+import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
 import io.mockk.coEvery
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Instant
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.koin.core.KoinApplication
@@ -53,9 +57,9 @@ class TransferDetectorTest : TestBase() {
 
     @Timeout(2, unit = TimeUnit.SECONDS)
     @Test
-    fun `Detects transfer`() {
-        val ctx1 = StatementProcessingContext(statementItem1())
-        val ctx2 = StatementProcessingContext(statementItem2())
+    fun `Detects a transfer`() {
+        val ctx1 = StatementProcessingContext(transferStatement1)
+        val ctx2 = StatementProcessingContext(transferStatement2)
 
         declareMock<BankAccountService> {
             coEvery { getAccountCurrency(ctx1.item.accountId) } returns Currency.getInstance("UAH")
@@ -67,8 +71,8 @@ class TransferDetectorTest : TestBase() {
                 launch {
                     val sc = StatementProcessingScopeComponent(ctx1)
                     val detector = sc.scope.get<TestDetector>()
-                    assertThat(detector.checkTransfer()).isInstanceOf(NotTransfer::class)
-                    val notTransfer = detector.checkTransfer() as NotTransfer
+                    assertThat(detector.checkForTransfer()).isInstanceOf(NotTransfer::class)
+                    val notTransfer = detector.checkForTransfer() as NotTransfer
                     waitForNotTransfer.complete(Any())
                     notTransfer.consume {
                         log.info { "Started consuming transaction 1..." }
@@ -83,11 +87,55 @@ class TransferDetectorTest : TestBase() {
                 launch {
                     val sc = StatementProcessingScopeComponent(ctx2)
                     val detector = sc.scope.get<TestDetector>()
-                    assertThat(detector.checkTransfer()).isInstanceOf(Transfer::class)
+                    assertThat(detector.checkForTransfer()).isInstanceOf(Transfer::class)
                     sc.scope.close()
                 }
             job1.join()
             job2.join()
         }
     }
+
+    private val transferStatement1 =
+        MonobankWebhookResponseStatementItem(
+            MonoWebhookResponseData(
+                "acc1",
+                MonoStatementItem(
+                    "aaa",
+                    Instant.parse("2023-04-02T18:12:41Z"),
+                    "З доларової картки",
+                    4829,
+                    4829,
+                    true,
+                    3665,
+                    100,
+                    Currency.getInstance("USD"),
+                    0,
+                    0,
+                    1234,
+                ),
+            ),
+            Currency.getInstance("UAH"),
+        )
+
+    private val transferStatement2 =
+        MonobankWebhookResponseStatementItem(
+            MonoWebhookResponseData(
+                "acc2",
+                MonoStatementItem(
+                    "bbb",
+                    Instant.parse("2023-04-02T18:12:42Z"),
+                    "Переказ на картку",
+                    4829,
+                    4829,
+                    true,
+                    -100,
+                    -3665,
+                    Currency.getInstance("UAH"),
+                    0,
+                    0,
+                    1234,
+                ),
+            ),
+            Currency.getInstance("UAH"),
+        )
 }

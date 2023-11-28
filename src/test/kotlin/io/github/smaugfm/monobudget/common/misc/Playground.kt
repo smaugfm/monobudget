@@ -3,6 +3,8 @@ package io.github.smaugfm.monobudget.common.misc
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.settings.Settings
+import io.github.smaugfm.monobudget.common.util.MCCRegistry
+import io.github.smaugfm.monobudget.common.util.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyCategoryService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -76,7 +78,7 @@ class Playground : KoinTest {
                         } else {
                             it.operationAmount + it.currency
                         },
-                        "${it.mcc} " + MCC.map[it.mcc.toInt()]?.fullDescription,
+                        "${it.mcc} " + MCCRegistry.map[it.mcc.toInt()]?.fullDescription,
                     )
                 }
 

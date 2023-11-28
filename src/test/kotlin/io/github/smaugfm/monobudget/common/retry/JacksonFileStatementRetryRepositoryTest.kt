@@ -2,7 +2,8 @@ package io.github.smaugfm.monobudget.common.retry
 
 import assertk.assertThat
 import assertk.assertions.isEmpty
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.TestData.exampleStatement1
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.integration.RetriesTest
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
@@ -30,8 +31,16 @@ class JacksonFileStatementRetryRepositoryTest : RetriesTest() {
     fun `Mono statement item serializes & deserializes correctly`() {
         val repo = JacksonFileStatementRetryRepository(Paths.get("retries.json"))
         runBlocking {
-            val req1 = repo.addRetryRequest(StatementProcessingContext(statementItem1()), Duration.ZERO)
-            val req2 = repo.addRetryRequest(StatementProcessingContext(statementItem1()), Duration.ZERO)
+            val req1 =
+                repo.addRetryRequest(
+                    StatementProcessingContext(exampleStatement1("test")),
+                    Duration.ZERO,
+                )
+            val req2 =
+                repo.addRetryRequest(
+                    StatementProcessingContext(exampleStatement1("test")),
+                    Duration.ZERO,
+                )
             repo.removeRetryRequest(req1.id)
             repo.removeRetryRequest(req2.id)
             assertThat(repo.getAllRequests()).isEmpty()

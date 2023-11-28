@@ -3,11 +3,11 @@ package io.github.smaugfm.monobudget.common.telegram
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.CallbackQuery
 import io.github.smaugfm.monobudget.common.account.BankAccountService
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventListener
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendException
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingEventListener
 import org.koin.core.annotation.Single
 
 @Single
@@ -23,7 +23,7 @@ class TelegramErrorHandlerEventListener(
         e: Throwable,
     ): Boolean {
         val chatIds = chatIdsFromContext(ctx)
-        if (e is BudgetBackendError) {
+        if (e is BudgetBackendException) {
             val header =
                 "Виникла помилка при створенні транзакції. " +
                     "Будь ласка створи цю транзакцію вручну. "
@@ -44,7 +44,7 @@ class TelegramErrorHandlerEventListener(
 
     override suspend fun handleRetry(
         ctx: StatementProcessingContext,
-        e: BudgetBackendError,
+        e: BudgetBackendException,
     ) {
         // Send retry message only on first attempt
         if (ctx.attempt > 0) {
@@ -76,13 +76,13 @@ class TelegramErrorHandlerEventListener(
     private suspend fun onBudgetBackendError(
         header: String,
         chatIds: List<Long>,
-        budgetBackendError: BudgetBackendError,
+        budgetBackendException: BudgetBackendException,
     ) {
         chatIds
             .forEach { chatId ->
                 telegramApi.sendMessage(
                     chatId = ChatId.IntegerId(chatId),
-                    text = header + budgetBackendError.userMessage,
+                    text = header + budgetBackendException.userMessage,
                 )
             }
     }

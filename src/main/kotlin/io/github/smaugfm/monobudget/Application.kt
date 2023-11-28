@@ -1,15 +1,15 @@
 package io.github.smaugfm.monobudget
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
-import io.github.smaugfm.monobudget.common.lifecycle.StatementItemProcessor
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventDelivery
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendException
+import io.github.smaugfm.monobudget.common.startup.ApplicationStartupVerifier
 import io.github.smaugfm.monobudget.common.statement.StatementSource
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementEvents
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementItemProcessor
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.common.util.injectAll
-import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.filter
@@ -28,7 +28,7 @@ class Application<TTransaction, TNewTransaction> :
     private val statementSources by injectAll<StatementSource>()
     private val startupVerifiers by injectAll<ApplicationStartupVerifier>()
     private val telegramCallbackHandler by inject<TelegramCallbackHandler<TTransaction>>()
-    private val statementEvents by inject<StatementProcessingEventDelivery>()
+    private val statementEvents by inject<StatementEvents>()
 
     suspend fun run() {
         runStartupChecks()
@@ -48,7 +48,7 @@ class Application<TTransaction, TNewTransaction> :
                         scope.get<StatementItemProcessor<TTransaction, TNewTransaction>>()
                             .process()
                         statementEvents.onStatementEnd(ctx)
-                    } catch (e: BudgetBackendError) {
+                    } catch (e: BudgetBackendException) {
                         statementEvents.onStatementRetry(ctx, e)
                     } catch (e: Throwable) {
                         statementEvents.onStatementError(ctx, e)

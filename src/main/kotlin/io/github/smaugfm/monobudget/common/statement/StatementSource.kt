@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.common.statement
 
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import kotlinx.coroutines.flow.Flow
 
 interface StatementSource {

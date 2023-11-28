@@ -1,8 +1,8 @@
-package io.github.smaugfm.monobudget.common.lifecycle
+package io.github.smaugfm.monobudget.common.statement.lifecycle
 
 import com.elbekd.bot.types.CallbackQuery
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendException
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
 import io.github.smaugfm.monobudget.common.util.injectAll
 import org.koin.core.annotation.Single
@@ -11,7 +11,7 @@ import org.koin.core.component.KoinComponent
 private val log = KotlinLogging.logger {}
 
 @Single
-class StatementProcessingEventDelivery : KoinComponent {
+class StatementEvents : KoinComponent {
     private val newStatementListeners
         by injectAll<StatementProcessingEventListener.New>()
     private val statementEndListeners
@@ -57,7 +57,7 @@ class StatementProcessingEventDelivery : KoinComponent {
 
     suspend fun onStatementRetry(
         ctx: StatementProcessingContext,
-        e: BudgetBackendError,
+        e: BudgetBackendException,
     ) {
         retryScheduledEventListeners.forEach { l ->
             l.handleRetry(ctx, e)

@@ -1,11 +1,11 @@
 package io.github.smaugfm.monobudget.common.retry
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventListener
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendException
 import io.github.smaugfm.monobudget.common.model.settings.RetrySettings
 import io.github.smaugfm.monobudget.common.statement.StatementSource
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingEventListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -31,7 +31,7 @@ class RetryStatementSource(
 
     override suspend fun handleRetry(
         ctx: StatementProcessingContext,
-        e: BudgetBackendError,
+        e: BudgetBackendException,
     ) {
         val request =
             repository.addRetryRequest(

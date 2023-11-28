@@ -2,9 +2,9 @@ package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferDetector
-import io.github.smaugfm.monobudget.common.lifecycle.StatementItemProcessor
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementItemProcessor
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter

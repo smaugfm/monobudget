@@ -2,11 +2,11 @@ package io.github.smaugfm.monobudget.ynab
 
 import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.monobudget.common.category.CategoryService
-import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.common.util.MCCRegistry
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
 import io.github.smaugfm.monobudget.ynab.model.YnabCleared
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
@@ -28,7 +28,7 @@ class YnabTransactionMessageFormatter(
             return formatHTMLStatementMessage(
                 "YNAB",
                 (description ?: "").replaceNewLines(),
-                (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
+                (MCCRegistry.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
                 "$amount${(if (accountCurrency != currency) " ($operationAmount)" else "")}",
                 category,
                 transaction.payeeName ?: "",

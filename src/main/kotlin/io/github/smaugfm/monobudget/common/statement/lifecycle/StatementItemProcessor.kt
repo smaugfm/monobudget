@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.lifecycle
+package io.github.smaugfm.monobudget.common.statement.lifecycle
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
@@ -25,7 +25,7 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
 
     private suspend fun processStatement() {
         val maybeTransfer =
-            transferDetector.checkTransfer()
+            transferDetector.checkForTransfer()
 
         val transaction = transactionFactory.create(maybeTransfer)
         val message = messageFormatter.format(ctx.item, transaction)

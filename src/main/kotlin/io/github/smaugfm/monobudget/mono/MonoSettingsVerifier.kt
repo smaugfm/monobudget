@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget.mono
 
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
-import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
+import io.github.smaugfm.monobudget.common.startup.ApplicationStartupVerifier
 import org.koin.core.annotation.Single
 
 @Single

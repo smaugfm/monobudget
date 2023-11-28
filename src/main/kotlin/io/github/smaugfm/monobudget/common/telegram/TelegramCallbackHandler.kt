@@ -8,7 +8,6 @@ import com.elbekd.bot.types.Message
 import com.elbekd.bot.types.ParseMode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.category.CategoryService
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventDelivery
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType.ChooseCategory
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
@@ -18,6 +17,7 @@ import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.Uncategorize
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType.UpdateCategory
 import io.github.smaugfm.monobudget.common.model.settings.MultipleAccountSettings
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementEvents
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractPayee
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractTransactionId
@@ -34,7 +34,7 @@ abstract class TelegramCallbackHandler<TTransaction> : KoinComponent {
     private val formatter: TransactionMessageFormatter<TTransaction> by inject()
     private val monoSettings: MultipleAccountSettings by inject()
     private val telegramChatIds = monoSettings.telegramChatIds
-    private val statementEvents by inject<StatementProcessingEventDelivery>()
+    private val statementEvents by inject<StatementEvents>()
 
     suspend fun handle(callbackQuery: CallbackQuery) {
         var callbackType: CallbackType? = null

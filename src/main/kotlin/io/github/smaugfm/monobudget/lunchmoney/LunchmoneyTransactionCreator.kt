@@ -7,12 +7,12 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyUpdateTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
-import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
+import io.github.smaugfm.monobudget.common.account.MaybeTransfer
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendException
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import kotlinx.serialization.SerializationException
@@ -30,24 +30,24 @@ class LunchmoneyTransactionCreator(
 ) : TransactionFactory<LunchmoneyTransaction, LunchmoneyInsertTransaction>() {
     private val transferCategoryId = budgetBackend.transferCategoryId.toLong()
 
-    override suspend fun create(maybeTransfer: MaybeTransferStatement<LunchmoneyTransaction>) =
+    override suspend fun create(maybeTransfer: MaybeTransfer<LunchmoneyTransaction>) =
         try {
             when (maybeTransfer) {
-                is MaybeTransferStatement.Transfer ->
+                is MaybeTransfer.Transfer ->
                     processTransfer(maybeTransfer.statement, maybeTransfer.processed())
 
-                is MaybeTransferStatement.NotTransfer ->
+                is MaybeTransfer.NotTransfer ->
                     maybeTransfer.consume(::processSingle)
             }
         } catch (e: LunchmoneyApiResponseException) {
             val template = "Текст помилки: "
             if (e.cause is SerializationException) {
-                throw BudgetBackendError(
+                throw BudgetBackendException(
                     e,
                     template + (e.message?.substringBefore("JSON input:") + "HTTP Body:\n" + e.body),
                 )
             } else {
-                throw BudgetBackendError(
+                throw BudgetBackendException(
                     e,
                     template + e.message,
                 )

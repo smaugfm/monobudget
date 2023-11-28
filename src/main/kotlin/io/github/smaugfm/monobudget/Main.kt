@@ -1,10 +1,7 @@
 package io.github.smaugfm.monobudget
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.resilience4j.core.IntervalFunction
-import io.github.resilience4j.kotlin.retry.RetryConfig
 import io.github.resilience4j.reactor.retry.RetryOperator
-import io.github.resilience4j.retry.Retry
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
@@ -34,7 +31,6 @@ import org.koin.dsl.module
 import org.koin.ksp.generated.*
 import java.net.URI
 import java.nio.file.Paths
-import java.time.Duration
 
 private val log = KotlinLogging.logger {}
 
@@ -104,7 +100,6 @@ private fun runtimeModule(
     single { settings.bot }
     single { settings.accounts }
     single { settings.retry }
-    single { apiRetry() }
     settings.accounts.settings.filterIsInstance<MonoAccountSettings>()
         .forEach { s -> single(StringQualifier(s.alias)) { MonoApi(s.token, s.accountId, s.alias) } }
     settings.transfer.forEach { s ->
@@ -112,22 +107,6 @@ private fun runtimeModule(
     }
     single { coroutineScope }
 }
-
-@Suppress("MagicNumber")
-private fun apiRetry(): Retry =
-    Retry.of(
-        "apiRetry",
-        RetryConfig {
-            maxAttempts(3)
-            failAfterMaxAttempts(true)
-            intervalFunction(
-                IntervalFunction.ofExponentialBackoff(
-                    Duration.ofSeconds(1),
-                    2.0,
-                ),
-            )
-        },
-    )
 
 private fun lunchmoneyModule(budgetBackend: Lunchmoney) =
     module {

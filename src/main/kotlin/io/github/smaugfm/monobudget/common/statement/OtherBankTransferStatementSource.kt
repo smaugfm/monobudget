@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget.common.statement
 
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.model.financial.OtherBankStatementItem
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import kotlinx.coroutines.flow.MutableSharedFlow
 import org.koin.core.annotation.Single
 

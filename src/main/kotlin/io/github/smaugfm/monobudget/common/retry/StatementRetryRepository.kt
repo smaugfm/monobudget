@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.common.retry
 
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import kotlin.time.Duration
 
 interface StatementRetryRepository {

@@ -4,12 +4,12 @@ import com.elbekd.bot.types.InlineKeyboardMarkup
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.monobudget.common.category.CategoryService
-import io.github.smaugfm.monobudget.common.misc.MCC
 import io.github.smaugfm.monobudget.common.model.callback.ActionCallbackType
 import io.github.smaugfm.monobudget.common.model.callback.PressedButtons
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
+import io.github.smaugfm.monobudget.common.util.MCCRegistry
 import io.github.smaugfm.monobudget.common.util.formatW
 import io.github.smaugfm.monobudget.common.util.replaceNewLines
 import io.github.smaugfm.monobudget.common.util.toLocalDateTime
@@ -40,7 +40,7 @@ class LunchmoneyTransactionMessageFormatter(
             return formatHTMLStatementMessage(
                 "Lunchmoney",
                 (description ?: "").replaceNewLines(),
-                (MCC.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
+                (MCCRegistry.map[mcc]?.fullDescription ?: "Невідомий MCC") + " ($mcc)",
                 "$amount${(if (accountCurrency != currency) " ($operationAmount)" else "")}",
                 category,
                 transaction.payee,

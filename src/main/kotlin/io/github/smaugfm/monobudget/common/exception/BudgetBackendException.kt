@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget.common.exception
 
-class BudgetBackendError(
+class BudgetBackendException(
     cause: Throwable,
     val userMessage: String,
 ) : Exception(cause)

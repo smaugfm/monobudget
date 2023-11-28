@@ -1,7 +1,7 @@
-package io.github.smaugfm.monobudget.common.lifecycle
+package io.github.smaugfm.monobudget.common.statement.lifecycle
 
 import com.elbekd.bot.types.CallbackQuery
-import io.github.smaugfm.monobudget.common.exception.BudgetBackendError
+import io.github.smaugfm.monobudget.common.exception.BudgetBackendException
 import io.github.smaugfm.monobudget.common.model.callback.CallbackType
 
 sealed interface StatementProcessingEventListener {
@@ -23,7 +23,7 @@ sealed interface StatementProcessingEventListener {
     interface Retry : StatementProcessingEventListener {
         suspend fun handleRetry(
             ctx: StatementProcessingContext,
-            e: BudgetBackendError,
+            e: BudgetBackendException,
         )
     }
 

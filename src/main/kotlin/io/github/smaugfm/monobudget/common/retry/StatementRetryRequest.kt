@@ -1,7 +1,7 @@
 package io.github.smaugfm.monobudget.common.retry
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlin.time.Duration

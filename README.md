@@ -102,4 +102,4 @@ Previously this app supported only YNAB as this was my preferred financial manag
 Last commit where YNAB support was working reliably (and I was personally using it)
 is [3a7da7af](https://github.com/smaugfm/monobudget/commit/3a7da7afd85bffa310f54a322c46d626d24f488c) (May 2022)
 
-PRs are feature requests are welcome!
+PRs and feature requests are welcome!

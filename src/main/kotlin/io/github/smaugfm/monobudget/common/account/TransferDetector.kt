@@ -1,9 +1,9 @@
 package io.github.smaugfm.monobudget.common.account
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.misc.ConcurrentExpiringMap
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.util.misc.ConcurrentExpiringMap
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 
@@ -14,7 +14,7 @@ abstract class TransferDetector<TTransaction>(
     private val ctx: StatementProcessingContext,
     private val cache: ConcurrentExpiringMap<StatementItem, Deferred<TTransaction>>,
 ) {
-    suspend fun checkTransfer(): MaybeTransferStatement<TTransaction> =
+    suspend fun checkForTransfer(): MaybeTransfer<TTransaction> =
         ctx.getOrPut("transfer") {
             val existingTransfer =
                 cache.entries.firstOrNull { (recentStatementItem) ->
@@ -27,12 +27,12 @@ abstract class TransferDetector<TTransaction>(
                         "Current: ${ctx.item}\n" +
                         "Recent transfer: $existingTransfer"
                 }
-                MaybeTransferStatement.Transfer(ctx.item, existingTransfer)
+                MaybeTransfer.Transfer(ctx.item, existingTransfer)
             } else {
                 val deferred = CompletableDeferred<TTransaction>()
                 cache.add(ctx.item, deferred)
 
-                MaybeTransferStatement.NotTransfer(ctx.item, deferred)
+                MaybeTransfer.NotTransfer(ctx.item, deferred)
             }
         }
 

@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.integration
+package io.github.smaugfm.monobudget.integration.util
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
@@ -8,15 +8,17 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.response.LunchmoneyUpdateTransactionResponse
 import io.github.smaugfm.monobudget.Application
 import io.github.smaugfm.monobudget.TestBase
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
+import io.github.smaugfm.monobudget.TestData
 import io.github.smaugfm.monobudget.common.model.settings.Settings
 import io.github.smaugfm.monobudget.common.retry.InMemoryStatementRetryRepository
 import io.github.smaugfm.monobudget.common.retry.StatementRetryRepository
+import io.github.smaugfm.monobudget.common.startup.ApplicationStartupVerifier
+import io.github.smaugfm.monobudget.common.startup.BudgetSettingsVerifier
 import io.github.smaugfm.monobudget.common.statement.StatementSource
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.telegram.TelegramApi
-import io.github.smaugfm.monobudget.common.verify.ApplicationStartupVerifier
-import io.github.smaugfm.monobudget.common.verify.BudgetSettingsVerifier
+import io.github.smaugfm.monobudget.common.util.misc.PeriodicFetcherFactory
+import io.github.smaugfm.monobudget.integration.TransactionsTest
 import io.github.smaugfm.monobudget.mono.MonoWebhookListener
 import io.github.smaugfm.monobudget.mono.MonoWebhookSettings
 import io.github.smaugfm.monobudget.setupKoinModules
@@ -111,10 +113,11 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
         )
     }
 
-    protected fun setupTransferMocks(isFirst: (LunchmoneyInsertTransaction) -> Boolean): Pair<Long, Long> =
-        setupTransferMocks(emptyList(), isFirst)
+    protected fun setupTransferTransactionMocks(
+        isFirst: (LunchmoneyInsertTransaction) -> Boolean,
+    ): Pair<Long, Long> = setupTransferTransactionMocks(emptyList(), isFirst)
 
-    protected fun setupTransferMocks(
+    protected fun setupTransferTransactionMocks(
         fails: List<IntegrationFailConfig>,
         isFirst: (LunchmoneyInsertTransaction) -> Boolean,
     ): Pair<Long, Long> {

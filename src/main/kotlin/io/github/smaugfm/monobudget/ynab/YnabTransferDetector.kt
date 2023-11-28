@@ -2,8 +2,8 @@ package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferDetector
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped

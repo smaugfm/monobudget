@@ -1,20 +1,17 @@
 package io.github.smaugfm.monobudget.integration
 
 import com.elbekd.bot.model.ChatId
-import io.github.smaugfm.monobank.model.MonoStatementItem
-import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.integration.TestData.UAH
-import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
+import io.github.smaugfm.monobudget.TestData.exampleStatement1
+import io.github.smaugfm.monobudget.TestData.exampleStatement2
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.integration.util.IntegrationTestBase
 import io.mockk.coVerify
 import io.mockk.confirmVerified
 import io.mockk.verifySequence
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
-import java.util.UUID
 
 @Suppress("LongMethod")
 class TransactionsTest : IntegrationTestBase(), CoroutineScope {
@@ -27,33 +24,13 @@ class TransactionsTest : IntegrationTestBase(), CoroutineScope {
 
     @Test
     fun `Other account transaction triggers transfer`() {
-        val (newTransactionId, newTransactionId2) = setupTransferMocks { it.amount > BigDecimal.ZERO }
+        val (newTransactionId, newTransactionId2) =
+            setupTransferTransactionMocks { it.amount > BigDecimal.ZERO }
 
         runTestApplication {
             webhookStatementsFlow.emit(
                 StatementProcessingContext(
-                    MonobankWebhookResponseStatementItem(
-                        d =
-                            MonoWebhookResponseData(
-                                account = "MONO-EXAMPLE-UAH",
-                                statementItem =
-                                    MonoStatementItem(
-                                        id = UUID.randomUUID().toString(),
-                                        time = Clock.System.now(),
-                                        description = "Від: 777777****1234",
-                                        mcc = 4829,
-                                        originalMcc = 4829,
-                                        hold = true,
-                                        amount = 5600,
-                                        operationAmount = 5600,
-                                        currencyCode = UAH,
-                                        commissionRate = 0,
-                                        cashbackAmount = 0,
-                                        balance = 0,
-                                    ),
-                            ),
-                        accountCurrency = UAH,
-                    ),
+                    exampleStatement1("Від: 777777****1234"),
                 ),
             )
 
@@ -89,60 +66,15 @@ class TransactionsTest : IntegrationTestBase(), CoroutineScope {
 
     @Test
     fun `Mono transfer triggers single and transfer transaction creation`() {
-        val (newTransactionId, newTransactionId2) = setupTransferMocks { it.amount < BigDecimal.ZERO }
+        val (newTransactionId, newTransactionId2) =
+            setupTransferTransactionMocks { it.amount < BigDecimal.ZERO }
 
         runTestApplication {
             webhookStatementsFlow.emit(
-                StatementProcessingContext(
-                    MonobankWebhookResponseStatementItem(
-                        d =
-                            MonoWebhookResponseData(
-                                account = "MONO-EXAMPLE-UAH2",
-                                statementItem =
-                                    MonoStatementItem(
-                                        id = UUID.randomUUID().toString(),
-                                        time = Clock.System.now(),
-                                        description = "test send",
-                                        mcc = 4829,
-                                        originalMcc = 4829,
-                                        hold = true,
-                                        amount = -5600,
-                                        operationAmount = -5600,
-                                        currencyCode = UAH,
-                                        commissionRate = 0,
-                                        cashbackAmount = 0,
-                                        balance = 0,
-                                    ),
-                            ),
-                        accountCurrency = UAH,
-                    ),
-                ),
+                StatementProcessingContext(exampleStatement2("test send")),
             )
             webhookStatementsFlow.emit(
-                StatementProcessingContext(
-                    MonobankWebhookResponseStatementItem(
-                        d =
-                            MonoWebhookResponseData(
-                                account = "MONO-EXAMPLE-UAH",
-                                statementItem =
-                                    MonoStatementItem(
-                                        id = UUID.randomUUID().toString(),
-                                        time = Clock.System.now(),
-                                        description = "test receive",
-                                        mcc = 4829,
-                                        originalMcc = 4829,
-                                        hold = true,
-                                        amount = 5600,
-                                        operationAmount = 5600,
-                                        currencyCode = UAH,
-                                        commissionRate = 0,
-                                        cashbackAmount = 0,
-                                        balance = 0,
-                                    ),
-                            ),
-                        accountCurrency = UAH,
-                    ),
-                ),
+                StatementProcessingContext(exampleStatement1("test receive")),
             )
             coVerify(timeout = 1000, exactly = 1) {
                 tgMock.sendMessage(
@@ -190,36 +122,11 @@ class TransactionsTest : IntegrationTestBase(), CoroutineScope {
         val newTransactionId = setupSingleTransactionMocks()
 
         runTestApplication {
-            webhookStatementsFlow.emit(
-                StatementProcessingContext(
-                    MonobankWebhookResponseStatementItem(
-                        d =
-                            MonoWebhookResponseData(
-                                account = "MONO-EXAMPLE-UAH",
-                                statementItem =
-                                    MonoStatementItem(
-                                        id = UUID.randomUUID().toString(),
-                                        time = Clock.System.now(),
-                                        description = "test",
-                                        mcc = 4829,
-                                        originalMcc = 4829,
-                                        hold = true,
-                                        amount = -5600,
-                                        operationAmount = -5600,
-                                        currencyCode = UAH,
-                                        commissionRate = 0,
-                                        cashbackAmount = 0,
-                                        balance = 0,
-                                    ),
-                            ),
-                        accountCurrency = UAH,
-                    ),
-                ),
-            )
+            webhookStatementsFlow.emit(StatementProcessingContext(exampleStatement2("test")))
             coVerify(timeout = 1000, exactly = 1) {
                 tgMock.sendMessage(
                     match {
-                        it is ChatId.IntegerId && it.id == 55555555L
+                        it is ChatId.IntegerId && it.id == 55555556L
                     },
                     any(),
                     any(),

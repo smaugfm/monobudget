@@ -1,9 +1,9 @@
 package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.category.CategoryService
-import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.model.financial.Amount
+import io.github.smaugfm.monobudget.common.util.misc.PeriodicFetcherFactory
 import org.koin.core.annotation.Single
 import java.util.Currency
 

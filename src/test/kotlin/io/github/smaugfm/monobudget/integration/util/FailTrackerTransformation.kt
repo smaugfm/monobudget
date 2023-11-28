@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.integration
+package io.github.smaugfm.monobudget.integration.util
 
 import io.github.smaugfm.lunchmoney.exception.LunchmoneyApiResponseException
 import io.ktor.http.HttpStatusCode
@@ -10,12 +10,6 @@ class FailTrackerTransformation<T>(private val configs: List<IntegrationFailConf
     private var attempt = 0
 
     override fun apply(mono: Mono<T>): Mono<T> =
-        (
-            if (configs.any { it.attemptFailRange.contains(attempt) }) {
-                Mono.error(LunchmoneyApiResponseException(HttpStatusCode.BadRequest.value))
-            } else {
-                mono
-            }
-        )
-            .also { attempt++ }
+        mono.takeIf { configs.all { !it.attemptFailRange.contains(attempt++) } }
+            ?: Mono.error(LunchmoneyApiResponseException(HttpStatusCode.BadRequest.value))
 }

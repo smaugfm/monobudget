@@ -3,8 +3,8 @@ package io.github.smaugfm.monobudget.lunchmoney
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyBudget
 import io.github.smaugfm.monobudget.common.category.CategoryService
-import io.github.smaugfm.monobudget.common.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.common.model.financial.Amount
+import io.github.smaugfm.monobudget.common.util.misc.PeriodicFetcherFactory
 import kotlinx.coroutines.reactor.awaitSingle
 import org.koin.core.annotation.Single
 import java.time.LocalDate

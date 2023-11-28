@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.lifecycle
+package io.github.smaugfm.monobudget.common.statement.lifecycle
 
 import org.koin.core.component.KoinScopeComponent
 import org.koin.core.component.createScope

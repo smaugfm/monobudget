@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.misc
+package io.github.smaugfm.monobudget.common.util.misc
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.asCoroutineDispatcher

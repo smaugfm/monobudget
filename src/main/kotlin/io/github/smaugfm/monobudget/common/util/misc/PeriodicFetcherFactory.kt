@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.misc
+package io.github.smaugfm.monobudget.common.util.misc
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CompletableDeferred

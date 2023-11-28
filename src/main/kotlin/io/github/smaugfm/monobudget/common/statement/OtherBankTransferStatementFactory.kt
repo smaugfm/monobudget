@@ -1,10 +1,10 @@
 package io.github.smaugfm.monobudget.common.statement
 
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingEventListener
 import io.github.smaugfm.monobudget.common.model.financial.OtherBankStatementItem
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.model.settings.OtherBanksTransferSettings
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingEventListener
 import org.koin.core.annotation.Single
 
 @Single

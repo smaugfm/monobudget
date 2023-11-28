@@ -8,12 +8,13 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.model.enumeration.LunchmoneyTransactionStatus
 import io.github.smaugfm.lunchmoney.response.LunchmoneyUpdateTransactionResponse
 import io.github.smaugfm.monobudget.TestBase
-import io.github.smaugfm.monobudget.common.account.MaybeTransferStatement
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingScopeComponent
+import io.github.smaugfm.monobudget.TestData.exampleStatement1
+import io.github.smaugfm.monobudget.common.account.MaybeTransfer
 import io.github.smaugfm.monobudget.common.model.BudgetBackend
 import io.github.smaugfm.monobudget.common.retry.InMemoryStatementRetryRepository
 import io.github.smaugfm.monobudget.common.retry.StatementRetryRepository
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.transaction.NewTransactionFactory
 import io.mockk.coEvery
 import io.mockk.every
@@ -79,7 +80,7 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
         declareMock<LunchmoneyApi> {}
         runBlocking {
             val map = mutableMapOf<String, Any>()
-            val ctx = StatementProcessingContext(statementItem1(), map)
+            val ctx = StatementProcessingContext(exampleStatement1("test"), map)
             map["transactionUpdated"] = true
             map["transactionCreatedId"] = expectedTransactionCreatedId
             map["transaction"] = expectedTransaction
@@ -88,7 +89,7 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
             val creator = sc.get<LunchmoneyTransactionCreator>()
             assertThat(
                 creator.create(
-                    MaybeTransferStatement.Transfer(
+                    MaybeTransfer.Transfer(
                         sc.ctx.item,
                         expectedTransaction,
                     ),
@@ -107,7 +108,7 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
         }
         runBlocking {
             val map = mutableMapOf<String, Any>()
-            val ctx = StatementProcessingContext(statementItem1(), map)
+            val ctx = StatementProcessingContext(exampleStatement1("test"), map)
             map["transactionUpdated"] = true
             map["transactionCreatedId"] = expectedTransactionCreatedId
             map["transaction"] = expectedTransaction
@@ -115,7 +116,7 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
             val creator = sc.get<LunchmoneyTransactionCreator>()
             assertThat(
                 creator.create(
-                    MaybeTransferStatement.Transfer(
+                    MaybeTransfer.Transfer(
                         sc.ctx.item,
                         expectedTransaction,
                     ),
@@ -146,11 +147,17 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
         }
         runBlocking {
             val map = mutableMapOf<String, Any>()
-            val sc = StatementProcessingScopeComponent(StatementProcessingContext(statementItem1(), map))
+            val sc =
+                StatementProcessingScopeComponent(
+                    StatementProcessingContext(
+                        exampleStatement1("test"),
+                        map,
+                    ),
+                )
             val creator = sc.get<LunchmoneyTransactionCreator>()
             assertThat(
                 creator.create(
-                    MaybeTransferStatement.Transfer(
+                    MaybeTransfer.Transfer(
                         sc.ctx.item,
                         expectedTransaction,
                     ),

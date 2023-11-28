@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.lifecycle
+package io.github.smaugfm.monobudget.common.statement.lifecycle
 
 import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 

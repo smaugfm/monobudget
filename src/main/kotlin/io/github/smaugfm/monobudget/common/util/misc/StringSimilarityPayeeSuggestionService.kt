@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.misc
+package io.github.smaugfm.monobudget.common.util.misc
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.util.jaroWinklerSimilarity
@@ -13,12 +13,12 @@ class StringSimilarityPayeeSuggestionService {
         payees: List<String>,
     ): List<String> {
         log.debug { "Looking for best payee match for memo: $value" }
-        return twoPass(value, payees).map { it.first }.also {
+        return twoPassJaroWindlerSimilarity(value, payees).map { it.first }.also {
             log.debug { "Found best match: $it" }
         }
     }
 
-    internal fun twoPass(
+    internal fun twoPassJaroWindlerSimilarity(
         value: String,
         payees: List<String>,
     ): List<Pair<String, Double>> {

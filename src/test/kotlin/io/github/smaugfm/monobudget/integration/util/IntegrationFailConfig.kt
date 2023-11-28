@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.integration
+package io.github.smaugfm.monobudget.integration.util
 
 sealed class IntegrationFailConfig(val attemptFailRange: IntRange) {
     class Update(attemptFailRange: IntRange) :

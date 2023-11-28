@@ -3,8 +3,10 @@ package io.github.smaugfm.monobudget.integration
 import com.elbekd.bot.model.ChatId
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
-import io.github.smaugfm.monobudget.common.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.integration.TestData.UAH
+import io.github.smaugfm.monobudget.TestData.UAH
+import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
+import io.github.smaugfm.monobudget.integration.util.IntegrationFailConfig
+import io.github.smaugfm.monobudget.integration.util.IntegrationTestBase
 import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
 import io.mockk.coVerify
 import io.mockk.confirmVerified
@@ -19,7 +21,7 @@ open class RetriesTest : IntegrationTestBase() {
     @Test
     open fun `When lunchmoney fails and then recovers transfer transaction is processed correctly`() {
         val (newTransactionId, newTransactionId2) =
-            setupTransferMocks(
+            setupTransferTransactionMocks(
                 listOf(
                     IntegrationFailConfig.CreateTransactionGroup(0..0),
                 ),
