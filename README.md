@@ -15,6 +15,7 @@ Ukrainian digital bank [Monobank](https://www.monobank.ua/) into one of the budg
 - Automatically recognizes transfers between monobank accounts and creates transfers in the budgeting app.
 - Uses Telegram bot to notify about created transactions in the budgeting app.
 - Telegram bot allows to change incorrectly assigned or empty category directly in Telegram messenger.
+- Automatic retries in case of budgeting provider API errors
 
 ### Preparations
 
