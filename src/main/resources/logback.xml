@@ -5,6 +5,7 @@
         </encoder>
     </appender>
     <logger name="io.github.smaugfm.monobudget" level="${LOG_LEVEL:-INFO}"/>
+    <logger name="io.github.smaugfm.lunchmoney" level="${LOG_LEVEL:-INFO}"/>
 
     <root level="info">
         <appender-ref ref="STDOUT"/>
