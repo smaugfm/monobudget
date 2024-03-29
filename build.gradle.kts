@@ -6,33 +6,34 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
-    kotlin("jvm") version "1.9.20"
-    kotlin("plugin.serialization") version "1.9.20"
-    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+    kotlin("jvm") version "2.0.10"
+    kotlin("plugin.serialization") version "2.0.10"
+    id("com.google.devtools.ksp") version "2.0.10-1.0.24"
     id("com.star-zero.gradle.githook") version "1.2.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.jlleitschuh.gradle.ktlint") version "11.6.1"
-    id("io.gitlab.arturbosch.detekt") version "1.23.3"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.1"
+    id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
 group = "io.github.smaugfm.monobudget"
 val version: String by project
 
-val jdkVersion = "11"
-val ktor = "2.3.6"
-val junit = "5.10.1"
-val logback = "1.4.11"
-val koin = "3.5.0"
-val koinKsp = "1.3.0"
+val jdkVersion = "17"
+val ktor = "2.3.12"
+val junit = "5.10.3"
+val logback = "1.5.6"
+val koin = "3.5.6"
+val koinKsp = "1.3.1"
 val resilience4jVersion = "1.7.0"
-val kotlinxCoroutines = "1.7.3"
+val kotlinxCoroutines = "1.8.1"
 val sealedEnum = "0.7.0"
-val jackson = "2.16.0"
+val jackson = "2.17.0"
 
 val githubToken: String? by project
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven("https://jitpack.io")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots")
 }
@@ -41,7 +42,7 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation(kotlin("reflect"))
     implementation("io.github.smaugfm:monobank:0.0.2")
-    implementation("io.github.smaugfm:lunchmoney:1.0.2")
+    implementation("io.github.smaugfm:lunchmoney:1.0.3-SNAPSHOT")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:$kotlinxCoroutines")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinxCoroutines")
     implementation("com.github.livefront.sealed-enum:runtime:$sealedEnum")

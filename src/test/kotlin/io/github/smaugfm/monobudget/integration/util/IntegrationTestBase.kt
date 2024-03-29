@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.integration.util
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
-import io.github.smaugfm.lunchmoney.model.LunchmoneyCategoryMultiple
+import io.github.smaugfm.lunchmoney.model.LunchmoneyCategory
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.lunchmoney.response.LunchmoneyUpdateTransactionResponse
@@ -35,6 +35,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaInstant
 import org.junit.jupiter.api.assertThrows
 import org.koin.core.KoinApplication
 import org.koin.dsl.bind
@@ -65,7 +67,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
 
     @MockK
     lateinit var categoriesFetcherMock:
-        PeriodicFetcherFactory.PeriodicFetcher<List<LunchmoneyCategoryMultiple>>
+        PeriodicFetcherFactory.PeriodicFetcher<List<LunchmoneyCategory>>
 
     @MockK
     lateinit var budgetSettingsVerifier: BudgetSettingsVerifier
@@ -81,7 +83,7 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
         every { lunchmoneyMock.getBudgetSummary(any(), any(), any()) } returns Mono.just(listOf())
         excludeRecords { lunchmoneyMock.getBudgetSummary(any(), any(), any()) }
         every {
-            periodicFetcherFactory.create<List<LunchmoneyCategoryMultiple>>(
+            periodicFetcherFactory.create<List<LunchmoneyCategory>>(
                 "Lunchmoney categories",
                 any(),
             )
@@ -157,6 +159,14 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                     notes = insertTransaction?.notes,
                     categoryId = insertTransaction?.categoryId,
                     status = insertTransaction!!.status!!,
+                    accountDisplayName = "",
+                    createdAt = Clock.System.now().toJavaInstant(),
+                    updatedAt = Clock.System.now().toJavaInstant(),
+                    displayName = "",
+                    excludeFromTotals = false,
+                    excludeFromBudget = false,
+                    isIncome = false,
+                    isPending = false,
                 ),
             ).transformDeferred(singleTransform)
         }
@@ -173,6 +183,14 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                     notes = insertTransaction2?.notes,
                     categoryId = insertTransaction2?.categoryId,
                     status = insertTransaction2!!.status!!,
+                    accountDisplayName = "",
+                    createdAt = Clock.System.now().toJavaInstant(),
+                    updatedAt = Clock.System.now().toJavaInstant(),
+                    displayName = "",
+                    excludeFromTotals = false,
+                    excludeFromBudget = false,
+                    isIncome = false,
+                    isPending = false,
                 ),
             ).transformDeferred(singleTransform)
         }
@@ -243,6 +261,14 @@ abstract class IntegrationTestBase : TestBase(), CoroutineScope {
                     notes = insertTransaction?.notes,
                     categoryId = insertTransaction?.categoryId,
                     status = insertTransaction!!.status!!,
+                    accountDisplayName = "",
+                    createdAt = Clock.System.now().toJavaInstant(),
+                    updatedAt = Clock.System.now().toJavaInstant(),
+                    displayName = "",
+                    excludeFromTotals = false,
+                    excludeFromBudget = false,
+                    isIncome = false,
+                    isPending = false,
                 ),
             ).transformDeferred(singleTracker)
         }

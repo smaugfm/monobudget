@@ -19,5 +19,5 @@ interface StatementItem {
     val operationAmount: Amount
     val currency: Currency
 
-    fun formatAmount() = amount.format()
+    fun formatAmount() = operationAmount.format()
 }

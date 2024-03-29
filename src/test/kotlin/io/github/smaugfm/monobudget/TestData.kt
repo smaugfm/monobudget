@@ -1,6 +1,6 @@
 package io.github.smaugfm.monobudget
 
-import io.github.smaugfm.lunchmoney.model.LunchmoneyCategoryMultiple
+import io.github.smaugfm.lunchmoney.model.LunchmoneyCategory
 import io.github.smaugfm.monobank.model.MonoStatementItem
 import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
@@ -62,7 +62,7 @@ object TestData {
 
     val categories =
         listOf(
-            LunchmoneyCategoryMultiple(
+            LunchmoneyCategory(
                 id = 444443,
                 name = "Авто",
                 description = null,
@@ -74,7 +74,7 @@ object TestData {
                 isGroup = false,
                 groupId = null,
             ),
-            LunchmoneyCategoryMultiple(
+            LunchmoneyCategory(
                 id = 444444,
                 name = "Перекази",
                 description = null,
@@ -86,7 +86,7 @@ object TestData {
                 isGroup = false,
                 groupId = null,
             ),
-            LunchmoneyCategoryMultiple(
+            LunchmoneyCategory(
                 id = 444445,
                 name = "Розваги",
                 description = null,
@@ -98,7 +98,7 @@ object TestData {
                 isGroup = false,
                 groupId = null,
             ),
-            LunchmoneyCategoryMultiple(
+            LunchmoneyCategory(
                 id = 444446,
                 name = "Транспорт",
                 description = null,

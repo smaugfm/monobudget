@@ -20,6 +20,8 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockkClass
 import kotlinx.coroutines.runBlocking
+import kotlinx.datetime.Clock
+import kotlinx.datetime.toJavaInstant
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.koin.core.KoinApplication
@@ -58,6 +60,14 @@ class LunchmoneyTransactionCreatorTest : TestBase() {
             1.0,
             isGroup = false,
             status = LunchmoneyTransactionStatus.CLEARED,
+            accountDisplayName = "",
+            createdAt = Clock.System.now().toJavaInstant(),
+            updatedAt = Clock.System.now().toJavaInstant(),
+            displayName = "",
+            excludeFromTotals = false,
+            excludeFromBudget = false,
+            isIncome = false,
+            isPending = false,
         )
     private val insertTransaction =
         LunchmoneyInsertTransaction(

@@ -25,7 +25,6 @@ class LunchmoneyTransactionMessageFormatter(
     private val shouldNotifyStatuses =
         setOf(
             LunchmoneyTransactionStatus.UNCLEARED,
-            LunchmoneyTransactionStatus.RECURRING_SUGGESTED,
             LunchmoneyTransactionStatus.PENDING,
         )
 

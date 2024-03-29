@@ -15,7 +15,6 @@ import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessi
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import kotlinx.coroutines.reactor.awaitSingle
-import kotlinx.serialization.SerializationException
 import org.koin.core.annotation.Scope
 import org.koin.core.annotation.Scoped
 
@@ -41,17 +40,10 @@ class LunchmoneyTransactionCreator(
             }
         } catch (e: LunchmoneyApiResponseException) {
             val template = "Текст помилки: "
-            if (e.cause is SerializationException) {
-                throw BudgetBackendException(
-                    e,
-                    template + (e.message?.substringBefore("JSON input:") + "HTTP Body:\n" + e.body),
-                )
-            } else {
-                throw BudgetBackendException(
-                    e,
-                    template + e.message,
-                )
-            }
+            throw BudgetBackendException(
+                e,
+                template + e.message,
+            )
         }
 
     private suspend fun processTransfer(

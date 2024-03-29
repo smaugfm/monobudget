@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.resilience4j.reactor.retry.RetryOperator
+import io.github.resilience4j.retry.Retry
 import io.github.smaugfm.lunchmoney.api.LunchmoneyApi
 import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
@@ -113,7 +114,7 @@ private fun lunchmoneyModule(budgetBackend: Lunchmoney) =
         single {
             LunchmoneyApi(
                 budgetBackend.token,
-                requestTransformer = RetryOperator.of(get()),
+                requestTransformer = RetryOperator.of(Retry.ofDefaults("default")),
             )
         }
     } + LunchmoneyModule().module

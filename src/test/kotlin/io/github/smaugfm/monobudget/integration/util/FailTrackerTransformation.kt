@@ -11,5 +11,5 @@ class FailTrackerTransformation<T>(private val configs: List<IntegrationFailConf
 
     override fun apply(mono: Mono<T>): Mono<T> =
         mono.takeIf { configs.all { !it.attemptFailRange.contains(attempt++) } }
-            ?: Mono.error(LunchmoneyApiResponseException(HttpStatusCode.BadRequest.value))
+            ?: Mono.error(LunchmoneyApiResponseException(HttpStatusCode.BadRequest.description))
 }

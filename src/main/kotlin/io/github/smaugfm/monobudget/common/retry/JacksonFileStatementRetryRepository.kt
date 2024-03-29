@@ -25,7 +25,7 @@ import kotlin.time.Duration
 class JacksonFileStatementRetryRepository(
     private val path: Path,
 ) : StatementRetryRepository {
-    internal val objectMapper =
+    private val objectMapper =
         jsonMapper {
             enable(SerializationFeature.INDENT_OUTPUT)
             addModule(kotlinModule())
