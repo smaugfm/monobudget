@@ -1,7 +1,6 @@
 package io.github.smaugfm.monobudget.common.model.serializer
 
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.toLocalDate
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
@@ -23,6 +22,6 @@ class LocalDateAsISOSerializer : KSerializer<LocalDate> {
     }
 
     override fun deserialize(decoder: Decoder): LocalDate {
-        return decoder.decodeString().toLocalDate()
+        return LocalDate.parse(decoder.decodeString())
     }
 }

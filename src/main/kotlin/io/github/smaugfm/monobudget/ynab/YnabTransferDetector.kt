@@ -1,6 +1,7 @@
 package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.BankAccountService
+import io.github.smaugfm.monobudget.common.account.TransferCache
 import io.github.smaugfm.monobudget.common.account.TransferDetector
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
@@ -13,7 +14,7 @@ import org.koin.core.annotation.Scoped
 class YnabTransferDetector(
     bankAccounts: BankAccountService,
     ctx: StatementProcessingContext,
-    cache: YnabTransferCache,
+    cache: TransferCache<YnabTransactionDetail>,
 ) : TransferDetector<YnabTransactionDetail>(
         bankAccounts,
         ctx,

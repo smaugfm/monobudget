@@ -13,7 +13,8 @@ import java.util.Currency
 private val log = KotlinLogging.logger {}
 
 @Single
-class LunchmoneyNewTransactionFactory : NewTransactionFactory<LunchmoneyInsertTransaction>() {
+class LunchmoneyNewTransactionFactory(private val noteSuffix: String = "") :
+    NewTransactionFactory<LunchmoneyInsertTransaction>() {
     override suspend fun create(statement: StatementItem): LunchmoneyInsertTransaction {
         log.debug { "Transforming Monobank statement to Lunchmoney transaction." }
 
@@ -28,7 +29,7 @@ class LunchmoneyNewTransactionFactory : NewTransactionFactory<LunchmoneyInsertTr
                 currency = amount.currency,
                 assetId = getBudgetAccountId(statement).toLong(),
                 recurringId = null,
-                notes = getNotes(amount.currency),
+                notes = getNotes(amount.currency) + noteSuffix,
                 status = getStatus(categoryId),
                 externalId = id,
                 tags = null,

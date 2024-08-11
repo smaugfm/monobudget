@@ -14,6 +14,7 @@ import io.github.smaugfm.monobudget.common.model.settings.MonoAccountSettings
 import io.github.smaugfm.monobudget.common.model.settings.Settings
 import io.github.smaugfm.monobudget.common.retry.JacksonFileStatementRetryRepository
 import io.github.smaugfm.monobudget.common.retry.StatementRetryRepository
+import io.github.smaugfm.monobudget.import.ImporterApplication
 import io.github.smaugfm.monobudget.lunchmoney.LunchmoneyModule
 import io.github.smaugfm.monobudget.mono.MonoApi
 import io.github.smaugfm.monobudget.mono.MonoModule
@@ -37,7 +38,13 @@ private val log = KotlinLogging.logger {}
 
 private const val DEFAULT_HTTP_PORT = 80
 
-fun main() {
+fun main(args: Array<String>) {
+    if (args.size == 1 && args[0] == "importer") {
+        return runBlocking {
+            ImporterApplication.main(this)
+        }
+    }
+
     val env = System.getenv()
     val setWebhook = env["SET_WEBHOOK"]?.toBoolean() ?: false
     val monoWebhookUrl = URI(env["MONO_WEBHOOK_URL"]!!)

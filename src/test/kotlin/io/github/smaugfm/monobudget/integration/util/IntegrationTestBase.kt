@@ -10,13 +10,13 @@ import io.github.smaugfm.monobudget.Application
 import io.github.smaugfm.monobudget.TestBase
 import io.github.smaugfm.monobudget.TestData
 import io.github.smaugfm.monobudget.common.model.settings.Settings
+import io.github.smaugfm.monobudget.common.notify.TelegramApi
 import io.github.smaugfm.monobudget.common.retry.InMemoryStatementRetryRepository
 import io.github.smaugfm.monobudget.common.retry.StatementRetryRepository
 import io.github.smaugfm.monobudget.common.startup.ApplicationStartupVerifier
 import io.github.smaugfm.monobudget.common.startup.BudgetSettingsVerifier
 import io.github.smaugfm.monobudget.common.statement.StatementSource
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
-import io.github.smaugfm.monobudget.common.telegram.TelegramApi
 import io.github.smaugfm.monobudget.common.util.misc.PeriodicFetcherFactory
 import io.github.smaugfm.monobudget.integration.TransactionsTest
 import io.github.smaugfm.monobudget.mono.MonoWebhookListener

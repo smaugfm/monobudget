@@ -2,7 +2,7 @@ package io.github.smaugfm.monobudget.ynab
 
 import com.elbekd.bot.types.Message
 import io.github.smaugfm.monobudget.common.model.callback.TransactionUpdateType
-import io.github.smaugfm.monobudget.common.telegram.TelegramCallbackHandler
+import io.github.smaugfm.monobudget.common.notify.TelegramCallbackHandler
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.extractFromOldMessage
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter.Companion.formatHTMLStatementMessage
 import io.github.smaugfm.monobudget.ynab.model.YnabTransactionDetail

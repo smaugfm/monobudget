@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.telegram
+package io.github.smaugfm.monobudget.common.notify
 
 import com.elbekd.bot.model.ChatId
 import com.elbekd.bot.types.ParseMode
@@ -11,11 +11,11 @@ import org.koin.core.annotation.Single
 private val log = KotlinLogging.logger {}
 
 @Single
-class TelegramMessageSender(
+class TelegramNotificationSender(
     private val bankAccounts: BankAccountService,
     private val telegramApi: TelegramApi,
-) {
-    suspend fun send(
+) : StatementItemNotificationSender {
+    override suspend fun notify(
         accountId: BankAccountId,
         newMessage: MessageWithReplyKeyboard,
     ) {

@@ -4,10 +4,10 @@ import io.github.smaugfm.lunchmoney.model.LunchmoneyInsertTransaction
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferDetector
+import io.github.smaugfm.monobudget.common.notify.StatementItemNotificationSender
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementItemProcessor
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
-import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import org.koin.core.annotation.Scope
@@ -21,12 +21,12 @@ class LunchmoneyStatementItemProcessor(
     bankAccounts: BankAccountService,
     transferDetector: TransferDetector<LunchmoneyTransaction>,
     messageFormatter: TransactionMessageFormatter<LunchmoneyTransaction>,
-    telegramMessageSender: TelegramMessageSender,
+    notificationSender: StatementItemNotificationSender,
 ) : StatementItemProcessor<LunchmoneyTransaction, LunchmoneyInsertTransaction>(
         ctx,
         transactionFactory,
         bankAccounts,
         transferDetector,
         messageFormatter,
-        telegramMessageSender,
+        notificationSender,
     )

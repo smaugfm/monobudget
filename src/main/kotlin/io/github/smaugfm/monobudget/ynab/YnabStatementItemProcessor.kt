@@ -2,10 +2,10 @@ package io.github.smaugfm.monobudget.ynab
 
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferDetector
+import io.github.smaugfm.monobudget.common.notify.StatementItemNotificationSender
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementItemProcessor
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
-import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.ynab.model.YnabSaveTransaction
@@ -21,12 +21,12 @@ class YnabStatementItemProcessor(
     bankAccounts: BankAccountService,
     transferDetector: TransferDetector<YnabTransactionDetail>,
     messageFormatter: TransactionMessageFormatter<YnabTransactionDetail>,
-    telegramMessageSender: TelegramMessageSender,
+    notificationSender: StatementItemNotificationSender,
 ) : StatementItemProcessor<YnabTransactionDetail, YnabSaveTransaction>(
         ctx,
         transactionFactory,
         bankAccounts,
         transferDetector,
         messageFormatter,
-        telegramMessageSender,
+        notificationSender,
     )

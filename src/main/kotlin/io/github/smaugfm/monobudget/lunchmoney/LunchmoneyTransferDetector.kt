@@ -2,6 +2,7 @@ package io.github.smaugfm.monobudget.lunchmoney
 
 import io.github.smaugfm.lunchmoney.model.LunchmoneyTransaction
 import io.github.smaugfm.monobudget.common.account.BankAccountService
+import io.github.smaugfm.monobudget.common.account.TransferCache
 import io.github.smaugfm.monobudget.common.account.TransferDetector
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
@@ -13,5 +14,5 @@ import org.koin.core.annotation.Scoped
 class LunchmoneyTransferDetector(
     bankAccounts: BankAccountService,
     ctx: StatementProcessingContext,
-    cache: LunchmoneyTransferCache,
+    cache: TransferCache<LunchmoneyTransaction>,
 ) : TransferDetector<LunchmoneyTransaction>(bankAccounts, ctx, cache)

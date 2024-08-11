@@ -24,6 +24,6 @@ abstract class NewTransactionFactory<TNewTransaction> : KoinComponent {
 
     companion object {
         @JvmStatic
-        protected fun StatementItem?.formatDescription() = (this?.description ?: "").replaceNewLines()
+        fun StatementItem?.formatDescription() = (this?.description ?: "").replaceNewLines()
     }
 }

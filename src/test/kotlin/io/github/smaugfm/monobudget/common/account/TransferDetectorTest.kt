@@ -8,14 +8,11 @@ import io.github.smaugfm.monobank.model.MonoWebhookResponseData
 import io.github.smaugfm.monobudget.TestBase
 import io.github.smaugfm.monobudget.common.account.MaybeTransfer.NotTransfer
 import io.github.smaugfm.monobudget.common.account.MaybeTransfer.Transfer
-import io.github.smaugfm.monobudget.common.model.financial.StatementItem
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingContext
 import io.github.smaugfm.monobudget.common.statement.lifecycle.StatementProcessingScopeComponent
-import io.github.smaugfm.monobudget.common.util.misc.ConcurrentExpiringMap
 import io.github.smaugfm.monobudget.mono.MonobankWebhookResponseStatementItem
 import io.mockk.coEvery
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -33,7 +30,8 @@ private val log = KotlinLogging.logger { }
 
 class TransferDetectorTest : TestBase() {
     companion object {
-        private val cache = ConcurrentExpiringMap<StatementItem, Deferred<Any>>(1.minutes)
+        private val cache =
+            TransferCache.Expiring<Any>(1.minutes)
     }
 
     class TestDetector(

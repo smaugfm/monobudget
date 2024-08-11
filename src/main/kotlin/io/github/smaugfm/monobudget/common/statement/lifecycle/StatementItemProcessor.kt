@@ -3,7 +3,7 @@ package io.github.smaugfm.monobudget.common.statement.lifecycle
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.github.smaugfm.monobudget.common.account.BankAccountService
 import io.github.smaugfm.monobudget.common.account.TransferDetector
-import io.github.smaugfm.monobudget.common.telegram.TelegramMessageSender
+import io.github.smaugfm.monobudget.common.notify.StatementItemNotificationSender
 import io.github.smaugfm.monobudget.common.transaction.TransactionFactory
 import io.github.smaugfm.monobudget.common.transaction.TransactionMessageFormatter
 import io.github.smaugfm.monobudget.common.util.pp
@@ -16,7 +16,7 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
     private val bankAccounts: BankAccountService,
     private val transferDetector: TransferDetector<TTransaction>,
     private val messageFormatter: TransactionMessageFormatter<TTransaction>,
-    private val telegramMessageSender: TelegramMessageSender,
+    private val notificationSender: StatementItemNotificationSender,
 ) {
     suspend fun process() {
         logStatement()
@@ -30,7 +30,7 @@ abstract class StatementItemProcessor<TTransaction, TNewTransaction>(
         val transaction = transactionFactory.create(maybeTransfer)
         val message = messageFormatter.format(ctx.item, transaction)
 
-        telegramMessageSender.send(ctx.item.accountId, message)
+        notificationSender.notify(ctx.item.accountId, message)
     }
 
     private suspend fun logStatement() {

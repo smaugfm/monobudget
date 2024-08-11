@@ -1,4 +1,4 @@
-package io.github.smaugfm.monobudget.common.telegram
+package io.github.smaugfm.monobudget.common.notify
 
 import com.elbekd.bot.Bot
 import com.elbekd.bot.model.ChatId
