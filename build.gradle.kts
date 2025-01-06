@@ -91,7 +91,9 @@ ktlint {
     version.set("1.0.1")
     enableExperimentalRules.set(true)
     filter {
-        exclude("**/generated/**")
+        exclude("**/build")
+        exclude("**/build/**")
+        exclude("build/***")
     }
     reporters {
         reporter(ReporterType.HTML)

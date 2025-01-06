@@ -9,13 +9,15 @@ Ukrainian digital bank [Monobank](https://www.monobank.ua/) into one of the budg
 ### Features
 
 - Creates transactions in the budgeting app as they happen (via Monobank
-  API [webHook](https://api.monobank.ua/docs/#tag/Kliyentski-personalni-dani/paths/~1personal~1webhook/post)).
-- Supports multiple monobank accounts and links transactions to the corresponding accounts created in the budgeting app.
-- Tries to guess transaction's category using [MCC](https://en.wikipedia.org/wiki/Merchant_category_code) codes.
-- Automatically recognizes transfers between monobank accounts and creates transfers in the budgeting app.
-- Uses Telegram bot to notify about created transactions in the budgeting app.
-- Telegram bot allows to change incorrectly assigned or empty category directly in Telegram messenger.
+  API [webHook](https://api.monobank.ua/docs/#tag/Kliyentski-personalni-dani/paths/~1personal~1webhook/post))
+- Supports multiple monobank accounts and links transactions to the corresponding accounts created in the budgeting app
+- Tries to guess transaction's category using [MCC](https://en.wikipedia.org/wiki/Merchant_category_code) codes
+- Automatically recognizes transfers between monobank accounts and creates transfers in the budgeting app
+- Uses Telegram bot to notify about created transactions in the budgeting app
+- Telegram bot allows to change incorrectly assigned or empty category directly in Telegram messenger
 - Automatic retries in case of budgeting provider API errors
+- **NEW** [Importer mode](#Importer-mode) for importing transactions from CSV statement files obtained from Monobank
+  app
 
 ### Preparations
 
@@ -96,9 +98,41 @@ There are a couple of environment variables you must set:
   call [Monobank API](https://api.monobank.ua/docs/#tag/Kliyentski-personalni-dani/paths/~1personal~1webhook/post)
   setting webhook at application startup or skip this step (i.e. webhook was set previously and URL hasn't changed)
 
+### Importer mode
+
+Application downtime can occur for various reasons like a scheduled maintenance at the Lunchmoney API
+side (happens frequently, once in a couple of months). And you may end up with a bunch of transactions that were not
+synced to the budgeting app. To avoid manual labour of adding those transactions in the budgeting app, monobudget can be
+run from the command line in a special `Importer` mode.
+
+You use your regular `settings.yml` file, but also create a new `import-config.yml` file, which may look like
+this:
+
+```yaml
+imports:
+  "Personal account UAH": "/Users/user/Documents/report_13-08-2024_19-36-25.csv"
+  "Personal account EUR": "/Users/user/Documents/report_10-08-2024_08-57-01.csv"
+  "Other account": "/some/other/full/path/to/the/csv/monobank/statement.csv"
+```
+
+It's a map from account `alias` from the `settings.yml` to the full path of the Monobank statement report for that
+account.
+Multiple accounts may be specified and if transfers between those account occurred they would be created as during
+normal application operation.
+Then you must `cd` into application repository folder and build and run it like this:
+
+```bash
+./gradlew build -x test
+java -jar build/libs/monobudget-fat.jar importer
+```
+
+`settings.yml` and `importer-config.yml` must reside in the root repository folder 
+
 ### About YNAB support
 
-Previously this app supported only YNAB as this was my preferred financial manager. Then I switched to Lunchmoney and refactored the app to support both, but I only tested YNAB support with the minimal effort after that, and I am not confident it works reliably.
+Previously this app supported only YNAB as this was my preferred financial manager. Then I switched to Lunchmoney and
+refactored the app to support both, but I only tested YNAB support with the minimal effort after that, and I am not
+confident it works reliably.
 
 Last commit where YNAB support was working reliably (and I was personally using it)
 is [3a7da7af](https://github.com/smaugfm/monobudget/commit/3a7da7afd85bffa310f54a322c46d626d24f488c) (May 2022)

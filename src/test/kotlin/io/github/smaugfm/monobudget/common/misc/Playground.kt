@@ -23,6 +23,7 @@ import java.nio.file.Paths
 import kotlin.io.path.readText
 
 @OptIn(DelicateCoroutinesApi::class)
+@Disabled
 class Playground : KoinTest {
     private val apis: List<MonoApi> by injectAll()
 
@@ -57,7 +58,6 @@ class Playground : KoinTest {
     }
 
     @Test
-    @Disabled
     fun vasa() {
         println(apis)
     }
