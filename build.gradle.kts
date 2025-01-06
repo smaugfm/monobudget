@@ -16,7 +16,7 @@ plugins {
 }
 
 group = "io.github.smaugfm.monobudget"
-val version: String by project
+val version = "1.1.0"
 
 val jdkVersion = "17"
 val ktor = "2.3.12"
